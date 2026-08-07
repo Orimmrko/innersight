@@ -1,0 +1,14 @@
+# environment
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# generated data
+data/*
+!data/.gitkeep
+
+# generated outputs
+outputs/checkpoints/*
+outputs/figures/*
+!**/.gitkeep

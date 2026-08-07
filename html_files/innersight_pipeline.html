@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — The Pipeline, Stage by Stage</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); line-height:1.62; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:40px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:62ch}
+
+  .thesis{
+    background:var(--accent-soft); border-left:4px solid var(--accent);
+    padding:20px 24px; border-radius:0 8px 8px 0; margin:0 0 44px;
+  }
+  .thesis p{margin:0; font-size:17px}
+  .thesis strong{color:var(--accent)}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+
+  /* ---- flow diagram ---- */
+  .flow{display:flex; flex-direction:column; gap:6px; margin:0 0 12px}
+  .frow{display:flex; align-items:stretch; gap:10px; flex-wrap:wrap}
+  .fbox{
+    flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+    border-radius:8px; padding:12px 14px; min-width:140px;
+  }
+  .fbox .n{font-family:var(--mono); font-size:11px; color:var(--accent); font-weight:700}
+  .fbox .t{font-weight:650; font-size:14px; margin-top:2px}
+  .fbox .f{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:6px; word-break:break-all}
+  .arrow{display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:18px; padding:2px 0}
+  .fbox.slow{border-color:var(--accent); border-width:2px}
+  .boundary{
+    display:flex; align-items:center; gap:14px; margin:14px 0; color:var(--accent);
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .boundary::before,.boundary::after{content:""; flex:1; height:1px; background:var(--accent); opacity:.45}
+
+  /* ---- stage cards ---- */
+  .stage{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 28px; margin:0 0 20px;
+  }
+  .stage-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px}
+  .num{
+    font-family:var(--mono); font-size:12px; font-weight:700; color:#fff; background:var(--accent);
+    width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center;
+    justify-content:center; flex:none; align-self:center;
+  }
+  .stage-head h3{font-size:22px; margin:0; letter-spacing:-.01em}
+  .cost{margin-left:auto; font-family:var(--mono); font-size:11px; padding:3px 9px;
+        border-radius:20px; border:1px solid var(--line); color:var(--muted)}
+  .cost.slow{color:var(--bad); border-color:var(--bad)}
+  .cost.fast{color:var(--ok); border-color:var(--ok)}
+
+  .io{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 18px}
+  .io div{
+    flex:1 1 220px; background:var(--code-bg); border-radius:7px; padding:10px 13px;
+    font-family:var(--mono); font-size:12px; line-height:1.5;
+  }
+  .io .lbl{color:var(--muted); font-size:10px; letter-spacing:.1em; text-transform:uppercase; display:block; margin-bottom:3px}
+
+  .stage p{margin:0 0 12px}
+  .stage p:last-child{margin-bottom:0}
+  .stage h4{font-size:13px; margin:20px 0 8px; color:var(--accent); letter-spacing:.02em}
+
+  pre{
+    background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+    font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0;
+  }
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  .note{
+    border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+    padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px;
+  }
+  .note b{color:var(--warn)}
+  .danger{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .danger b{color:var(--bad)}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+
+  ul{margin:10px 0; padding-left:22px}
+  li{margin:6px 0}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:13.5px}
+
+  /* ---- big chapter ---- */
+  .chapter-open{
+    margin:72px 0 8px; padding:30px 32px; border-radius:14px;
+    background:linear-gradient(135deg, var(--accent-soft), transparent 70%);
+    border:2px solid var(--accent);
+  }
+  .chapter-open .kicker{font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 8px}
+  .chapter-open h2{font-size:30px; font-family:var(--sans); text-transform:none; letter-spacing:-.02em;
+    color:var(--ink); border:none; margin:0 0 10px; padding:0}
+  .chapter-open p{margin:0; color:var(--muted); font-size:16px; max-width:64ch}
+
+  .part{display:flex; align-items:center; gap:12px; margin:44px 0 18px}
+  .part span.tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    background:var(--accent); color:#fff; padding:5px 11px; border-radius:5px; flex:none}
+  .part h3{margin:0; font-size:23px; letter-spacing:-.01em}
+  .part::after{content:""; flex:1; height:2px; background:var(--line)}
+
+  .sec{margin:0 0 26px}
+  .sec h4{font-size:16px; color:var(--ink); margin:26px 0 10px; letter-spacing:-.005em}
+  .sec h4 .no{font-family:var(--mono); font-size:12px; color:var(--accent); margin-right:8px}
+
+  .todo{list-style:none; padding:0; margin:12px 0}
+  .todo li{
+    background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0; padding:13px 16px; margin:8px 0; font-size:14.5px;
+  }
+  .todo li b{display:block; margin-bottom:3px; font-size:14.5px}
+  .todo li span{color:var(--muted)}
+
+  .verdict-ok{color:var(--ok); font-weight:650}
+  .verdict-no{color:var(--bad); font-weight:650}
+  .verdict-mid{color:var(--warn); font-weight:650}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Graduation project · CERT r4.2</p>
+  <h1>InnerSight — the pipeline, stage by stage</h1>
+  <p class="sub">Seven stages that turn 16 GB of raw activity logs into two trained neural networks and one comparison table.</p>
+</header>
+
+<div class="thesis">
+  <p><strong>The one idea:</strong> an insider does nothing forbidden — they do normal things at abnormal times, in abnormal amounts. So we never ask <em>“is this action bad?”</em> We ask <strong>“is this unlike them?”</strong> Every raw count becomes a z&#8209;score against that person’s own history, and the networks learn from deviations, not from counts.</p>
+</div>
+
+<h2>The shape of the whole thing</h2>
+
+<div class="flow">
+  <div class="frow">
+    <div class="fbox slow">
+      <div class="n">STAGE 1</div><div class="t">Extract</div>
+      <div class="f">→ daily_counts.csv</div>
+    </div>
+    <div class="fbox">
+      <div class="n">STAGE 2</div><div class="t">Label</div>
+      <div class="f">+ label, scenario</div>
+    </div>
+    <div class="fbox">
+      <div class="n">STAGE 3</div><div class="t">Baseline (z)</div>
+      <div class="f">→ dataset.csv</div>
+    </div>
+    <div class="fbox">
+      <div class="n">STAGE 4</div><div class="t">Split</div>
+      <div class="f">→ splits.json</div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="frow">
+    <div class="fbox">
+      <div class="n">STAGE 5</div><div class="t">Model A — MLP</div>
+      <div class="f">sees 1 day · (18,)</div>
+    </div>
+    <div class="fbox">
+      <div class="n">STAGE 6</div><div class="t">Model B — CNN</div>
+      <div class="f">sees 28 days · (18,28)</div>
+    </div>
+    <div class="fbox">
+      <div class="n">STAGE 7</div><div class="t">Evaluate</div>
+      <div class="f">→ results table + curves</div>
+    </div>
+  </div>
+</div>
+
+<div class="boundary">↑ 16 GB above this line &nbsp;·&nbsp; ~40 MB below it ↑</div>
+
+<p>Stage 1 is the only slow thing in the project. It runs <b>once</b>, and after it the data is small enough to load instantly. Everything you will debug twenty times lives below that line.</p>
+
+<h2>The seven stages</h2>
+
+<!-- 1 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">1</span><h3>Extract</h3><span class="cost slow">hours · run once</span></div>
+  <div class="io">
+    <div><span class="lbl">reads</span>logon.csv · device.csv · file.csv<br>email.csv · http.csv &nbsp;(~16 GB)</div>
+    <div><span class="lbl">writes</span>daily_counts.csv<br>~500,000 rows · ~30 MB</div>
+  </div>
+
+  <p>Thirty million individual events get squeezed into <b>18 numbers per person per day</b>. That’s the entire job.</p>
+
+  <pre><code>user      day         logon  after_hrs  usb  files  http  jobsearch  ...
+KPC0073   2010-07-05      2          0    0      0   412          0
+KPC0073   2010-07-07      3          1    1      0   288          0
+NGF0157   2010-07-07      2          0    0     14   533          0</code></pre>
+
+  <h4>How it survives 14.5 GB</h4>
+  <ul>
+    <li><b>Read in chunks.</b> 50,000 rows at a time — never load a whole file.</li>
+    <li><b>Drop <code>content</code> at read time.</b> It’s generated filler and feeds no feature. It is also most of the file size.</li>
+    <li><b>Parse dates with an explicit format</b> (<code>%m/%d/%Y %H:%M:%S</code>). Letting pandas guess across 28 M rows costs minutes.</li>
+    <li><b>Sums combine across chunks; distinct counts don’t.</b> The same PC seen in two chunks is one PC, not two — so those two features collect <code>(user, day, value)</code> triples and deduplicate at the end.</li>
+  </ul>
+
+  <div class="note"><b>Design note.</b> The keys are the <em>union</em> of <code>(user, day)</code> across all five logs. A missing value means <b>zero</b>, not NaN — “no USB events today” is an observation, not absent data. And a day with no activity at all still deserves a row: a resigned insider who stopped coming in produces exactly that pattern.</div>
+
+  <div class="note danger"><b>Do this first.</b> Kick this off before anything else and let it run in the background while you build stages 2–7 against the 30-user sample. Waiting for it idle is the most likely way to lose a day.</div>
+</div>
+
+<!-- 2 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">2</span><h3>Label</h3><span class="cost fast">seconds</span></div>
+  <div class="io">
+    <div><span class="lbl">reads</span>daily_counts.csv<br>answers/insiders.csv</div>
+    <div><span class="lbl">writes</span>+ two columns: <code>label</code>, <code>scenario</code></div>
+  </div>
+
+  <p>The raw logs contain <b>no labels at all</b>. Nothing in a logon row says good or bad. The truth lives in one separate file that names each insider and the window they were malicious in.</p>
+
+  <pre><code>answers/insiders.csv
+  dataset  scenario  user      start                end
+  4.2      1         KPC0073   07/07/2010 20:05:29  07/15/2010 03:08:16
+
+becomes
+
+  user      day         ...   label   scenario
+  KPC0073   2010-07-05  ...     0       -        ← before the window
+  KPC0073   2010-07-08  ...     1       1        ← inside it
+  NGF0157   2010-07-08  ...     0       -        ← not an insider</code></pre>
+
+  <p><b>One row = one user-day.</b> Label 1 if that day falls inside that user’s attack window, else 0. Carry the scenario number too — you need it in stage 7 to report per-scenario results.</p>
+
+  <div class="note"><b>Known imperfection, worth writing down.</b> The published windows mark the <em>signature</em> event, not the full run-up. Insider BIH0745’s labelled window is 65 minutes long, yet his heaviest after-hours USB copying sits <em>outside</em> it. So some genuinely anomalous days are labelled benign, and your model gets “punished” for finding real anomalies. That is a property of the dataset, not a bug in your work — say so in the write-up.</div>
+</div>
+
+<!-- 3 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">3</span><h3>Baseline — the z-scores</h3><span class="cost fast">~1 minute</span></div>
+  <div class="io">
+    <div><span class="lbl">reads</span>daily_counts.csv (18 raw counts)</div>
+    <div><span class="lbl">writes</span>dataset.csv (18 z-scores + label)</div>
+  </div>
+
+  <p><b>This stage is the thesis.</b> Everything else is plumbing around it.</p>
+
+  <p>For each user, walk their days in order. Score today against their own past, <em>then</em> absorb today into the running average:</p>
+
+  <pre><code>for each day t, per feature:
+    z[t]  = (count[t] - running_mean) / max(running_std, floor)   # score first
+    running_mean, running_std  ←  update with count[t]            # then absorb</code></pre>
+
+  <h4>Why this works</h4>
+  <p>Same raw number, two people, opposite meanings:</p>
+
+  <table>
+    <tr><th>Person</th><th class="mono">their normal</th><th class="mono">today</th><th class="mono">z-score</th><th>reading</th></tr>
+    <tr><td>Accountant, never used USB</td><td class="mono">0 ± 0</td><td class="mono">3</td><td class="mono"><b>+20</b></td><td>alarm</td></tr>
+    <tr><td>Hardware engineer</td><td class="mono">4 ± 1.5</td><td class="mono">3</td><td class="mono">−0.67</td><td>Tuesday</td></tr>
+  </table>
+
+  <ul>
+    <li><b>Score before absorbing.</b> Update first and today’s spike gets swallowed into the baseline it is measured against — it partly hides itself.</li>
+    <li><b>The standard-deviation floor</b> stops division by zero for someone whose history is all zeros. That person’s z stays at exactly 0 while they do nothing, and explodes the first time they act. The zero is what makes the spike enormous.</li>
+    <li><b>No training here.</b> This is arithmetic, so class imbalance cannot hurt it — the hardest part of the problem is solved before any network sees anything.</li>
+  </ul>
+
+  <div class="note"><b>Leakage check.</b> A user’s running mean only ever looks at their <em>own earlier</em> days, so it cannot leak the future. Give each user ~30 days of history before you trust their z-scores.</div>
+</div>
+
+<!-- 4 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">4</span><h3>Split</h3><span class="cost fast">seconds</span></div>
+  <div class="io">
+    <div><span class="lbl">reads</span>the list of 1,000 users</div>
+    <div><span class="lbl">writes</span>splits.json — three lists of user IDs</div>
+  </div>
+
+  <table>
+    <tr><th>Group</th><th>Size</th><th>Labels used to…</th><th>Weights change?</th></tr>
+    <tr><td><b>Train</b></td><td>600 users (~42 insiders)</td><td>correct the model — backprop</td><td><b>yes</b></td></tr>
+    <tr><td><b>Validation</b></td><td>200 users (~14 insiders)</td><td>choose when to stop, and the threshold</td><td>no</td></tr>
+    <tr><td><b>Test</b></td><td>200 users (~14 insiders)</td><td>the single number you report</td><td>no</td></tr>
+  </table>
+
+  <div class="note danger"><b>Split by user, never by day.</b> If a user’s Monday is in train and his Tuesday is in test, the model has already met him — same person, same habits, same baseline. Your test score becomes fiction. Pick users; their days follow them.</div>
+
+  <p>Stratify by scenario as well as by insider/benign. There are only <b>10 scenario-3 insiders in the entire dataset</b>, so a naive 20% test split can leave you with 2 — or 0.</p>
+
+  <div class="note"><b>Both models read this same file.</b> If each script rolls its own split, the comparison in stage 7 means nothing.</div>
+</div>
+
+<!-- 5 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">5</span><h3>Model A — the MLP</h3><span class="cost fast">minutes</span></div>
+  <div class="io">
+    <div><span class="lbl">input</span>(18,) — today’s z-scores, one user, one day</div>
+    <div><span class="lbl">output</span>one probability · ~640 parameters</div>
+  </div>
+
+  <pre><code>18  →  32  →  1        Adam, lr 1e-3, batch 256
+                       BCEWithLogitsLoss(pos_weight ≈ 300)</code></pre>
+
+  <p>It sees <b>one day at a time</b>. It can learn “high USB deviation together with high after-hours deviation is suspicious”, but it has no idea what yesterday looked like. That limitation is the point — it’s the control in your experiment.</p>
+
+  <div class="note danger"><b>The one thing that will silently kill this project.</b> ~0.4% of rows are positive, so a model that answers “not malicious” to everything scores <b>99.6% accuracy</b> and is worthless. <code>pos_weight</code> makes each positive count ~300× in the loss. Without it the model collapses to all-zeros within about two epochs, and the loss curve will look perfectly healthy while it happens.</div>
+
+  <h4>Keep it small on purpose</h4>
+  <p>You have ~1,700 positive user-days and ~640 parameters — roughly 2.6 positives per parameter, which is healthy. The instinct to make the network bigger because the problem is hard is exactly backwards here: a bigger network memorises those 1,700 rows and generalises to nothing.</p>
+</div>
+
+<!-- 6 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">6</span><h3>Model B — the 1D CNN</h3><span class="cost fast">minutes</span></div>
+  <div class="io">
+    <div><span class="lbl">input</span>(18, 28) — the 28 days ending today</div>
+    <div><span class="lbl">output</span>one probability · ~5,000 parameters</div>
+  </div>
+
+  <pre><code>Conv1d(18→32, k=3) → Conv1d(32→32, k=3) → pool over time → 1
+same loss · same optimizer · same split · same label</code></pre>
+
+  <p>Identical everything, with <b>one variable changed: it also gets the 27 days before today.</b> So it can see what Model A structurally cannot — a slow build-up, a sudden break from a quiet stretch, an escalating trend.</p>
+
+  <table>
+    <tr><th></th><th>Model A</th><th>Model B</th></tr>
+    <tr><td>Sees</td><td>1 day</td><td>28 days</td></tr>
+    <tr><td>Input</td><td class="mono">(18,)</td><td class="mono">(18, 28)</td></tr>
+    <tr><td>Predicts</td><td>today’s label</td><td>today’s label</td></tr>
+    <tr><td>Parameters</td><td class="mono">~640</td><td class="mono">~5,000</td></tr>
+  </table>
+
+  <div class="note"><b>The 28-day windows are not a pipeline stage.</b> They get sliced out of <code>dataset.csv</code> inside the data loader — a few lines. Do not build a separate “windows” file; that complexity is what sank the earlier design.</div>
+</div>
+
+<!-- 7 -->
+<div class="stage">
+  <div class="stage-head"><span class="num">7</span><h3>Evaluate &amp; compare</h3><span class="cost fast">seconds</span></div>
+  <div class="io">
+    <div><span class="lbl">reads</span>both trained models + the test split</div>
+    <div><span class="lbl">writes</span>the comparison table, curves, per-scenario breakdown</div>
+  </div>
+
+  <p><b>This stage is your submission.</b> The four things to produce:</p>
+
+  <ul>
+    <li><b>Training curves</b> for both models — train loss and validation loss per epoch. The most convincing evidence that you really trained something.</li>
+    <li><b>The comparison table</b> — A vs B on AUPRC, AUROC, precision@50.</li>
+    <li><b>Per-scenario recall</b> — where B should beat A, and where you predicted it would.</li>
+    <li><b>The stated sanity check</b> — that the split is by user. Say it out loud; it is the first thing you’ll be challenged on.</li>
+  </ul>
+
+  <h4>Why AUPRC leads and AUROC follows</h4>
+  <table>
+    <tr><th>Metric</th><th class="mono">random model</th><th class="mono">perfect</th><th>reading</th></tr>
+    <tr><td><b>AUPRC</b></td><td class="mono">0.004</td><td class="mono">1.0</td><td>baseline <em>is</em> the class rate — 0.40 means 100× better than chance</td></tr>
+    <tr><td>AUROC</td><td class="mono">0.50</td><td class="mono">1.0</td><td>starts at 0.5 no matter how rare positives are — flatters everything</td></tr>
+    <tr><td><b>P@50</b></td><td>—</td><td class="mono">1.0</td><td>of the 50 riskiest days, how many were real — what an analyst experiences</td></tr>
+  </table>
+
+  <div class="note"><b>You are building a ranker, not a classifier.</b> The goal is not to label 500,000 days correctly — it is to put the malicious ones near the top of a sorted list. An analyst has time for 50 people a week, not half a million days. That reframing is why 0.4% stops being frightening.</div>
+
+  <div class="note"><b>Set expectations now.</b> Scenario 2 (~1,500 positives, weeks of drift) should work well. Scenario 1 (~180 positives, 1–12 days) partially. Scenario 3 (~20 positives, 2 days) probably poorly — and “20 examples” is the honest reason. Reporting that beats one inflated average that hides it.</div>
+</div>
+
+<!-- ============ BIG CHAPTER: THE 0.4% PROBLEM ============ -->
+
+<div class="chapter-open">
+  <p class="kicker">Chapter · the central difficulty</p>
+  <h2>The 0.4% problem</h2>
+  <p>Out of roughly 500,000 user-days, about 1,700 are malicious. Everything hard about this project comes from that one ratio. This chapter is the theory of why it breaks a neural network — and then the concrete list of things the code has to do about it.</p>
+</div>
+
+<!-- ---------- PART ONE : THEORY ---------- -->
+<div class="part"><span class="tag">Part 1</span><h3>Theory — why rarity breaks learning</h3></div>
+
+<div class="sec">
+
+<h4><span class="no">1.1</span>The numbers, exactly</h4>
+
+<table>
+  <tr><th>Quantity</th><th class="mono">Value</th></tr>
+  <tr><td>Total rows (user-days)</td><td class="mono">~500,000</td></tr>
+  <tr><td>Positive rows (inside an attack window)</td><td class="mono">~1,700</td></tr>
+  <tr><td>Negative rows</td><td class="mono">~498,300</td></tr>
+  <tr><td>Positive rate</td><td class="mono">0.34%</td></tr>
+  <tr><td><b>Ratio negative : positive</b></td><td class="mono"><b>≈ 293 : 1</b></td></tr>
+</table>
+
+<p>Now translate that into what a training batch looks like. With <code>batch_size = 256</code>:</p>
+
+<pre><code>expected positives per batch  =  256 × 0.0034  =  0.87
+
+→ the typical batch contains ZERO positive examples
+→ roughly 4 batches in 10 contain exactly one
+→ the model spends most of its updates being told only "say no"</code></pre>
+
+<p>That last line is the whole problem, and it is worth sitting with. This is not "the model sees few positives." It is <b>most gradient updates contain no positive information at all.</b></p>
+
+<h4><span class="no">1.2</span>Why the model gives up — the gradient argument</h4>
+
+<p>Binary cross-entropy for one example, where <code>y</code> is the label and <code>p</code> the predicted probability:</p>
+
+<pre><code>L  =  −[ y·log(p)  +  (1−y)·log(1−p) ]
+
+y = 1  (malicious) →  L = −log(p)        "push p UP"
+y = 0  (benign)    →  L = −log(1−p)      "push p DOWN"</code></pre>
+
+<p>The batch loss is the <em>average</em> over all examples. In a batch of 256 with one positive, 255 examples say “down” and one says “up”. The arithmetic is not subtle: the cheapest way for the optimiser to reduce loss is to make <b>every</b> output small.</p>
+
+<p>It works. Predicting <code>p ≈ 0.003</code> everywhere drives the loss to a very low number very quickly, the gradients shrink to almost nothing, and the loss curve flattens into what looks like a beautifully converged model.</p>
+
+<div class="note danger"><b>Why this is so dangerous.</b> There is no error message. The loss goes down. The curve looks textbook. Accuracy reads 99.66%. Every dashboard you would normally trust says the training succeeded — and the model has learned to say “nobody is an insider”, which is 99.66% correct and 100% useless.</div>
+
+<h4><span class="no">1.3</span>The key insight: this is three problems, not one</h4>
+
+<p>Most people fix one of these and wonder why things still look broken. They are independent, and they have different fixes.</p>
+
+<table>
+  <tr><th>Problem</th><th>Symptom</th><th>Where it lives</th><th>Fix</th></tr>
+  <tr>
+    <td><b>1. Evaluation</b></td>
+    <td>99.66% accuracy on a useless model</td>
+    <td>your metrics, not your model</td>
+    <td>AUPRC · AUROC · P@50. Ban accuracy.</td>
+  </tr>
+  <tr>
+    <td><b>2. Decision</b></td>
+    <td>model ranks well but flags nobody</td>
+    <td>the threshold, not the weights</td>
+    <td>pick the cutoff on validation, never 0.5</td>
+  </tr>
+  <tr>
+    <td><b>3. Optimisation</b></td>
+    <td>minority class learned slowly / underfitted</td>
+    <td>the loss function</td>
+    <td><code>pos_weight</code> in BCE</td>
+  </tr>
+</table>
+
+<p><b>Problems 1 and 2 are mandatory and nearly free.</b> Problem 3 is real but the most over-engineered — people reach for exotic sampling schemes when their actual issue was that they measured accuracy and thresholded at 0.5.</p>
+
+<h4><span class="no">1.4</span>The reframe that makes 0.4% survivable</h4>
+
+<div class="thesis"><p><strong>You are not building a classifier. You are building a ranker.</strong> The goal is not to label 500,000 days correctly — it is to push the malicious ones to the <em>top of a sorted list</em>. A security analyst has time for 50 people a week, not half a million days.</p></div>
+
+<p>This changes what “success” means. The model may be numerically “wrong” about thousands of days deep in the list and still be an excellent system, provided the real insiders surface near the top. AUPRC and precision@50 measure exactly that; accuracy measures something nobody cares about.</p>
+
+<h4><span class="no">1.5</span>The mathematics of the fix</h4>
+
+<p>Weighted binary cross-entropy adds one multiplier to the positive term:</p>
+
+<pre><code>L  =  −[ w·y·log(p)  +  (1−y)·log(1−p) ]
+
+w  =  n_negatives / n_positives  ≈  293</code></pre>
+
+<p>Now a single positive example contributes as much gradient as 293 negatives. The batch of 256 that contained one positive and 255 negatives becomes, in gradient terms, roughly <b>293 vs 255</b> — a balanced argument instead of a rout. The “say no to everything” shortcut stops being cheap.</p>
+
+<p>An alternative you should know the name of, <b>focal loss</b>:</p>
+
+<pre><code>FL  =  −α · (1 − p_t)^γ · log(p_t)          α ≈ 0.75,  γ = 2</code></pre>
+
+<p>The <code>(1 − p_t)^γ</code> term shrinks the contribution of examples the model already gets right, so the gradient concentrates on hard cases rather than on the ocean of obvious negatives. It often performs slightly better — at the cost of two extra hyperparameters to justify in your defense.</p>
+
+<div class="note"><b>Recommendation.</b> Use weighted BCE. Mention focal loss in the report as a considered alternative. One argument beats two hyperparameters when you have three days.</div>
+
+<h4><span class="no">1.6</span>The full toolkit, with honest verdicts</h4>
+
+<table>
+  <tr><th>Approach</th><th>What it does</th><th>Verdict</th></tr>
+  <tr><td><code>pos_weight</code> in BCE</td><td>each positive counts ~293× in the loss</td><td class="verdict-ok">USE — one argument, no downside</td></tr>
+  <tr><td>Focal loss</td><td>down-weights easy examples</td><td class="verdict-mid">optional — mention, don’t implement</td></tr>
+  <tr><td>Undersample negatives</td><td>keep ~20 negatives per positive</td><td class="verdict-mid">works, but discards data and distorts probabilities</td></tr>
+  <tr><td>Oversample positives</td><td>duplicate positive rows</td><td class="verdict-mid">≈ equivalent to <code>pos_weight</code>, slower</td></tr>
+  <tr><td>SMOTE / synthetic positives</td><td>interpolate between minority examples</td><td class="verdict-no">NO — see below</td></tr>
+  <tr><td>Anomaly detection (one-class)</td><td>train on benign only, flag outliers</td><td class="verdict-mid">a legitimate different project, not this one</td></tr>
+</table>
+
+<h4><span class="no">1.7</span>Why the popular fixes are wrong <em>here</em></h4>
+
+<ul>
+  <li><b>SMOTE.</b> It invents new positives by interpolating between existing ones. Halfway between two insiders’ z-score vectors is a person who never existed and whose behaviour means nothing. Worse, synthetic rows have no user ID — so they cannot respect your user-level split, and they will leak across it.</li>
+  <li><b>Aggressive undersampling.</b> Throwing away 95% of the benign days also throws away the <em>variety</em> of normal behaviour — which is precisely what the model needs in order to know what normal looks like.</li>
+  <li><b>“Just collect more positives.”</b> There are 70 insiders. That is the dataset. r4.2 is already the <em>dense</em> release, deliberately unrealistic in insider density — the real world is far rarer, not less.</li>
+  <li><b>Accuracy, F1 at 0.5, or a confusion matrix at the default threshold.</b> All three will tell you a broken model is fine.</li>
+</ul>
+
+</div>
+
+<!-- ---------- PART TWO : PRACTICE ---------- -->
+<div class="part"><span class="tag">Part 2</span><h3>Practice — what the code must actually do</h3></div>
+
+<div class="sec">
+<p>Not code — the list of decisions the code has to encode, grouped by where they live.</p>
+
+<h4><span class="no">A</span>Preparing the data</h4>
+<ul class="todo">
+  <li><b>Count positives and negatives per split, and print them.</b>
+    <span>Before a single epoch runs. If the test split contains 0 positives, every metric you compute afterwards is undefined and you will not notice.</span></li>
+  <li><b>Compute <code>pos_weight</code> from the TRAINING split only.</b>
+    <span>Computing it over the whole dataset uses test-set information to set a training hyperparameter. Small leak, real leak, easy to avoid.</span></li>
+  <li><b>Stratify the user split by scenario, not just by insider/benign.</b>
+    <span>Only 10 scenario-3 insiders exist. A naive random split can hand you 0 of them in test, which silently deletes a third of your per-scenario results table.</span></li>
+  <li><b>Shuffle rows within the training set, never across the split boundary.</b>
+    <span>Shuffling is for batch composition. Users must stay inside the group they were assigned to.</span></li>
+</ul>
+
+<h4><span class="no">B</span>The loss</h4>
+<ul class="todo">
+  <li><b>Use <code>BCEWithLogitsLoss(pos_weight=…)</code>, not sigmoid followed by <code>BCELoss</code>.</b>
+    <span>The fused version is numerically stable at the extreme probabilities this problem produces. The split version can produce NaN when p gets very close to 0 — which is exactly where your model will be operating.</span></li>
+  <li><b>The model outputs a raw logit. No sigmoid inside the model.</b>
+    <span>The loss applies it internally. A sigmoid in both places silently squashes your outputs twice and the model will barely train.</span></li>
+  <li><b>Apply sigmoid manually only at evaluation time,</b> <span>when you need an actual probability to rank or threshold.</span></li>
+</ul>
+
+<h4><span class="no">C</span>The training loop</h4>
+<ul class="todo">
+  <li><b>Consider a larger batch — 512 instead of 256.</b>
+    <span>At 0.34% positives, a batch of 512 expects ~1.7 positives instead of ~0.87. Fewer completely-negative batches means less noisy gradients. Cheap, since the model is tiny.</span></li>
+  <li><b>Log five numbers every epoch, not one:</b>
+    <span>train loss · validation loss · validation AUPRC · validation P@50 · <b>mean predicted score</b>. The last one is your collapse detector.</span></li>
+  <li><b>Early-stop on validation AUPRC, not on validation loss.</b>
+    <span>Loss is dominated by the 99.66% of rows you don’t care about. AUPRC is the thing you actually want maximised, so select on it directly.</span></li>
+</ul>
+
+<h4><span class="no">D</span>Model selection and the threshold</h4>
+<ul class="todo">
+  <li><b>Keep the checkpoint from the best-AUPRC epoch, not the last epoch.</b>
+    <span>Training past the optimum is normal; shipping the overfitted final weights is not.</span></li>
+  <li><b>Sweep thresholds on validation, pick the one maximising F1, and freeze it.</b>
+    <span>Never assume 0.5. With a weighted loss the outputs are deliberately not calibrated around 0.5 — the weighting shifts them.</span></li>
+  <li><b>Save the threshold inside the checkpoint, next to the weights.</b>
+    <span>A model without its threshold is not a working system. Recomputing it on test data at report time would be leakage.</span></li>
+  <li><b>Apply that frozen number to test. Once.</b></li>
+</ul>
+
+<h4><span class="no">E</span>Guards that catch silent failure</h4>
+<ul class="todo">
+  <li><b>After epoch 1, print min / max / mean / std of the predicted scores.</b>
+    <span>If max − min is near zero, the model has collapsed to a constant. This single check catches the failure this chapter is about.</span></li>
+  <li><b>Count the distinct predicted values.</b>
+    <span>A healthy model produces thousands of distinct scores. A collapsed one produces a handful.</span></li>
+  <li><b>Assert that AUPRC beats the random baseline (the positive rate, ≈ 0.0034).</b>
+    <span>Below that, something is genuinely wrong — inverted labels, a broken split, or a shuffled join.</span></li>
+  <li><b>Sanity-check by hand: score the known insiders in the test split.</b>
+    <span>If KPC0073’s USB nights don’t rank near the top of his own timeline, no aggregate metric will save you.</span></li>
+  <li><b>Fix the seeds, and run 3 of them.</b>
+    <span>With ~14 insiders in test, one landing differently swings your number visibly. Report mean ± std, not a single lucky run.</span></li>
+</ul>
+
+<h4><span class="no">F</span>What to report</h4>
+<ul class="todo">
+  <li><b>The ablation: Model A with and without <code>pos_weight</code>.</b>
+    <span>Five extra minutes of training and it turns an assertion into a measurement. Report AUPRC, P@50 and mean predicted score for both. Whatever the outcome, you tested it.</span></li>
+  <li><b>State the random baseline next to every AUPRC.</b>
+    <span>“AUPRC 0.42 against a random baseline of 0.0034” is a defensible sentence. “AUPRC 0.42” alone means nothing to a reader.</span></li>
+  <li><b>Report per-scenario recall separately.</b>
+    <span>Scenario 3 has ~20 positive days in the entire dataset. If it performs badly, the count <em>is</em> the explanation.</span></li>
+</ul>
+
+<h4><span class="no">G</span>Failure signatures — read this when something looks wrong</h4>
+
+<table>
+  <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+  <tr><td>Loss drops fast then flatlines; every score ≈ the same tiny value</td><td>collapse to the majority class</td><td><code>pos_weight</code> missing or far too small</td></tr>
+  <tr><td>Accuracy 99.66%, AUPRC ≈ 0.003</td><td>the model learned “always no”</td><td>same as above — and stop looking at accuracy</td></tr>
+  <tr><td>Great AUPRC, but nothing is flagged</td><td>ranking is fine, threshold is wrong</td><td>problem 2, not 3 — sweep the threshold on validation</td></tr>
+  <tr><td>Validation AUPRC swings wildly between epochs</td><td>too few positives in validation</td><td>enlarge the validation split, or average over 3 seeds</td></tr>
+  <tr><td>Loss becomes NaN</td><td>numerical blow-up at extreme p</td><td>use <code>BCEWithLogitsLoss</code>; remove any sigmoid inside the model</td></tr>
+  <tr><td>Test far better than validation</td><td>an easy insider landed in test</td><td>expected at this scale — report ± std across seeds</td></tr>
+</table>
+
+<div class="note"><b>The one-line summary.</b> Weight the loss so the minority can be heard, judge with AUPRC so you can tell whether it was, choose the threshold on validation so the model can act — and print the mean predicted score every epoch so that if it all silently fails, you find out in thirty seconds instead of on day four.</div>
+
+</div>
+
+<h2>Numbers worth memorising</h2>
+
+<table>
+  <tr><th>Quantity</th><th class="mono">Value</th><th>Why it matters</th></tr>
+  <tr><td>Dataset</td><td class="mono">CERT r4.2</td><td>one of only 2 releases of 10 with enough insiders to train on</td></tr>
+  <tr><td>Users / insiders</td><td class="mono">1,000 / 70</td><td>30 scenario 1 · 30 scenario 2 · 10 scenario 3</td></tr>
+  <tr><td>Period</td><td class="mono">Jan 2010 – May 2011</td><td>17 months</td></tr>
+  <tr><td>Features</td><td class="mono">18 defined, 15 useful</td><td>3 are dead on r4.2 — report this, don’t hide it</td></tr>
+  <tr><td>Rows after stage 1</td><td class="mono">~500,000 user-days</td><td>the whole project fits in memory from here on</td></tr>
+  <tr><td>Positive rate</td><td class="mono">~0.4% (~1,700 days)</td><td>why <code>pos_weight</code> exists and why accuracy is banned</td></tr>
+  <tr><td>Split</td><td class="mono">600 / 200 / 200 users</td><td>by user, stratified by scenario</td></tr>
+  <tr><td>Headline metric</td><td class="mono">AUPRC</td><td>AUROC reported alongside for comparability</td></tr>
+</table>
+
+<h2>The rule that saves the deadline</h2>
+<div class="thesis">
+  <p><strong>Every stage writes a file. The next stage reads that file. Nothing recomputes.</strong><br>
+  Stage 1 takes hours. Stages 5–7 you will run twenty times while debugging. If the CNN script reaches back to the raw logs, every bug costs an afternoon.</p>
+</div>
+
+<footer>
+  InnerSight · simplified pipeline · built on the CERT Insider Threat Test Dataset r4.2 (Carnegie Mellon University / ExactData).
+  All figures verified against the dataset files rather than quoted from documentation.
+</footer>
+
+</div>
+</body>
+</html>

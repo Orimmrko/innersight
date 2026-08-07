@@ -1,0 +1,14 @@
+# Pinned from a clean resolve on 2026-08-07. Seven direct dependencies; their
+# transitive dependencies are left to the resolver so that the same file works
+# on macOS/arm64 and Linux.
+#
+# Explicitly NOT needed: xgboost, torch-geometric, flask, qdrant-client,
+# transformers, seaborn. An earlier over-scoped design used them; they are cut.
+
+pandas==3.0.5          # dataframes; the whole pipeline
+pyarrow==25.0.0        # parquet read/write
+numpy==2.5.1
+torch==2.13.0          # both models
+scikit-learn==1.9.0    # AUPRC, AUROC, stratified splits, metrics
+matplotlib==3.11.1     # training curves and figures
+tqdm==4.70.0           # progress bar for the multi-hour http.csv pass
