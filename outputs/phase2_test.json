@@ -1,0 +1,2048 @@
+{
+  "all_guards_passed": true,
+  "detection_latency": {
+    "per_insider": [
+      {
+        "attack_day_recall": 0.5,
+        "attack_days": 2,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-08-12",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 42,
+        "user": "BBS0039",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.4444444444444444,
+        "attack_days": 9,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.2,
+        "attack_days": 55,
+        "attack_days_flagged": 11,
+        "detected": true,
+        "first_detection_date": "2010-11-15",
+        "first_detection_day": 5,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "DRR0162",
+        "window_span_days": 55
+      },
+      {
+        "attack_day_recall": 0.2711864406779661,
+        "attack_days": 59,
+        "attack_days_flagged": 16,
+        "detected": true,
+        "first_detection_date": "2011-01-18",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "FSC0601",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.5,
+        "attack_days": 2,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2011-04-28",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 42,
+        "user": "JLM0364",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.4444444444444444,
+        "attack_days": 9,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-07-07",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "KPC0073",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.3220338983050847,
+        "attack_days": 59,
+        "attack_days_flagged": 19,
+        "detected": true,
+        "first_detection_date": "2010-11-22",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "KRL0501",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.44642857142857145,
+        "attack_days": 56,
+        "attack_days_flagged": 25,
+        "detected": true,
+        "first_detection_date": "2010-06-17",
+        "first_detection_day": 2,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "LCC0819",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-29",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "MAS0025",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.75,
+        "attack_days": 4,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2010-09-20",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "MCF0600",
+        "window_span_days": 4
+      },
+      {
+        "attack_day_recall": 0.3898305084745763,
+        "attack_days": 59,
+        "attack_days_flagged": 23,
+        "detected": true,
+        "first_detection_date": "2011-01-04",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "MDH0580",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.39215686274509803,
+        "attack_days": 51,
+        "attack_days_flagged": 20,
+        "detected": true,
+        "first_detection_date": "2010-06-14",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 42,
+        "user": "PNL0301",
+        "window_span_days": 51
+      },
+      {
+        "attack_day_recall": 0.375,
+        "attack_days": 8,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2010-07-13",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "RKD0604",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 0.375,
+        "attack_days": 8,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2011-02-24",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 42,
+        "user": "WDD0366",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-08-12",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 42,
+        "user": "BBS0039",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.8888888888888888,
+        "attack_days": 9,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.4909090909090909,
+        "attack_days": 55,
+        "attack_days_flagged": 27,
+        "detected": true,
+        "first_detection_date": "2010-12-07",
+        "first_detection_day": 27,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "DRR0162",
+        "window_span_days": 55
+      },
+      {
+        "attack_day_recall": 0.9322033898305084,
+        "attack_days": 59,
+        "attack_days_flagged": 55,
+        "detected": true,
+        "first_detection_date": "2011-01-20",
+        "first_detection_day": 3,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "FSC0601",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2011-04-28",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 42,
+        "user": "JLM0364",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.4444444444444444,
+        "attack_days": 9,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-07-07",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "KPC0073",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.8813559322033898,
+        "attack_days": 59,
+        "attack_days_flagged": 52,
+        "detected": true,
+        "first_detection_date": "2010-11-29",
+        "first_detection_day": 8,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "KRL0501",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.07142857142857142,
+        "attack_days": 56,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-08-02",
+        "first_detection_day": 48,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "LCC0819",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-29",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "MAS0025",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 4,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-09-20",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "MCF0600",
+        "window_span_days": 4
+      },
+      {
+        "attack_day_recall": 0.9661016949152542,
+        "attack_days": 59,
+        "attack_days_flagged": 57,
+        "detected": true,
+        "first_detection_date": "2011-01-06",
+        "first_detection_day": 3,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "MDH0580",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.8627450980392157,
+        "attack_days": 51,
+        "attack_days_flagged": 44,
+        "detected": true,
+        "first_detection_date": "2010-06-21",
+        "first_detection_day": 8,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 42,
+        "user": "PNL0301",
+        "window_span_days": 51
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 8,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2010-07-13",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "RKD0604",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 8,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2011-02-24",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 42,
+        "user": "WDD0366",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 0.3333333333333333,
+        "attack_days": 12,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-07-30",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BDV0168",
+        "window_span_days": 12
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 1,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-07-13",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BIH0745",
+        "window_span_days": 1
+      },
+      {
+        "attack_day_recall": 0.3333333333333333,
+        "attack_days": 9,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-08-11",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "CAH0936",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 2,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 123,
+        "user": "CCA0046",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.16666666666666666,
+        "attack_days": 54,
+        "attack_days_flagged": 9,
+        "detected": true,
+        "first_detection_date": "2011-02-07",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "CEJ0109",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.14285714285714285,
+        "attack_days": 56,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2010-10-18",
+        "first_detection_day": 13,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "IUB0565",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 0.17857142857142858,
+        "attack_days": 56,
+        "attack_days_flagged": 10,
+        "detected": true,
+        "first_detection_date": "2010-06-17",
+        "first_detection_day": 2,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "LCC0819",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-29",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "MAS0025",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.3050847457627119,
+        "attack_days": 59,
+        "attack_days_flagged": 18,
+        "detected": true,
+        "first_detection_date": "2011-01-06",
+        "first_detection_day": 3,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "MDH0580",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.5,
+        "attack_days": 2,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-12-09",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 123,
+        "user": "MSO0222",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.3333333333333333,
+        "attack_days": 6,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-12-13",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 123,
+        "user": "MYD0978",
+        "window_span_days": 6
+      },
+      {
+        "attack_day_recall": 0.4,
+        "attack_days": 45,
+        "attack_days_flagged": 18,
+        "detected": true,
+        "first_detection_date": "2010-07-06",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "RAR0725",
+        "window_span_days": 45
+      },
+      {
+        "attack_day_recall": 0.1320754716981132,
+        "attack_days": 53,
+        "attack_days_flagged": 7,
+        "detected": true,
+        "first_detection_date": "2010-09-08",
+        "first_detection_day": 2,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 123,
+        "user": "VSS0154",
+        "window_span_days": 53
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 12,
+        "attack_days_flagged": 12,
+        "detected": true,
+        "first_detection_date": "2010-07-30",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BDV0168",
+        "window_span_days": 12
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 1,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-07-13",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BIH0745",
+        "window_span_days": 1
+      },
+      {
+        "attack_day_recall": 0.7777777777777778,
+        "attack_days": 9,
+        "attack_days_flagged": 7,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-08-11",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "CAH0936",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 2,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 123,
+        "user": "CCA0046",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.3888888888888889,
+        "attack_days": 54,
+        "attack_days_flagged": 21,
+        "detected": true,
+        "first_detection_date": "2011-02-09",
+        "first_detection_day": 3,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "CEJ0109",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.14285714285714285,
+        "attack_days": 56,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2010-11-19",
+        "first_detection_day": 45,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "IUB0565",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 0.25,
+        "attack_days": 56,
+        "attack_days_flagged": 14,
+        "detected": true,
+        "first_detection_date": "2010-07-28",
+        "first_detection_day": 43,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "LCC0819",
+        "window_span_days": 56
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-29",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "MAS0025",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.864406779661017,
+        "attack_days": 59,
+        "attack_days_flagged": 51,
+        "detected": true,
+        "first_detection_date": "2011-01-07",
+        "first_detection_day": 4,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "MDH0580",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 1.0,
+        "attack_days": 2,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-12-09",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 123,
+        "user": "MSO0222",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.6666666666666666,
+        "attack_days": 6,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-12-13",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 123,
+        "user": "MYD0978",
+        "window_span_days": 6
+      },
+      {
+        "attack_day_recall": 0.8666666666666667,
+        "attack_days": 45,
+        "attack_days_flagged": 39,
+        "detected": true,
+        "first_detection_date": "2010-07-09",
+        "first_detection_day": 4,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "RAR0725",
+        "window_span_days": 45
+      },
+      {
+        "attack_day_recall": 0.7735849056603774,
+        "attack_days": 53,
+        "attack_days_flagged": 41,
+        "detected": true,
+        "first_detection_date": "2010-09-13",
+        "first_detection_day": 7,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 123,
+        "user": "VSS0154",
+        "window_span_days": 53
+      },
+      {
+        "attack_day_recall": 0.07407407407407407,
+        "attack_days": 54,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-06-28",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "AAF0535",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.2222222222222222,
+        "attack_days": 9,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-10",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "AJR0932",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.3333333333333333,
+        "attack_days": 12,
+        "attack_days_flagged": 4,
+        "detected": true,
+        "first_detection_date": "2010-07-30",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "BDV0168",
+        "window_span_days": 12
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 2,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 456,
+        "user": "BSS0369",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.3333333333333333,
+        "attack_days": 9,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.5,
+        "attack_days": 2,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-10-14",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 3,
+        "seed": 456,
+        "user": "CCA0046",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.05555555555555555,
+        "attack_days": 54,
+        "attack_days_flagged": 3,
+        "detected": true,
+        "first_detection_date": "2011-02-07",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "CEJ0109",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.2413793103448276,
+        "attack_days": 58,
+        "attack_days_flagged": 14,
+        "detected": true,
+        "first_detection_date": "2010-10-18",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "EDB0714",
+        "window_span_days": 58
+      },
+      {
+        "attack_day_recall": 0.125,
+        "attack_days": 8,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-12-02",
+        "first_detection_day": 8,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "FTM0406",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 54,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "HBO0413",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.2857142857142857,
+        "attack_days": 7,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-11-19",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "HJB0742",
+        "window_span_days": 7
+      },
+      {
+        "attack_day_recall": 0.020833333333333332,
+        "attack_days": 48,
+        "attack_days_flagged": 1,
+        "detected": true,
+        "first_detection_date": "2010-10-14",
+        "first_detection_day": 43,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "JJM0203",
+        "window_span_days": 48
+      },
+      {
+        "attack_day_recall": 0.0847457627118644,
+        "attack_days": 59,
+        "attack_days_flagged": 5,
+        "detected": true,
+        "first_detection_date": "2010-11-23",
+        "first_detection_day": 2,
+        "model": "model_a",
+        "scenario": 2,
+        "seed": 456,
+        "user": "KRL0501",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.18181818181818182,
+        "attack_days": 11,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-13",
+        "first_detection_day": 1,
+        "model": "model_a",
+        "scenario": 1,
+        "seed": 456,
+        "user": "RAB0589",
+        "window_span_days": 11
+      },
+      {
+        "attack_day_recall": 0.9074074074074074,
+        "attack_days": 54,
+        "attack_days_flagged": 49,
+        "detected": true,
+        "first_detection_date": "2010-06-30",
+        "first_detection_day": 3,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "AAF0535",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.5555555555555556,
+        "attack_days": 9,
+        "attack_days_flagged": 5,
+        "detected": true,
+        "first_detection_date": "2010-09-10",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "AJR0932",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.75,
+        "attack_days": 12,
+        "attack_days_flagged": 9,
+        "detected": true,
+        "first_detection_date": "2010-07-30",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "BDV0168",
+        "window_span_days": 12
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 2,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 456,
+        "user": "BSS0369",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.8888888888888888,
+        "attack_days": 9,
+        "attack_days_flagged": 8,
+        "detected": true,
+        "first_detection_date": "2010-10-06",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "BTL0226",
+        "window_span_days": 9
+      },
+      {
+        "attack_day_recall": 0.0,
+        "attack_days": 2,
+        "attack_days_flagged": 0,
+        "detected": false,
+        "first_detection_date": null,
+        "first_detection_day": null,
+        "model": "model_b",
+        "scenario": 3,
+        "seed": 456,
+        "user": "CCA0046",
+        "window_span_days": 2
+      },
+      {
+        "attack_day_recall": 0.46296296296296297,
+        "attack_days": 54,
+        "attack_days_flagged": 25,
+        "detected": true,
+        "first_detection_date": "2011-02-23",
+        "first_detection_day": 17,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "CEJ0109",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.9655172413793104,
+        "attack_days": 58,
+        "attack_days_flagged": 56,
+        "detected": true,
+        "first_detection_date": "2010-10-20",
+        "first_detection_day": 3,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "EDB0714",
+        "window_span_days": 58
+      },
+      {
+        "attack_day_recall": 0.25,
+        "attack_days": 8,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-12-01",
+        "first_detection_day": 7,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "FTM0406",
+        "window_span_days": 8
+      },
+      {
+        "attack_day_recall": 0.46296296296296297,
+        "attack_days": 54,
+        "attack_days_flagged": 25,
+        "detected": true,
+        "first_detection_date": "2011-02-15",
+        "first_detection_day": 2,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "HBO0413",
+        "window_span_days": 54
+      },
+      {
+        "attack_day_recall": 0.2857142857142857,
+        "attack_days": 7,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-11-19",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "HJB0742",
+        "window_span_days": 7
+      },
+      {
+        "attack_day_recall": 0.625,
+        "attack_days": 48,
+        "attack_days_flagged": 30,
+        "detected": true,
+        "first_detection_date": "2010-09-20",
+        "first_detection_day": 19,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "JJM0203",
+        "window_span_days": 48
+      },
+      {
+        "attack_day_recall": 0.864406779661017,
+        "attack_days": 59,
+        "attack_days_flagged": 51,
+        "detected": true,
+        "first_detection_date": "2010-11-29",
+        "first_detection_day": 8,
+        "model": "model_b",
+        "scenario": 2,
+        "seed": 456,
+        "user": "KRL0501",
+        "window_span_days": 59
+      },
+      {
+        "attack_day_recall": 0.18181818181818182,
+        "attack_days": 11,
+        "attack_days_flagged": 2,
+        "detected": true,
+        "first_detection_date": "2010-09-13",
+        "first_detection_day": 1,
+        "model": "model_b",
+        "scenario": 1,
+        "seed": 456,
+        "user": "RAB0589",
+        "window_span_days": 11
+      }
+    ],
+    "position_buckets": [
+      {
+        "attack_days": 239,
+        "bucket": "days 1-7",
+        "hits": 86,
+        "model": "model_a",
+        "recall": 0.3598326359832636,
+        "scenario": null
+      },
+      {
+        "attack_days": 153,
+        "bucket": "days 8-14",
+        "hits": 48,
+        "model": "model_a",
+        "recall": 0.3137254901960784,
+        "scenario": null
+      },
+      {
+        "attack_days": 252,
+        "bucket": "days 15-28",
+        "hits": 55,
+        "model": "model_a",
+        "recall": 0.21825396825396826,
+        "scenario": null
+      },
+      {
+        "attack_days": 485,
+        "bucket": "days 29+",
+        "hits": 73,
+        "model": "model_a",
+        "recall": 0.15051546391752577,
+        "scenario": null
+      },
+      {
+        "attack_days": 239,
+        "bucket": "days 1-7",
+        "hits": 105,
+        "model": "model_b",
+        "recall": 0.4393305439330544,
+        "scenario": null
+      },
+      {
+        "attack_days": 153,
+        "bucket": "days 8-14",
+        "hits": 94,
+        "model": "model_b",
+        "recall": 0.6143790849673203,
+        "scenario": null
+      },
+      {
+        "attack_days": 252,
+        "bucket": "days 15-28",
+        "hits": 174,
+        "model": "model_b",
+        "recall": 0.6904761904761905,
+        "scenario": null
+      },
+      {
+        "attack_days": 485,
+        "bucket": "days 29+",
+        "hits": 372,
+        "model": "model_b",
+        "recall": 0.7670103092783506,
+        "scenario": null
+      },
+      {
+        "attack_days": 101,
+        "bucket": "days 1-7",
+        "hits": 36,
+        "model": "model_a",
+        "recall": 0.3564356435643564,
+        "scenario": 1
+      },
+      {
+        "attack_days": 27,
+        "bucket": "days 8-14",
+        "hits": 11,
+        "model": "model_a",
+        "recall": 0.4074074074074074,
+        "scenario": 1
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 15-28",
+        "hits": 0,
+        "model": "model_a",
+        "recall": null,
+        "scenario": 1
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 29+",
+        "hits": 0,
+        "model": "model_a",
+        "recall": null,
+        "scenario": 1
+      },
+      {
+        "attack_days": 101,
+        "bucket": "days 1-7",
+        "hits": 71,
+        "model": "model_b",
+        "recall": 0.7029702970297029,
+        "scenario": 1
+      },
+      {
+        "attack_days": 27,
+        "bucket": "days 8-14",
+        "hits": 19,
+        "model": "model_b",
+        "recall": 0.7037037037037037,
+        "scenario": 1
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 15-28",
+        "hits": 0,
+        "model": "model_b",
+        "recall": null,
+        "scenario": 1
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 29+",
+        "hits": 0,
+        "model": "model_b",
+        "recall": null,
+        "scenario": 1
+      },
+      {
+        "attack_days": 126,
+        "bucket": "days 1-7",
+        "hits": 46,
+        "model": "model_a",
+        "recall": 0.36507936507936506,
+        "scenario": 2
+      },
+      {
+        "attack_days": 126,
+        "bucket": "days 8-14",
+        "hits": 37,
+        "model": "model_a",
+        "recall": 0.29365079365079366,
+        "scenario": 2
+      },
+      {
+        "attack_days": 252,
+        "bucket": "days 15-28",
+        "hits": 55,
+        "model": "model_a",
+        "recall": 0.21825396825396826,
+        "scenario": 2
+      },
+      {
+        "attack_days": 485,
+        "bucket": "days 29+",
+        "hits": 73,
+        "model": "model_a",
+        "recall": 0.15051546391752577,
+        "scenario": 2
+      },
+      {
+        "attack_days": 126,
+        "bucket": "days 1-7",
+        "hits": 28,
+        "model": "model_b",
+        "recall": 0.2222222222222222,
+        "scenario": 2
+      },
+      {
+        "attack_days": 126,
+        "bucket": "days 8-14",
+        "hits": 75,
+        "model": "model_b",
+        "recall": 0.5952380952380952,
+        "scenario": 2
+      },
+      {
+        "attack_days": 252,
+        "bucket": "days 15-28",
+        "hits": 174,
+        "model": "model_b",
+        "recall": 0.6904761904761905,
+        "scenario": 2
+      },
+      {
+        "attack_days": 485,
+        "bucket": "days 29+",
+        "hits": 372,
+        "model": "model_b",
+        "recall": 0.7670103092783506,
+        "scenario": 2
+      },
+      {
+        "attack_days": 12,
+        "bucket": "days 1-7",
+        "hits": 4,
+        "model": "model_a",
+        "recall": 0.3333333333333333,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 8-14",
+        "hits": 0,
+        "model": "model_a",
+        "recall": null,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 15-28",
+        "hits": 0,
+        "model": "model_a",
+        "recall": null,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 29+",
+        "hits": 0,
+        "model": "model_a",
+        "recall": null,
+        "scenario": 3
+      },
+      {
+        "attack_days": 12,
+        "bucket": "days 1-7",
+        "hits": 6,
+        "model": "model_b",
+        "recall": 0.5,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 8-14",
+        "hits": 0,
+        "model": "model_b",
+        "recall": null,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 15-28",
+        "hits": 0,
+        "model": "model_b",
+        "recall": null,
+        "scenario": 3
+      },
+      {
+        "attack_days": 0,
+        "bucket": "days 29+",
+        "hits": 0,
+        "model": "model_b",
+        "recall": null,
+        "scenario": 3
+      }
+    ],
+    "summaries": [
+      {
+        "detected": 39,
+        "earliest_first_detection_day": 1,
+        "insiders": 42,
+        "iqr_first_detection_day": [
+          1.0,
+          1.0
+        ],
+        "latest_first_detection_day": 43,
+        "median_first_detection_day": 1.0,
+        "model": "model_a",
+        "never_detected": 3,
+        "scenario": null
+      },
+      {
+        "detected": 18,
+        "earliest_first_detection_day": 1,
+        "insiders": 18,
+        "iqr_first_detection_day": [
+          1.0,
+          1.0
+        ],
+        "latest_first_detection_day": 8,
+        "median_first_detection_day": 1.0,
+        "model": "model_a",
+        "never_detected": 0,
+        "scenario": 1
+      },
+      {
+        "detected": 17,
+        "earliest_first_detection_day": 1,
+        "insiders": 18,
+        "iqr_first_detection_day": [
+          1.0,
+          2.0
+        ],
+        "latest_first_detection_day": 43,
+        "median_first_detection_day": 1.0,
+        "model": "model_a",
+        "never_detected": 1,
+        "scenario": 2
+      },
+      {
+        "detected": 4,
+        "earliest_first_detection_day": 1,
+        "insiders": 6,
+        "iqr_first_detection_day": [
+          1.0,
+          1.0
+        ],
+        "latest_first_detection_day": 1,
+        "median_first_detection_day": 1.0,
+        "model": "model_a",
+        "never_detected": 2,
+        "scenario": 3
+      },
+      {
+        "detected": 39,
+        "earliest_first_detection_day": 1,
+        "insiders": 42,
+        "iqr_first_detection_day": [
+          1.0,
+          7.0
+        ],
+        "latest_first_detection_day": 48,
+        "median_first_detection_day": 1.0,
+        "model": "model_b",
+        "never_detected": 3,
+        "scenario": null
+      },
+      {
+        "detected": 18,
+        "earliest_first_detection_day": 1,
+        "insiders": 18,
+        "iqr_first_detection_day": [
+          1.0,
+          1.0
+        ],
+        "latest_first_detection_day": 7,
+        "median_first_detection_day": 1.0,
+        "model": "model_b",
+        "never_detected": 0,
+        "scenario": 1
+      },
+      {
+        "detected": 18,
+        "earliest_first_detection_day": 2,
+        "insiders": 18,
+        "iqr_first_detection_day": [
+          3.0,
+          18.5
+        ],
+        "latest_first_detection_day": 48,
+        "median_first_detection_day": 7.5,
+        "model": "model_b",
+        "never_detected": 0,
+        "scenario": 2
+      },
+      {
+        "detected": 3,
+        "earliest_first_detection_day": 1,
+        "insiders": 6,
+        "iqr_first_detection_day": [
+          1.0,
+          1.0
+        ],
+        "latest_first_detection_day": 1,
+        "median_first_detection_day": 1.0,
+        "model": "model_b",
+        "never_detected": 3,
+        "scenario": 3
+      }
+    ]
+  },
+  "device": "mps",
+  "guards": [
+    {
+      "detail": "disjoint on all 3 seed(s) (seed 42: 200 test users, seed 123: 200 test users, seed 456: 200 test users)",
+      "fatal_if_failed": true,
+      "guard": "test users never appear in train or val",
+      "passed": true
+    },
+    {
+      "detail": "all 2 checkpoint(s) match a train-only refit to 1e-9; mean[0]=-0.024407 std[0]=1.010643, mean[1]=-0.027305 std[1]=1.011278, mean[2]=+0.001523 std[2]=0.431034",
+      "fatal_if_failed": true,
+      "guard": "seed 42: standardiser loaded from checkpoint, not refit",
+      "passed": true
+    },
+    {
+      "detail": "87,887 rows, 383 positive (0.4358%), digest 3eacde4b53d0ee60",
+      "fatal_if_failed": true,
+      "guard": "seed 42: both models scored on identical rows",
+      "passed": true
+    },
+    {
+      "detail": "87,887 rows (expected ~93,000), 383 positives (expected ~376, 0.4358%), scenario-3 positives 4 (expected exactly 4)",
+      "fatal_if_failed": false,
+      "guard": "seed 42: test split matches Stage 4's measured shape",
+      "passed": true
+    },
+    {
+      "detail": "all 2 checkpoint(s) match a train-only refit to 1e-9; mean[0]=-0.024876 std[0]=1.010124, mean[1]=-0.027750 std[1]=1.009862, mean[2]=+0.001766 std[2]=0.418095",
+      "fatal_if_failed": true,
+      "guard": "seed 123: standardiser loaded from checkpoint, not refit",
+      "passed": true
+    },
+    {
+      "detail": "87,367 rows, 359 positive (0.4109%), digest 9f4d0b4da0260dcd",
+      "fatal_if_failed": true,
+      "guard": "seed 123: both models scored on identical rows",
+      "passed": true
+    },
+    {
+      "detail": "87,367 rows (expected ~93,000), 359 positives (expected ~376, 0.4109%), scenario-3 positives 4 (expected exactly 4)",
+      "fatal_if_failed": false,
+      "guard": "seed 123: test split matches Stage 4's measured shape",
+      "passed": true
+    },
+    {
+      "detail": "all 2 checkpoint(s) match a train-only refit to 1e-9; mean[0]=-0.024772 std[0]=1.011061, mean[1]=-0.027402 std[1]=1.011136, mean[2]=+0.001383 std[2]=0.414344",
+      "fatal_if_failed": true,
+      "guard": "seed 456: standardiser loaded from checkpoint, not refit",
+      "passed": true
+    },
+    {
+      "detail": "88,720 rows, 387 positive (0.4362%), digest 831e9a4db2194d1e",
+      "fatal_if_failed": true,
+      "guard": "seed 456: both models scored on identical rows",
+      "passed": true
+    },
+    {
+      "detail": "88,720 rows (expected ~93,000), 387 positives (expected ~376, 0.4362%), scenario-3 positives 4 (expected exactly 4)",
+      "fatal_if_failed": false,
+      "guard": "seed 456: test split matches Stage 4's measured shape",
+      "passed": true
+    },
+    {
+      "detail": "model_a seed 42: 0.958207 (994 rows flagged); model_b seed 42: 0.817646 (520 rows flagged); model_a seed 123: 0.973918 (436 rows flagged); model_b seed 123: 0.991286 (363 rows flagged); model_a seed 456: 0.993927 (71 rows flagged); model_b seed 456: 0.855652 (322 rows flagged)",
+      "fatal_if_failed": true,
+      "guard": "threshold loaded from checkpoint, not re-swept",
+      "passed": true
+    },
+    {
+      "detail": "527,948 predictions, all finite",
+      "fatal_if_failed": true,
+      "guard": "no NaN or inf in any prediction",
+      "passed": true
+    },
+    {
+      "detail": "worst is model_a seed 42 at 34.6x random",
+      "fatal_if_failed": true,
+      "guard": "AUPRC above the random baseline for every model and seed",
+      "passed": true
+    },
+    {
+      "detail": "highest is model_b seed 456 at 0.8054",
+      "fatal_if_failed": true,
+      "guard": "no model scores AUPRC >= 0.95 (leakage ceiling)",
+      "passed": true
+    }
+  ],
+  "headline": {
+    "model_a": {
+      "auprc": {
+        "mean": 0.19025171678322117,
+        "n": 3,
+        "std": 0.0299533313762182
+      },
+      "auroc": {
+        "mean": 0.947383147055883,
+        "n": 3,
+        "std": 0.013604789594338902
+      },
+      "context_days": 1,
+      "lift_over_random": {
+        "mean": 44.553766419358716,
+        "n": 3,
+        "std": 7.182800419256846
+      },
+      "model": "model_a",
+      "n_parameters": 641,
+      "per_seed_auprc": {
+        "123": 0.1971645008396796,
+        "42": 0.15060191163544923,
+        "456": 0.22298873787453466
+      },
+      "precision_at_10": {
+        "mean": 0.8666666666666667,
+        "n": 3,
+        "std": 0.18856180831641267
+      },
+      "precision_at_50": {
+        "mean": 0.5800000000000001,
+        "n": 3,
+        "std": 0.08640987597877146
+      },
+      "random_baseline": {
+        "mean": 0.00427633649270063,
+        "n": 3,
+        "std": 0.00011826420036819405
+      },
+      "rows_flagged": {
+        "mean": 500.3333333333333,
+        "n": 3,
+        "std": 379.5491477471074
+      },
+      "seeds": [
+        42,
+        123,
+        456
+      ]
+    },
+    "model_b": {
+      "auprc": {
+        "mean": 0.666281069954974,
+        "n": 3,
+        "std": 0.1277057254444563
+      },
+      "auroc": {
+        "mean": 0.9957049867923434,
+        "n": 3,
+        "std": 0.00042372441728337246
+      },
+      "context_days": 28,
+      "lift_over_random": {
+        "mean": 155.13408201382856,
+        "n": 3,
+        "std": 26.212061295423467
+      },
+      "model": "model_b",
+      "n_parameters": 4897,
+      "per_seed_auprc": {
+        "123": 0.4970003567560063,
+        "42": 0.6964130916773136,
+        "456": 0.8054297614316022
+      },
+      "precision_at_10": {
+        "mean": 0.7000000000000001,
+        "n": 3,
+        "std": 0.2449489742783178
+      },
+      "precision_at_50": {
+        "mean": 0.7666666666666666,
+        "n": 3,
+        "std": 0.28859814429217817
+      },
+      "random_baseline": {
+        "mean": 0.00427633649270063,
+        "n": 3,
+        "std": 0.00011826420036819405
+      },
+      "rows_flagged": {
+        "mean": 401.6666666666667,
+        "n": 3,
+        "std": 85.33203124006575
+      },
+      "seeds": [
+        42,
+        123,
+        456
+      ]
+    }
+  },
+  "per_scenario_pooled": {
+    "model_a": {
+      "1": {
+        "attack_days_summed": 128,
+        "hits_summed": 47,
+        "pooled_recall": 0.3671875
+      },
+      "2": {
+        "attack_days_summed": 989,
+        "hits_summed": 211,
+        "pooled_recall": 0.21334681496461072
+      },
+      "3": {
+        "attack_days_summed": 12,
+        "hits_summed": 4,
+        "pooled_recall": 0.3333333333333333
+      }
+    },
+    "model_b": {
+      "1": {
+        "attack_days_summed": 128,
+        "hits_summed": 90,
+        "pooled_recall": 0.703125
+      },
+      "2": {
+        "attack_days_summed": 989,
+        "hits_summed": 649,
+        "pooled_recall": 0.6562184024266936
+      },
+      "3": {
+        "attack_days_summed": 12,
+        "hits_summed": 6,
+        "pooled_recall": 0.5
+      }
+    }
+  },
+  "per_seed": [
+    {
+      "auprc": 0.15060191163544923,
+      "auroc": 0.9424645623063199,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed42.pt",
+      "context_days": 1,
+      "lift_over_random": 34.55861673082174,
+      "model": "model_a",
+      "n_flagged": 994,
+      "n_parameters": 641,
+      "n_positives": 383,
+      "n_rows": 87887,
+      "per_scenario": [
+        {
+          "attack_days": 40,
+          "hits": 19,
+          "recall": 0.475,
+          "scenario": 1
+        },
+        {
+          "attack_days": 339,
+          "hits": 114,
+          "recall": 0.336283185840708,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 2,
+          "recall": 0.5,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 0.6,
+        "50": 0.46
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 86893,
+        "max": 1.0,
+        "mean": 0.20428634534176957,
+        "min": 1.799239498723182e-06,
+        "n_rows": 87887,
+        "std": 0.24213268931214268
+      },
+      "random_baseline": 0.004357868626759361,
+      "seed": 42,
+      "split": "test",
+      "threshold": {
+        "f1": 0.19607843137254902,
+        "precision": 0.1358148893360161,
+        "predicted_positives": 994,
+        "recall": 0.3524804177545692,
+        "threshold": 0.9582074284553528
+      },
+      "threshold_applied": 0.9582074284553528,
+      "threshold_source": "checkpoint (chosen on validation)"
+    },
+    {
+      "auprc": 0.6964130916773136,
+      "auroc": 0.9960659612666122,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_b_seed42.pt",
+      "context_days": 28,
+      "lift_over_random": 159.8058939640837,
+      "model": "model_b",
+      "n_flagged": 520,
+      "n_parameters": 4897,
+      "n_positives": 383,
+      "n_rows": 87887,
+      "per_scenario": [
+        {
+          "attack_days": 40,
+          "hits": 34,
+          "recall": 0.85,
+          "scenario": 1
+        },
+        {
+          "attack_days": 339,
+          "hits": 239,
+          "recall": 0.7050147492625368,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 4,
+          "recall": 1.0,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 0.7,
+        "50": 0.94
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 52381,
+        "max": 1.0,
+        "mean": 0.009472669972290326,
+        "min": 1.4322550578264176e-13,
+        "n_rows": 87887,
+        "std": 0.08359031907671105
+      },
+      "random_baseline": 0.004357868626759361,
+      "seed": 42,
+      "split": "test",
+      "threshold": {
+        "f1": 0.6135105204872646,
+        "precision": 0.5326923076923077,
+        "predicted_positives": 520,
+        "recall": 0.7232375979112271,
+        "threshold": 0.8176457285881042
+      },
+      "threshold_applied": 0.8176457285881042,
+      "threshold_source": "checkpoint (chosen on validation)"
+    },
+    {
+      "auprc": 0.1971645008396796,
+      "auroc": 0.9659511666586418,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed123.pt",
+      "context_days": 1,
+      "lift_over_random": 47.98237031994509,
+      "model": "model_a",
+      "n_flagged": 436,
+      "n_parameters": 641,
+      "n_positives": 359,
+      "n_rows": 87367,
+      "per_scenario": [
+        {
+          "attack_days": 32,
+          "hits": 14,
+          "recall": 0.4375,
+          "scenario": 1
+        },
+        {
+          "attack_days": 323,
+          "hits": 70,
+          "recall": 0.21671826625386997,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 1,
+          "recall": 0.25,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 1.0,
+        "50": 0.62
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 86366,
+        "max": 1.0,
+        "mean": 0.155709946202022,
+        "min": 2.987743386029251e-08,
+        "n_rows": 87367,
+        "std": 0.24439153891928125
+      },
+      "random_baseline": 0.004109102979385809,
+      "seed": 123,
+      "split": "test",
+      "threshold": {
+        "f1": 0.2138364779874214,
+        "precision": 0.19495412844036697,
+        "predicted_positives": 436,
+        "recall": 0.23676880222841226,
+        "threshold": 0.9739176630973816
+      },
+      "threshold_applied": 0.9739176630973816,
+      "threshold_source": "checkpoint (chosen on validation)"
+    },
+    {
+      "auprc": 0.4970003567560063,
+      "auroc": 0.9951102693723421,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_b_seed123.pt",
+      "context_days": 28,
+      "lift_over_random": 120.95105896574374,
+      "model": "model_b",
+      "n_flagged": 363,
+      "n_parameters": 4897,
+      "n_positives": 359,
+      "n_rows": 87367,
+      "per_scenario": [
+        {
+          "attack_days": 32,
+          "hits": 28,
+          "recall": 0.875,
+          "scenario": 1
+        },
+        {
+          "attack_days": 323,
+          "hits": 174,
+          "recall": 0.5386996904024768,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 2,
+          "recall": 0.5,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 0.4,
+        "50": 0.36
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 77203,
+        "max": 1.0,
+        "mean": 0.01771743198718194,
+        "min": 4.4133606491580935e-11,
+        "n_rows": 87367,
+        "std": 0.10829429916203898
+      },
+      "random_baseline": 0.004109102979385809,
+      "seed": 123,
+      "split": "test",
+      "threshold": {
+        "f1": 0.5650969529085873,
+        "precision": 0.5619834710743802,
+        "predicted_positives": 363,
+        "recall": 0.5682451253481894,
+        "threshold": 0.9912864565849304
+      },
+      "threshold_applied": 0.9912864565849304,
+      "threshold_source": "checkpoint (chosen on validation)"
+    },
+    {
+      "auprc": 0.22298873787453466,
+      "auroc": 0.9337337122026875,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed456.pt",
+      "context_days": 1,
+      "lift_over_random": 51.12031220730934,
+      "model": "model_a",
+      "n_flagged": 71,
+      "n_parameters": 641,
+      "n_positives": 387,
+      "n_rows": 88720,
+      "per_scenario": [
+        {
+          "attack_days": 56,
+          "hits": 14,
+          "recall": 0.25,
+          "scenario": 1
+        },
+        {
+          "attack_days": 327,
+          "hits": 27,
+          "recall": 0.08256880733944955,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 1,
+          "recall": 0.25,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 1.0,
+        "50": 0.66
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 87786,
+        "max": 1.0,
+        "mean": 0.1451449573496151,
+        "min": 3.2458854093420086e-07,
+        "n_rows": 88720,
+        "std": 0.2054583604671857
+      },
+      "random_baseline": 0.004362037871956718,
+      "seed": 456,
+      "split": "test",
+      "threshold": {
+        "f1": 0.18340611353711792,
+        "precision": 0.5915492957746479,
+        "predicted_positives": 71,
+        "recall": 0.10852713178294573,
+        "threshold": 0.9939269423484802
+      },
+      "threshold_applied": 0.9939269423484802,
+      "threshold_source": "checkpoint (chosen on validation)"
+    },
+    {
+      "auprc": 0.8054297614316022,
+      "auroc": 0.9959387297380762,
+      "checkpoint": "/Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_b_seed456.pt",
+      "context_days": 28,
+      "lift_over_random": 184.64529311165825,
+      "model": "model_b",
+      "n_flagged": 322,
+      "n_parameters": 4897,
+      "n_positives": 387,
+      "n_rows": 88720,
+      "per_scenario": [
+        {
+          "attack_days": 56,
+          "hits": 28,
+          "recall": 0.5,
+          "scenario": 1
+        },
+        {
+          "attack_days": 327,
+          "hits": 236,
+          "recall": 0.7217125382262997,
+          "scenario": 2
+        },
+        {
+          "attack_days": 4,
+          "hits": 0,
+          "recall": 0.0,
+          "scenario": 3
+        }
+      ],
+      "precision_at_k": {
+        "10": 1.0,
+        "50": 1.0
+      },
+      "prediction_stats": {
+        "collapse_floor": 1000,
+        "distinct": 48710,
+        "max": 1.0,
+        "mean": 0.006268312408328709,
+        "min": 8.593513812875375e-13,
+        "n_rows": 88720,
+        "std": 0.06733699308347806
+      },
+      "random_baseline": 0.004362037871956718,
+      "seed": 456,
+      "split": "test",
+      "threshold": {
+        "f1": 0.7447108603667136,
+        "precision": 0.8198757763975155,
+        "predicted_positives": 322,
+        "recall": 0.6821705426356589,
+        "threshold": 0.8556524515151978
+      },
+      "threshold_applied": 0.8556524515151978,
+      "threshold_source": "checkpoint (chosen on validation)"
+    }
+  ],
+  "phase": 2,
+  "sample": false,
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "split": "test"
+}

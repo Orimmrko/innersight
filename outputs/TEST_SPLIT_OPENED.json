@@ -1,0 +1,15 @@
+{
+  "openings": [
+    {
+      "when": "2026-08-21T11:02:25+00:00",
+      "seeds": [
+        42,
+        123,
+        456
+      ],
+      "sample": false,
+      "forced": false,
+      "reason": "first pass"
+    }
+  ]
+}
