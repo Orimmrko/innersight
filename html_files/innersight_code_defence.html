@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — The code, in plain words</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.7; font-size:17px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:38px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:18px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:56px 0 14px; letter-spacing:-.015em}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:20px; line-height:1.55; margin:20px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:16px 18px; overflow-x:auto;
+      font-family:var(--mono); font-size:13px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11.5px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-8px}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:15px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:13px}
+  td.num{text-align:right; font-family:var(--mono); font-size:13px}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:14px 18px; border-radius:0 6px 6px 0; margin:18px 0}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:12px 0; padding-left:24px} li{margin:8px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:20px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:16px}
+  .stat .v{font-family:var(--mono); font-size:23px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:13px; color:var(--muted); margin-top:3px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:14px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:14px 20px; font-weight:650; font-size:17px}
+  .qa .a{padding:16px 20px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:12px}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:18px 22px; margin:18px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:8px}
+  .say p{margin:0; font-size:17.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · the code · study notes</p>
+  <h1>The code, in plain words</h1>
+  <p class="sub">What the program does, why it's built this way, and the specific lines someone might point at and ask “why is this here?”</p>
+</header>
+
+<div class="callout">
+  <p><strong>If you only remember one sentence about the code, remember this one.</strong></p>
+  <p>The input is 16 GB. The output is 2.8 MB. So the program is built so it <em>never holds anything that grows with the input</em> — it reads a small slice, immediately shrinks it to daily counts, throws the slice away, and repeats.</p>
+</div>
+
+<h2><span class="n">1</span>What files exist</h2>
+
+<table>
+  <tr><th>File</th><th class="num">Lines</th><th>What it's for</th><th>Might be asked about?</th></tr>
+  <tr><td class="mono">config.py</td><td class="num">392</td><td>every setting and number the project uses</td><td><b>yes</b></td></tr>
+  <tr><td class="mono">extraction/extract.py</td><td class="num">881</td><td>the actual program</td><td><b>yes, mainly this</b></td></tr>
+  <tr><td class="mono">extraction/test_extract.py</td><td class="num">127</td><td>9 automated tests</td><td><b>yes</b></td></tr>
+  <tr><td class="mono">verify_setup.py</td><td class="num">—</td><td>checks the laptop is set up; run once</td><td>no</td></tr>
+  <tr><td class="mono">extraction/salvage/</td><td class="num">—</td><td>record of where the code came from</td><td>only if asked about reuse</td></tr>
+</table>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">1,400</div><div class="k">total lines</div></div>
+  <div class="stat"><div class="v">12</div><div class="k">main functions</div></div>
+  <div class="stat"><div class="v">9</div><div class="k">tests, all passing</div></div>
+</div>
+
+<p>There's no framework and no complicated class structure. It's a set of small functions, each of which takes something in and gives something back without changing anything else.</p>
+
+<p>That's not just a style choice — it's why the tests can be simple. The tests hand the program <b>two tiny fake tables</b>, and the real run hands it <b>28 million rows</b>, and both go through <em>exactly the same code</em>. Nothing has to be mocked or faked.</p>
+
+<h2><span class="n">2</span>How the program works, step by step</h2>
+
+<pre><code>1.  Open one log file
+2.  Check its column names match what we expect        ← fails loudly if not
+3.  Read 50,000 rows at a time (never the whole file)
+4.  For each batch: convert it into daily counts
+5.  Add those counts to a running total
+6.  Repeat for all five log files
+7.  Join the five results together on (person, day)
+8.  Fill any gaps with zero
+9.  Save one file
+10. Print a report with sanity checks</code></pre>
+
+<p>Steps 1–5 happen for each of the five log files independently. Steps 7–8 put them together. That's the whole program.</p>
+
+<h2><span class="n">3</span>The one clever bit: adding up vs counting different things</h2>
+
+<p>This is the most interesting part of the code, and the part where an obvious approach is <b>wrong in a way that doesn't crash</b>. If you learn one technical thing to talk about, learn this one.</p>
+
+<p>Remember the program reads the file in batches of 50,000 rows. So one person's single day can be split across two batches.</p>
+
+<h3>For most of the 18 numbers, that's fine</h3>
+
+<pre><code>batch 1:  Anna, Monday, 3 logins
+batch 2:  Anna, Monday, 2 logins
+                        ────────
+total:                  5 logins    ✓ correct</code></pre>
+
+<p>You just add them. Sixteen of the eighteen numbers work like this.</p>
+
+<h3>For two of them, adding is wrong</h3>
+
+<p>Two of the numbers count <em>different things</em>, not <em>how many times</em>: "how many different computers did they use" and "how many different filenames".</p>
+
+<pre><code>batch 1:  Anna, Monday, used PC-1     →  1 different computer
+batch 2:  Anna, Monday, used PC-1     →  1 different computer
+                                         ─────────────────────
+adding them gives                        2 different computers   ✗ WRONG
+the truth is                             1 different computer    ✓</code></pre>
+
+<p>It's the same computer. Seeing it twice doesn't make it two computers.</p>
+
+<h3>How the code handles it</h3>
+
+<p>Those two numbers are never counted per batch. Instead the program keeps a list of unique <code>(person, day, thing)</code> combinations all the way to the end, removes duplicates, and only <em>then</em> counts.</p>
+
+<pre><span class="filetag">extract.py</span><code>def _compact_distinct(parts):
+    """Combine and remove duplicates -- never count in between."""
+    return pd.concat(parts).drop_duplicates()</code></pre>
+
+<div class="note bad"><b>Why this matters so much.</b> If you got this wrong, nothing would crash. There'd be no error message and no missing values. You'd just get a number that's slightly too big — and only for the people whose day happened to land on a batch boundary, which changes if you change the batch size. It would quietly survive all the way into your final results. <b>That's why it's the very first automated test in the file.</b></div>
+
+<div class="note good"><b>A nice coincidence worth mentioning.</b> Keeping those lists costs memory — but only a little, because a person uses a handful of computers a day, not thousands. And the one genuinely enormous file, the web log, needs <em>none</em> of this: its three numbers are all simple counting. So the expensive technique is only needed on the small files.</div>
+
+<h2><span class="n">4</span>The lines someone might point at</h2>
+
+<p>Each of these looks like a small detail. Each one prevents a specific failure. If an examiner points at any line in the file, the comment above it explains why it's there.</p>
+
+<div class="card">
+<h3>Refusing an empty website list</h3>
+<pre><span class="filetag">extract.py</span><code>if not domains:
+    raise ExtractionError(
+        "An empty URL list matches EVERY url, so every web request "
+        "would count as a job-site visit.")</code></pre>
+<p><b>The problem:</b> the way we search for websites, an empty list doesn't match nothing — it matches <em>everything</em>. If someone emptied the job-sites list, all 28 million web requests would count as job hunting, and that number would suddenly look incredibly useful. The code refuses to run instead.</p>
+</div>
+
+<div class="card">
+<h3>Not being fooled by a fake company domain</h3>
+<pre><span class="filetag">extract.py</span><code>@dtaa.com(?![\w.-])</code></pre>
+<p><b>The problem:</b> the company's email domain is <code>dtaa.com</code>. An attacker could use an address like <code>someone@dtaa.com.evil.net</code> — which <em>contains</em> "dtaa.com" but is a completely different, external domain. Without that extra bit of pattern, the code would count it as an internal colleague. There's a test for that exact address.</p>
+</div>
+
+<div class="card">
+<h3>Counting @ symbols instead of splitting addresses</h3>
+<pre><span class="filetag">extract.py</span><code>return recipients.str.count("@") > recipients.str.count(internal_pattern)</code></pre>
+<p><b>The idea:</b> every email address has exactly one <code>@</code>. So if there are more <code>@</code> symbols than company addresses, at least one recipient is outside the company.</p>
+<p><b>Why do it that way:</b> the alternative is splitting every address list apart row by row, across 2.6 million emails. Counting is one fast operation over the whole column instead.</p>
+<p>And it checks <b>to, cc <em>and</em> bcc</b>. An email sent to a colleague and secretly blind-copied to a personal Gmail looks completely internal if you only check "to" — and that's exactly what attack type 2 does.</p>
+</div>
+
+<div class="card">
+<h3>Treating "unknown" as "didn't happen"</h3>
+<pre><span class="filetag">extract.py</span><code>return mask.astype("boolean").fillna(False).astype("int64")</code></pre>
+<p><b>The problem:</b> if a row has a missing value, comparing it to anything gives "unknown" rather than "no". Left alone, that "unknown" spreads through the calculation. Here a missing value should mean <b>it didn't happen</b> — a row with no recorded action is not evidence of a login. This line makes that explicit.</p>
+</div>
+
+<div class="card">
+<h3>Filling gaps before converting to whole numbers</h3>
+<pre><span class="filetag">extract.py</span><code># Cast last, after filling: a whole-number column cannot hold the
+# blank that joining a missing (user, day) introduces.
+daily = frame.fillna(0)
+for feature in FEATURE_NAMES:
+    daily[feature] = daily[feature].astype("int64")</code></pre>
+<p><b>The problem:</b> when we join the five log files together, a person-day present in one file and absent from another leaves a blank. Blanks can't be stored in a whole-number column. So we fill the blanks with zero <em>first</em>, then convert. Doing it the other way round crashes.</p>
+</div>
+
+<div class="card">
+<h3>Telling the date reader what format to expect</h3>
+<pre><span class="filetag">extract.py</span><code>try:
+    chunk["date"] = pd.to_datetime(chunk["date"], format=DATE_FORMAT)
+except ValueError:
+    chunk["date"] = pd.to_datetime(chunk["date"], format="mixed")</code></pre>
+<p><b>Why the order matters:</b> if you don't tell the date reader the format, it works it out separately <em>for every single row</em>. On a 100-row test that's invisible. On 28 million rows it costs minutes. We tell it the format, and only fall back to guessing if that fails.</p>
+<p>This is a large part of why the whole thing runs in 90 seconds.</p>
+</div>
+
+<div class="card">
+<h3>Checking the whole file, but reading only part of it</h3>
+<pre><span class="filetag">extract.py</span><code>header = pd.read_csv(path, nrows=0).columns     # check ALL expected columns exist
+reader = pd.read_csv(path, usecols=wanted, ...)  # then read only the ones we need</code></pre>
+<p><b>Both halves matter.</b> We check every expected column is present before reading a single row of data — so if the file is the wrong version, it fails immediately with a clear message instead of producing wrong numbers. But then we only actually load three to six columns, and <b>never the "content" column</b>, which is filler text making up most of the file size.</p>
+<p>This is the single biggest speed decision in the program.</p>
+</div>
+
+<h2><span class="n">5</span>Two kinds of checking, and why we need both</h2>
+
+<p>This distinction is a genuinely good answer to “how do you know it works?”</p>
+
+<table>
+  <tr><th></th><th>Automated tests</th><th>Checks printed on every run</th></tr>
+  <tr><td><b>Question</b></td><td>does the code do what I wrote?</td><td>is what I wrote true about the real world?</td></tr>
+  <tr><td><b>When</b></td><td>when you run the tests</td><td>every single time the program runs</td></tr>
+  <tr><td><b>If it fails</b></td><td>the test fails loudly</td><td>prints a line — nothing stops</td></tr>
+  <tr><td><b>Catches</b></td><td>mistakes in the logic</td><td>wrong file, wrong dataset version, changed data</td></tr>
+</table>
+
+<p>The printed checks deliberately don't stop the program. A surprising number is something to <em>look at</em>, not necessarily something broken. Here's what it prints:</p>
+
+<pre><code>ok    no negative counts                 none
+ok    no missing values anywhere         none
+ok    no duplicated (person, day)        0 duplicates
+ok    logins roughly match logoffs       470,591 logins vs 384,268 logoffs
+ -    files-to-USB equals file count     True    (expected on r4.2)
+ -    unique filenames equals file count True    (expected on r4.2)
+ -    big attachments total              0       (expected on r4.2)</code></pre>
+
+<div class="note good"><b>The cleverest one is the logins/logoffs check.</b> It requires them to be <em>close but not equal</em>. If they were exactly equal, something would be inventing logoffs that never happened. If they were wildly different, the filter would be broken. The dataset's documentation says a few logins are deliberately left out to simulate messy real-world data — so a small mismatch is the <em>correct</em> state, and the check tests for the mismatch rather than for a perfect match.</div>
+
+<h3>Why only 9 tests?</h3>
+
+<p>Because they were chosen by a rule, not for a coverage score. The rule is written at the top of the test file:</p>
+
+<p class="big">Test the things that would be wrong <em>silently</em> — no error, no crash, just a number that's a bit off and nobody notices until the results make no sense.</p>
+
+<table>
+  <tr><th>Test</th><th>What it protects against</th></tr>
+  <tr><td>different computers not double-counted</td><td>the batch-boundary problem from section 3</td></tr>
+  <tr><td>after-hours counts logins only</td><td>counting the matching logoff as a second event</td></tr>
+  <tr><td>missing days become zero, not blank</td><td>a blank would break the next stage's maths</td></tr>
+  <tr><td>column order is fixed</td><td>reordering silently breaks every saved model</td></tr>
+  <tr><td>external emails check to/cc/bcc</td><td>4 cases including the fake-domain trick</td></tr>
+  <tr><td>empty input gives correct empty result</td><td>a malformed empty table crashing the next stage</td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">If someone says “only nine tests?”</span>
+  <p>“Nine tests chosen by a rule, not nine tests chasing a coverage number. Each one targets a failure that produces no error message. Testing that the login counter counts logins would raise the coverage percentage and catch nothing — that failure is obvious the first time you look at the output.”</p>
+</div>
+
+<h2><span class="n">6</span>The riskiest line in the whole project</h2>
+
+<pre><span class="filetag">config.py</span><code>FEATURE_NAMES = (
+    "logon_count",              # 0
+    "logoff_count",             # 1
+    ...
+    "cloud_upload_visits",      # 17
+)</code></pre>
+
+<p>That list looks like documentation. It isn't. <b>The order of those 18 names is the order the numbers go into the neural network.</b> It's also the order stored inside every saved model file.</p>
+
+<div class="note bad"><b>If someone reorders that list, nothing breaks.</b> No error. No failed test. The program keeps running. But every saved model is now reading the wrong number for every feature — a model trained to react to "USB activity" would be reacting to "weekend logins" instead. The results would be nonsense and there'd be no clue why. That's why one of the nine tests does nothing but confirm the output columns come out in that exact order.</div>
+
+<h2><span class="n">7</span>Questions you'll get</h2>
+
+<div class="qa"><div class="q">Walk me through what happens when you run it.</div><div class="a">
+<p>It opens each of the five log files one at a time. For each, it first checks the column names are what we expect, then reads the file in slices of 50,000 rows, loading only the columns it actually needs. Each slice gets turned into daily counts straight away and the raw rows are thrown out. Those counts are added to a running total. At the end, the five results are joined together on person-and-day, gaps are filled with zero, and one file is saved. Then it prints a report with sanity checks.</p></div></div>
+
+<div class="qa"><div class="q">Why not just load the files normally?</div><div class="a">
+<p>The biggest one is 14.5 GB — it doesn't fit in memory. And even if it did, most of it is a filler column we don't use. Reading in slices means the memory needed depends on how many people and how many days there are, not on how big the file is. That's why the same code runs on a 30-person test copy and on the full dataset without any changes.</p></div></div>
+
+<div class="qa"><div class="q">What was the hardest part to get right?</div><div class="a">
+<p>The two "count different things" numbers. Every other number can just be added up across batches, but "how many different computers did this person use today" can't — the same computer appearing in two batches is still one computer. So those keep a list of unique combinations until the very end and count once. What makes it hard is the failure mode: no crash, no error, just a number that's slightly too big depending on where the batch boundaries happened to fall. It's the first test in the file for that reason.</p></div></div>
+
+<div class="qa"><div class="q">What if you ran this on a different version of the dataset?</div><div class="a">
+<p>The expected column names are written down in the settings file and checked before reading anything, so a different version fails immediately with a message saying which columns are missing — rather than quietly producing wrong numbers. One case is already handled: newer versions have an extra column saying whether a file was copied to USB. If it's there we use it; if it isn't, we count every file copy, which is correct for this version because the documentation says every file event already is a USB copy.</p></div></div>
+
+<div class="qa"><div class="q">Did you write all of this yourself?</div><div class="a">
+<p>The extraction code was adapted from an earlier, much larger version of this project that I abandoned as too complicated. The original file is kept unchanged in <code>extraction/salvage/provenance/</code> so what was reused is visible rather than just claimed, along with the checks I ran on it. Nothing about it was taken on trust — including the test where I rebuilt a known attacker's timeline and compared it against the official answer key.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to finish on.</strong></p>
+  <p>“It's about 1,400 lines with no framework and no complicated structure — five small functions that turn a batch of raw rows into daily counts, one loop that adds them up, and one join. The shape of it comes entirely from one fact: 16 GB goes in and 2.8 MB comes out, so nothing is ever held in memory that grows with the input. Every line that isn't obvious has a comment saying which mistake it's preventing.”</p>
+</div>
+
+<footer>
+  InnerSight · code study notes · Stage 1 as built. Line counts and behaviour measured from the actual files.
+</footer>
+
+</div>
+</body>
+</html>

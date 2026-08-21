@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 7 code (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+  .todo{border-left-color:var(--muted); background:color-mix(in srgb, var(--muted) 7%, transparent)}
+  .todo b{color:var(--muted)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 7 code · defence preparation</p>
+  <h1>Walk me through the code</h1>
+  <p class="sub">Stage 7 writes no model and trains nothing that is reported. It is a package whose entire job is to make three specific cheats <em>impossible to commit by accident</em>, and then to measure four things. What was added, how each cheat is prevented by structure rather than by care, the fifty-four tests, and the one wart that was found and deliberately not fixed.</p>
+</header>
+
+<div class="note todo"><b>State.</b> The package is written, linted and tested — <b>101 tests pass</b> across the project — and the whole pipeline has been proven end to end on the 30-user sample. The full-release runs are outstanding, so this document describes the machinery rather than the results. None of it changes when the numbers arrive.</div>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what did you write for Stage 7?”</strong></p>
+  <p>“A package that loads the two trained models through a single code path, applies the decision threshold and the input scaling that were saved inside their checkpoints, scores the sealed test split once, and writes the report. The interesting part is what it is <em>unable</em> to do: there is no function in it that can fit a scaler on evaluation rows, no import of the threshold-selection code, and no filename pattern that will open the tuning variant that lost.”</p>
+</div>
+
+<h2>1 — The whole diff</h2>
+
+<pre><code>modeling/                 UNCHANGED   all of it, byte-identical to Stage 6
+config.py                 UNCHANGED
+
+evaluation/               NEW
+├── corpus.py             the row set — load, clip, mask, slice, keep the dates
+├── checkpoints.py        one loader for both models; refuses the v2 variant
+├── scoring.py            checkpoint + rows → probabilities; threshold APPLIED
+├── guards.py             the guard list, as checks that run and print values
+├── latency.py            first-detection day, position buckets, the decision rule
+├── falsepositives.py     the top-scoring benign rows, inspected and classified
+├── phase1.py             the validation analyses, orchestrated
+├── testpass.py           the single test pass, with its audit trail
+├── report.py             STAGE7_REPORT.md and final_results.json
+├── figures.py            the two figures
+├── run_phase1.py  run_b7.py  run_phase2.py  run_stage7.py
+├── test_evaluation.py    54 tests
+└── README.md
+
+                          ~4,200 lines of package, 870 of tests
+                          101 tests across the project, about 10 seconds</code></pre>
+
+<div class="note good"><b>Nothing in <code>modeling/</code> was touched, and that is a load-bearing property rather than tidiness.</b> Stage 7 measures an experiment. If it could edit the code that ran the experiment, “both models were trained identically” would depend on trusting the order in which files were saved. The 47 Stage 5–6 tests still pass unchanged, which is the cheap proof.</div>
+
+<h3>1.1 — Why eleven modules rather than one script</h3>
+
+<p>Each file answers one question, and the split is not arbitrary — it is the reason the guards are checkable. <code>corpus.py</code> is the only place that builds rows; <code>scoring.py</code> is the only place that produces a probability; <code>guards.py</code> imports both and can therefore assert things about them that a single script would only be able to <em>do</em>. When the claim is “this code cannot refit a scaler”, that claim is worth much more if it is a statement about a module with one job than about a four-hundred-line function.</p>
+
+<h2>2 — Three cheats, and how each is made structurally impossible</h2>
+
+<p>These are the three ways Stage 7 could have produced a better number with no error, no warning and nothing to notice afterwards. None of them is prevented by remembering not to do it.</p>
+
+<h3>2.1 — Refitting the input scaling on the rows being scored</h3>
+
+<p>The mean and standard deviation used to scale inputs were fitted on <em>training</em> people in Stage 5 and written into every checkpoint. Refitting them on the test rows would raise the score and raise nothing else.</p>
+
+<span class="filetag">evaluation/corpus.py</span>
+<pre><code>def build(self, name, seed, standardiser, *, users=None) -> EvalSplit:
+    #                     ^^^^^^^^^^^^^^ required argument, never computed here</code></pre>
+
+<div class="note good"><b>The scaler is a required parameter of the only function that builds rows.</b> There is no default and no fallback, so there is no code path in the package that can score a split under statistics derived from that split. The caller passes the one it read out of the checkpoint.</div>
+
+<p>A single function in the package does fit a scaler — <code>refit_train_standardiser()</code> — and its docstring says what it is for: it exists so a <em>guard</em> can compare the checkpoint's values against a fresh training-only fit and print both. Its result is never applied to anything, and the only caller is <code>guards.py</code>.</p>
+
+<h4>The test that proves it</h4>
+
+<pre><code>wrong = Standardiser(mean=full(18, 100.0), std=full(18, 0.5))
+split = corpus.build("val", 7, wrong)
+assert split.features.mean() &lt; -100      # it really used the one it was handed</code></pre>
+
+<p>A deliberately absurd scaler is passed in. If the module quietly fitted its own, the features would come out neatly standardised anyway and the test would fail.</p>
+
+<h3>2.2 — Re-choosing the decision threshold on test</h3>
+
+<p>This is the easiest cheat in the project. The threshold was picked on validation by maximising F1; picking it again on test would improve every recall figure and would look completely normal in the output.</p>
+
+<div class="callout">
+  <p><strong>The prevention is an absence: <code>evaluation/scoring.py</code> does not import <code>sweep_threshold</code>.</strong></p>
+  <p>What it has instead is <code>describe_at_threshold()</code>, which computes precision, recall, F1 and the flagged-row count <em>at a cutoff handed in</em>. It is a description, not a choice, and the distinction is the whole of the matter. The evaluation call is always <code>evaluate(..., choose_threshold=False, threshold=&lt;from the checkpoint&gt;)</code>.</p>
+</div>
+
+<h4>And a guard on top of the absence</h4>
+
+<pre><code>ok  threshold loaded from checkpoint, not re-swept —
+    model_a seed 42: 0.958200 (1,168 rows flagged); model_b seed 42: 0.818441 (444 rows flagged); …</code></pre>
+
+<p>The applied value is compared byte-for-byte against the stored one and printed with the number of days it flags. Cheap, and it is the check that would catch a re-sweep introduced later by somebody tidying up.</p>
+
+<h3>2.3 — The variant that lost getting into a table</h3>
+
+<p>Model B v2 — the tuning attempt with dropout, mean-and-max pooling and a decaying learning rate — scored 0.6022 against 0.6767. Its checkpoints are still on disk, deliberately, because they are the evidence behind the finding about pooling. Nothing stops a tired person from typing that path.</p>
+
+<span class="filetag">evaluation/checkpoints.py</span>
+<pre><code>_HEADLINE_NAME = re.compile(r"^(?:model_a|model_b)_seed\d+(?:\.sample)?\.pt$")</code></pre>
+
+<div class="note good"><b>The exclusion is a regular expression rather than a rule in a document.</b> Every tagged run — <code>model_b_v2_seed42.pt</code>, <code>model_a_nopw_seed42.pt</code>, <code>model_b_w7_seed42.pt</code> — fails to match, so <code>load_checkpoint()</code> raises with an explanation instead of loading. Reaching a control on purpose requires calling <code>load_variant_checkpoint()</code>, which still refuses <code>v2</code> outright. There is a test for each case.</div>
+
+<h2>3 — Building the test split without writing a second pipeline</h2>
+
+<p><code>modeling.data.prepare()</code> deliberately refuses to build the test split — that was Stage 5's way of guaranteeing exactly one place in the codebase could open it. So Stage 7 needs its own way in, and the hazard is obvious: a second pipeline that <em>almost</em> agrees with the first produces numbers that are wrong in a way nothing would ever reveal.</p>
+
+<span class="filetag">evaluation/corpus.py</span>
+<pre><code>from modeling.data import (
+    load_dataset, clip_z_scores, target_mask, load_splits, _build_split,
+)</code></pre>
+
+<div class="note good"><b>Nothing is reimplemented.</b> The clip, the 27-day warm-up mask, the split lookup and the tensor construction are the same functions the training runs called. If Stage 3 ever changes the parquet, this module breaks in the same place training would — which is the desirable failure.</div>
+
+<h4>The one thing that had to be added: the dates</h4>
+
+<p>Detection latency is a question about calendar days, and <code>SplitData</code> does not keep them. So <code>EvalSplit</code> carries the <code>day</code> of every scored row alongside the tensors — derived from the same boolean mask and the same positions.</p>
+
+<pre><code>positions  = flatnonzero(is_target[belongs])
+users_here = rows[USER].to_numpy()[positions]
+
+if not array_equal(users_here, data.users):
+    raise EvaluationError("row alignment slipped …")</code></pre>
+
+<div class="note"><b>Why the assertion is there rather than a comment saying the two must agree.</b> If the date array and the feature tensor ever fell out of step, every latency number would be wrong and every AUPRC would be right — so nothing downstream would look odd. The check costs one array comparison and turns a plausible latency table into an exception.</div>
+
+<p>The <em>raw</em> z-scores are kept too — clipped but not standardised. Section 6's inspection has to print the eighteen numbers for a human to read, and standardised values are the model's units, not a reader's.</p>
+
+<h2>4 — One loader, two architectures, no branch that knows which</h2>
+
+<p>A loader that has to be <em>told</em> which model it is opening is a loader that can be told wrong, and the entire result depends on both models being evaluated by identical code. Stage 5 and Stage 6 wrote their checkpoints through the same function, so each file already declares what it is:</p>
+
+<span class="filetag">outputs/checkpoints/model_b_seed42.pt</span>
+<pre><code>model_class     "ModelA" | "ModelB"
+input_kind      "point"  | "window"     → which view of a split to build
+window_days     1 | 28
+threshold       the cut-off chosen on validation
+standardiser    mean, std, and the feature order so a reordering is refused
+state_dict      the weights, from the best-AUPRC epoch — not the last</code></pre>
+
+<pre><code>def view(self, split):
+    return split.point_view() if self.input_kind == "point" \
+           else split.window_view(self.window_days)</code></pre>
+
+<p>Three consistency checks run before anything is scored: the architecture named must be one the package can rebuild; <code>input_kind</code> must agree with it (a <code>ModelB</code> stamped <code>"point"</code> is a corrupt file, not a configuration); and the threshold must be strictly inside (0, 1), because a 0 or a 1 means the sweep found nothing and every flagged-row count downstream would be meaningless. The weights load with <code>strict=True</code>, which is the check that the class named in the file is the class the weights belong to.</p>
+
+<h2>5 — The detection-latency arithmetic</h2>
+
+<p>The measurement that decides what the project may claim, and it is mostly index arithmetic — which is exactly the kind of code that is confidently wrong.</p>
+
+<h4>The attack window comes from the labels, not from the answer key</h4>
+
+<p><code>insiders.csv</code> lives on an external drive that is not always mounted, and more importantly it is not what the models were scored against. So an insider's window is derived from their own labelled days: the first labelled day is day 1. Non-contiguous windows are detected and warned about rather than silently accepted — on r4.2 every window is a single date range with a row for every calendar day inside it, so a gap means an upstream assumption has moved.</p>
+
+<pre><code>position = (day - window.first_day).days + 1        # 1-based, day 1 = onset
+
+BUCKETS = (("days 1-7", 1, 7), ("days 8-14", 8, 14),
+           ("days 15-28", 15, 28), ("days 29+", 29, None))</code></pre>
+
+<div class="note"><b>“Detected” means a day that is both labelled an attack day and scored above the threshold.</b> A high-scoring day <em>outside</em> the labelled window does not count as a detection here — deliberately, even though §6 argues some of those are real. Crediting them would be scoring the model against a story rather than against the labels. They are reported separately, as their own finding.</div>
+
+<h4>The decision rule is a constant, declared before the data</h4>
+
+<span class="filetag">evaluation/latency.py</span>
+<pre><code>PERSISTENCE_RATIO = 1.5     # late/early recall above this → persistence detector
+FLAT_RATIO        = 1.25    # within this of each other    → flat
+ONSET_MEDIAN_DAYS = 7.0     # median first detection beyond a week → not onset</code></pre>
+
+<div class="note good"><b>This is the part worth defending out loud.</b> These three numbers were written before any measurement existed, so the verdict is a consequence of the data rather than a description of it. Choosing them afterwards — even honestly — would make “Model B detects onset” unfalsifiable, because any bucket profile can be described as flat enough if you get to pick “enough” last.</div>
+
+<h4>Insiders who were never caught are counted, not dropped</h4>
+
+<pre><code>median first detection: day N   IQR a–b   X of Y insiders detected   Z never caught</code></pre>
+
+<p>A median computed only over the insiders that were found is a much better-looking number than one that acknowledges the misses, and it is the number most reports would print. Both appear, always, side by side.</p>
+
+<h2>6 — The nine rows: turning an impression into a count</h2>
+
+<p>Stage 6 left an anomaly open — Model B seed 123 scored P@10 = 0.100 against P@50 = 0.520, meaning nine of its ten highest-scoring days are labelled benign. The brief asked for those rows to be printed and looked at.</p>
+
+<p>Printing them is easy. The hazard is what happens next: a human looks at ten rows, forms an impression, and writes the sentence they were hoping for. So the module classifies each row and derives the sentence from the counts.</p>
+
+<table>
+  <tr><th>Reading</th><th>How it is decided</th></tr>
+  <tr><td>insider, inside the window's dates but unlabelled</td><td>the day falls between the person's first and last labelled attack day</td></tr>
+  <tr><td>insider, within 28 days of their window</td><td>distance to the nearest labelled day ≤ 28</td></tr>
+  <tr><td>insider, far from their labelled window</td><td>distance &gt; 28</td></tr>
+  <tr><td>a person with no labelled attack at all</td><td>no window exists for them</td></tr>
+</table>
+
+<p>Each row also prints its rank <em>over all rows</em> rather than among benign ones — “rank 3” means third-highest overall, which is the number the anomaly is about — plus the loud features above two sigma, and the distance in days from the labelled window.</p>
+
+<div class="note good"><b>Then the sentence is chosen by majority, and both possible sentences are written into the code in advance.</b> If most of the rows are insiders' own days near their window, the report says the precision figures are a <em>lower bound</em>. If most belong to people with no labelled attack, it says these are genuine false positives and precision should be read at face value. There is a test for each branch. Deciding the wording before seeing the counts is the only way the flattering version stays honest when it happens to be true.</div>
+
+<h2>7 — The guards, and why they print numbers</h2>
+
+<p>Two of the brief's required checks specify that values must be <em>printed</em>. That is the entire design of this module: a boolean saying “the scaler came from the checkpoint” carries exactly as much information as no check at all.</p>
+
+<pre><code>ok  seed 42: standardiser loaded from checkpoint, not refit — all 2 checkpoint(s)
+    match a train-only refit to 1e-9; mean[0]=-0.017065 std[0]=1.010514,
+    mean[1]=-0.016164 std[1]=1.010489, mean[2]=+0.004012 std[2]=0.993616
+ok  seed 42: both models scored on identical rows — 93,142 rows, 376 positive
+    (0.4037%), digest 322668fc6486dce2
+ok  threshold loaded from checkpoint, not re-swept — model_a seed 42: 0.958200 …</code></pre>
+
+<h4>The row digest, and why it is a hash rather than a count</h4>
+
+<pre><code>sha256( users || days || labels )[:16]</code></pre>
+
+<p>Both models must be scored on identical rows. A row count catches a dropped row. A hash of every row's person, day and label also catches a <em>reordering</em> — which is the failure that would leave both average precisions plausible and both wrong, and which no amount of staring at the output would reveal.</p>
+
+<h4>The guard that makes the rest believable</h4>
+
+<div class="callout">
+  <p><strong><code>reproduces_training</code> — re-score validation from the checkpoints and compare against what Stages 5 and 6 logged.</strong></p>
+  <p>If loading the weights, rebuilding the architecture, applying the stored scaler and applying the stored threshold reproduces 0.1237 / 0.1687 / 0.1615 for Model A and 0.7127 / 0.6306 / 0.6868 for Model B, then the identical machinery pointed at the test split is doing what it claims. If it does not, nothing downstream is worth reading.</p>
+  <p>On the 30-user smoke run it matched <b>to four decimal places on all six checkpoints</b>. It is deliberately non-fatal, because a genuine device difference can move the last decimal — and it prints both figures, so the size of the gap is visible rather than merely classified.</p>
+</div>
+
+<h4>And one guard designed to fail on a good result</h4>
+
+<pre><code>if auprc &gt;= 0.95:  →  FAIL, exit code 3</code></pre>
+
+<p>At a 0.4% positive rate with labels this coarse, near-perfect ranking means a split applied by row instead of by person, a scaler fitted on everything, or a label leaking into a feature. This is the guard most likely to be argued with at three in the morning, which is precisely why it is in code and why the entry point exits non-zero on it.</p>
+
+<h2>8 — The phase gate and the audit trail</h2>
+
+<p>The brief's rule is that Phase 1 finishes before the test split is opened, because after that no model may change. That is a discipline, and disciplines are what fail at midnight before a deadline. Two mechanisms turn it into behaviour.</p>
+
+<span class="filetag">evaluation/testpass.py</span>
+<pre><code>def require_phase1(...):
+    if not artifact.is_file():
+        raise PhaseOrderError("Phase 1 has not been run: …
+            Brief §4 — once the test split is opened no model may change …")</code></pre>
+
+<p>The ordering becomes a missing-file error rather than a habit.</p>
+
+<pre><code>outputs/TEST_SPLIT_OPENED.json
+{"openings": [{"when": "2026-08-08T…Z", "seeds": [42,123,456],
+               "sample": false, "forced": false, "reason": "first pass"}]}</code></pre>
+
+<div class="note"><b>A second real opening is refused unless it is forced with a written reason, and the reason is appended to the file.</b> This is not security — anyone can delete the file. It is a note to the person about to do it, at the moment they are doing it, that the number they are about to produce is no longer a single-pass test result and the write-up has to say so. Sample runs are recorded separately and do not burn the real one.</div>
+
+<h2>9 — The report writes what was measured, not what was hoped</h2>
+
+<p>The generated report contains a great deal of prose, and prose is where a result quietly becomes a claim. Every sentence that asserts a <em>direction</em> is derived from the numbers.</p>
+
+<pre><code>if ratio &gt;= 1.1:   "Model B's average precision is Nx Model A's …"
+elif ratio &lt;= 0.9: "Model B scores BELOW Model A on test — that contradicts
+                    the validation result and is a finding to investigate
+                    and report, not to smooth over."
+else:              "The two models are level on test — temporal context
+                    bought nothing measurable here, which is itself the
+                    answer to the question asked."</code></pre>
+
+<div class="note good"><b>This was tested by building the report from data where Model B loses, and reading what it said.</b> The sample split has almost no scenario-1 or scenario-2 attack days, so Model B does badly on it — which made an accidental but useful adversarial case. The prediction scorecard also distinguishes <em>unscored</em> from <em>missed</em>: a scenario with no attack days in the split is not a failed prediction, and calling it one would be inventing evidence.</div>
+
+<p>Missing optional inputs render as a visible <em>“not run — see the cut order”</em> section rather than disappearing. If the seven-day control or the ablation is cut for time, the report has a hole a reader can see, which is worth more than one that looks complete.</p>
+
+<h2>10 — The 54 tests</h2>
+
+<p>Same criterion as every stage before: cover the failures that are <b>silent</b>. Stage 7's silent failures are all of the form “a number that is a little too good”.</p>
+
+<div class="card">
+<h4>The row set — 7 tests</h4>
+<p>That the warm-up mask costs exactly 27 rows per person and zero positives; that the date array, the raw z-scores and the feature tensor are aligned to the same rows; that <code>build()</code> uses the scaler it was handed rather than one of its own; that the raw features really are unstandardised; and that the row digest changes under a reordering.</p>
+
+<h4>Checkpoint loading — 8 tests</h4>
+<p>That a <code>v2</code> path cannot be loaded by either entry point; that <code>nopw</code> and <code>w7</code> are refused by the headline loader; that a <code>ModelB</code> stamped <code>"point"</code> is rejected as inconsistent; that a threshold of 1.0 is rejected; that missing keys are named; and that a seven-day control's window length is taken from the caller rather than from the file that mis-states it.</p>
+
+<h4>The threshold is applied, never chosen — 4 tests</h4>
+<p>Given labels and scores where a sweep would obviously prefer a different cut-off, <code>describe_at_threshold</code> reports what the cut-off it was <em>given</em> actually does. Plus the zero-rows-above-threshold case, which must be a zero rather than a crash.</p>
+
+<h4>Latency arithmetic — 8 tests</h4>
+<p>On a synthetic corpus with a planted attack of known length: that day 1 of the window is day 1; that the window is derived correctly from the labels; that an insider nobody detected is <em>counted</em> rather than dropped; that the buckets partition positions without overlap or gap; that bucket totals sum to the attack days; and that the decision rule reads a climbing profile as persistence and a flat one as onset.</p>
+
+<h4>False-positive classification — 4 tests</h4>
+<p>That rank is over all rows rather than only benign ones; that all eighteen z-scores are reported; and that each of the two possible report sentences is produced by the counts that should produce it.</p>
+
+<h4>The guards — 13 tests</h4>
+<p>Each one is tested by <em>fabricating the mistake it exists to catch</em>: a scaler fitted on the validation rows instead of the training rows; two models carrying different scalers; a test person planted in the training split; a swapped threshold; two models scored on different row sets; and a model whose predictions rank the labels perfectly, which must trip the leakage ceiling.</p>
+
+<h4>Phase ordering and the audit trail — 5 tests</h4>
+<p>That the test split cannot be opened before Phase 1 has written its file; that a second opening is refused; that a forced one is recorded with its reason; and that a sample run does not burn the real pass.</p>
+
+<h4>The report builder — 3 tests</h4>
+<p>That missing optional inputs say “not run” rather than vanishing; that the random baseline appears beside the headline average precision; and that a report built from sample data is stamped as meaningless.</p>
+
+<h4>The capacity control's premise — 2 tests</h4>
+<p>That <code>ModelB(days=7)</code>, <code>ModelB(days=14)</code> and <code>ModelB(days=28)</code> have identical parameter counts — the assumption the entire control rests on — and that a six-day window is refused, because the receptive field is seven.</p>
+
+<p style="margin-top:18px; padding-top:14px; border-top:1px solid var(--line)"><b>7 + 8 + 4 + 8 + 4 + 13 + 5 + 3 + 2 = 54</b>, on top of the 47 from Stages 5 and 6, for 101 in about ten seconds. None of them needs r4.2 present — they build a small synthetic calendar-dense table with planted insiders.</p>
+</div>
+
+<div class="note"><b>The pattern worth pointing at.</b> Thirteen of the fifty-four tests do not test the guards' happy path — they construct the exact mistake the guard names and assert it is caught. A guard that has only ever been run on correct code is a decoration.</div>
+
+<h2>11 — The wart, found and deliberately not fixed</h2>
+
+<div class="note bad"><b><code>runner.save_checkpoint</code> writes the wrong <code>window_days</code> for the seven-day control.</b> It stamps <code>config.WINDOW_DAYS</code> on <em>any</em> window model rather than the length the view actually used, so a B@7 checkpoint claims 28 days on disk.</div>
+
+<p>Two reasons it was left alone. The brief forbids editing <code>runner.py</code> — Stage 7 measures the experiment and does not get to modify the code that ran it. And the control is validation-only and its checkpoint is never reloaded, so the field is never read in anger.</p>
+
+<span class="filetag">evaluation/checkpoints.py</span>
+<pre><code>load_variant_checkpoint(path, model_name=…, expected_window_days=7)
+    → overrides the stored value with the caller's
+    → then pushes a zero batch of that shape through the weights</code></pre>
+
+<p>So instead of trusting a field that is known to be wrong, the caller states what it expects and the weights are made to prove they accept it.</p>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“I found a bug in Stage 5's checkpoint writer while building Stage 7, and I did not fix it — because fixing it would have meant editing a file that both reported models were trained through, and ‘I changed the training code after training but it was only a metadata field' is not a sentence I want in this project. I worked around it where the value is read, and wrote it down in three places instead.”</p>
+</div>
+
+<h2>12 — Running it</h2>
+
+<pre><code>python -m pytest evaluation/ modeling/ -q     →  101 passed in ~10 s
+
+python -m evaluation.run_phase1 --device mps  →  ~2 min   latency, P@10, guards
+python -m evaluation.run_b7     --device mps  →  ~4 min   the capacity control
+python -m modeling.run_model_a --no-pos-weight →  ~90 s   the ablation
+
+python -m evaluation.run_phase2 --device mps  →  ~2 min   THE TEST SPLIT, once
+python -m evaluation.run_stage7               →  seconds  report, JSON, figures</code></pre>
+
+<table>
+  <tr><th class="mono">exit</th><th>meaning</th></tr>
+  <tr><td class="num">0</td><td>clean</td></tr>
+  <tr><td class="num">2</td><td>bad device, or an argument that cannot be honoured (a six-day window)</td></tr>
+  <tr><td class="num">3</td><td>a guard failed — including the leakage ceiling</td></tr>
+  <tr><td class="num">4</td><td>the phase ordering or the audit trail refused the run</td></tr>
+</table>
+
+<div class="note"><b>Every output file takes a <code>.sample</code> infix under <code>--sample</code>.</b> That rule is carried from Stage 1, where a seven-second development run silently replaced the thousand-user table and nothing complained. A smoke run and a real run must never be able to share a filename.</div>
+
+<h2>13 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Show me the line that stops you from tuning on the test set.</div><div class="a">
+<p>There isn't one line — there is a missing import. <code>evaluation/scoring.py</code> does not import <code>sweep_threshold</code>, which is the function that would search for a cut-off. What it has is <code>describe_at_threshold</code>, which reports what a cut-off handed to it actually does. Every call into the metrics code passes <code>choose_threshold=False</code>.</p>
+<p>The same shape applies to the input scaling: the only function that builds evaluation rows takes the scaler as a required argument with no default, so there is no path that scales a split by statistics derived from that split. And both are then checked at runtime and printed, because an absence in the source is a good argument and a printed comparison is evidence.</p></div></div>
+
+<div class="qa"><div class="q">You built a second data pipeline for the test split. How do you know it matches the training one?</div><div class="a">
+<p>I did not build a second one. Stage 5's <code>prepare()</code> deliberately refuses to construct the test split — that was how it guaranteed only one place could open it — so Stage 7 imports the same underlying functions: the clipper, the warm-up mask, the split lookup and the tensor builder. Nothing is reimplemented, so if the upstream table ever changes, this breaks in the same place training would.</p>
+<p>The one thing I had to add is the calendar dates, because latency is a question about days and the training data structure does not keep them. Those are derived from the same mask and the same positions, and there is an assertion that the person column derived that way matches the one the shared function produced — because if those ever diverged, every latency number would be wrong and every accuracy number would still be right.</p></div></div>
+
+<div class="qa"><div class="q">Why can't the loader just open any checkpoint I give it?</div><div class="a">
+<p>Because one of them is a model that lost, and the brief is unambiguous that it must not appear in any comparison. Leaving that to memory is how it ends up in a table at one in the morning. The loader accepts only filenames matching the pattern the reported experiment produced, so every tagged run — the tuning variant, the class-weighting ablation, the seven-day control — fails to open and says why.</p>
+<p>Reaching a control deliberately takes a different function, and even that one refuses the tuning variant outright. The controls are not competing models and they never touch the test split.</p></div></div>
+
+<div class="qa"><div class="q">Your latency thresholds look arbitrary. Why 1.5 and not 2?</div><div class="a">
+<p>They are a judgement, and the only thing that makes a judgement defensible here is <em>when</em> it was made. All three are module constants in <code>latency.py</code>, written before any measurement existed. If I had chosen them after seeing the bucket profile, “the recall is flat enough” would be unfalsifiable, because I would be picking what “enough” means last.</p>
+<p>I would rather defend a number somebody disagrees with than a number nobody can check. And the report prints the underlying counts either way, so a reader who prefers a different cut-off can apply it themselves.</p></div></div>
+
+<div class="qa"><div class="q">Fifty-four tests for code that only reads files and computes metrics. Isn't that excessive?</div><div class="a">
+<p>The metrics themselves are three lines calling scikit-learn and I did not test those. What is tested is everything around them, because Stage 7's failure mode is not a crash — it is a number that is quietly a bit too good.</p>
+<p>Thirteen of the tests fabricate the exact mistake a guard names and assert it is caught: a scaler fitted on the wrong rows, a test person planted in the training split, a swapped threshold, two models scored on different data, predictions that rank the labels perfectly. A guard that has only ever been run on correct code has never been tested at all — that lesson came from Stage 6, where the test the brief recommended turned out to pass on the bug it was supposed to catch.</p></div></div>
+
+<div class="qa"><div class="q">If you had to point at one line as the most dangerous in the stage, which is it?</div><div class="a">
+<p>The one that decides which scaler to apply. Everything else in Stage 7 either raises or is obviously wrong, but scaling the test rows by statistics fitted on the test rows produces a better score, a completely normal-looking output, and no error of any kind. It would survive into the report and into the defence.</p>
+<p>That is why it is a required argument rather than a default, why the only function in the package that fits a scaler exists solely to feed a comparison, and why the guard prints the actual means and standard deviations instead of a tick.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Stage 7 is a few thousand lines that compute about a dozen numbers. Almost none of it is the computation. It is the part that makes three specific cheats impossible to commit by accident — a scaler that cannot be refitted, a threshold that cannot be re-chosen, and a losing variant that cannot be loaded — and then prints the values behind each of those claims so that you do not have to take my word for any of it.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 7 code · <code>evaluation/</code> — 11 modules, ~4,200 lines, 54 tests, no r4.2 required.
+  <code>modeling/</code> and <code>config.py</code> are byte-identical to Stage 6. 101 tests across the project, about ten seconds.
+  Written 8 August 2026. <b>The full-release runs are outstanding and the test split has not been opened.</b>
+</footer>
+
+
+</div>
+</body>
+</html>

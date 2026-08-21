@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 3 Code (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:21px; margin:34px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:21px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 3 code · defence preparation</p>
+  <h1>Walk me through the code</h1>
+  <p class="sub">The two files in <code>baseline/</code>, what each part does and why it is written that way, the four lines someone might point at, the bug the tests found, and why there are 16 tests and not 60.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what does your code do?”</strong></p>
+  <p>“For each person separately, it walks their days in order and turns each of the 18 counts into a distance from that person's own earlier days — with a floor under the division so a never-done-it-before day gives a big number instead of infinity, and the first 30 days blanked because a baseline built from three days isn't one. Then it checks the answer is worth having before anything gets trained on it.”</p>
+</div>
+
+<h2>1 — What is in the folder</h2>
+
+<pre><code>baseline/
+├── __init__.py           what the stage is, and how to run it
+├── baseline.py           the program — about 800 lines including comments
+├── test_baseline.py      16 tests
+└── README.md             the stage written up, with the measured results</code></pre>
+
+<p>Same layout as <code>extraction/</code> and <code>labeling/</code>: program, tests, README, run from the project folder. Every path, column name and constant comes from <code>config.py</code>. Nothing is typed in twice.</p>
+
+<pre><span class="filetag">terminal</span><code>python -m baseline.baseline                    # the real table,  ~5 seconds
+python -m baseline.baseline --sample           # 30-person sample, ~1 second
+python -m baseline.baseline --user KPC0073     # raw counts beside z-scores
+python -m baseline.baseline --floor-all-users  # the rejected floor, for comparison
+python -m pytest baseline/ -q                  # run the 16 tests</code></pre>
+
+<div class="note"><b>Third stage, third separate sample filename.</b> Stage 1 was burned once when a 7-second test run overwrote the 1,000-person table, so <code>--sample</code> reads and writes its own filenames at every stage. Here that is <code>dataset.sample.parquet</code> against <code>dataset.parquet</code>. The failure it prevents shows up only as results that look suspiciously good.</div>
+
+<h2>2 — How the program is put together</h2>
+
+<pre><code>read labelled_counts.parquet
+        │
+        ├─→ std_floors(counts)              one floor per feature
+        ├─→ causal_z_scores(counts, floors) the arithmetic
+        │        └─ returns (z-scores, which rows were blanked)
+        ├─→ verify(...)                     stop if something is impossible
+        ├─→ validation_gate(...)            do insiders actually stand out?
+        ├─→ format_report(...)              print everything
+        └─→ save dataset.parquet</code></pre>
+
+<p>Each function takes data in and gives data back — no files, no hidden state — which is what makes each one testable alone. <code>causal_z_scores</code> in particular takes the floors as an argument rather than computing them, so a test can pass in a floor of exactly 0.5 and check the arithmetic against a number worked out by hand.</p>
+
+<h2>3 — The arithmetic, in four lines</h2>
+
+<div class="card">
+<h4>Expanding, then shift — in that order</h4>
+<pre><span class="filetag">baseline.py</span><code>grouped = ordered.groupby(users, sort=False)
+# `.expanding()` includes today; `.shift(1)` within the same user removes
+# it. Doing it in that order -- rather than shifting the values first -- is
+# what keeps the window "all days before t" for every t, including the
+# first day of each user, where the shift correctly yields nothing.
+mean_prior = grouped.expanding().mean().reset_index(level=0, drop=True)
+std_prior  = grouped.expanding().std(ddof=1).reset_index(level=0, drop=True)
+mean_prior = mean_prior.groupby(users, sort=False).shift(1)
+std_prior  = std_prior.groupby(users, sort=False).shift(1)</code></pre>
+<p><code>expanding()</code> means “everything up to and including today”. The <code>shift(1)</code> slides that answer down by one row <em>within each person</em>, so the value sitting on today's row is the summary of everything before today. Today is out.</p>
+<p><b>The order matters and the comment says why.</b> Shifting the raw values first and then expanding would also produce a number — a slightly different, slightly wrong one — and nothing would flag it.</p>
+<p>Both <code>groupby</code> calls are on <code>users</code>, which is what confines every calculation to one person. Drop either and the whole table gets scored against one pooled average.</p>
+
+<h4>The division, with the floor</h4>
+<pre><span class="filetag">baseline.py</span><code>denominator = np.maximum(
+    std_prior.fillna(0.0).to_numpy(),
+    np.maximum(floors.reindex(columns).to_numpy(), STD_FLOOR),
+)
+scores = (ordered.to_numpy() - mean_prior.fillna(0.0).to_numpy()) / denominator</code></pre>
+<p>Two nested maximums. The inner one guarantees the floor itself is never zero; the outer one uses whichever is larger, the person's real spread or the floor. For someone with genuine day-to-day variation, the floor never binds and they are scored by their own spread. For someone whose count has never moved, the floor is the whole denominator.</p>
+</div>
+
+<h3>3.1 — Why not the textbook variance formula</h3>
+
+<div class="note bad"><b>This is the line that would have produced a file full of missing values.</b> The obvious way to compute a running spread is <code>average of x² − (average of x)²</code>. Our <code>total_email_size</code> runs to about 100,000,000. Both of those terms are then around 10<sup>16</sup>, and subtracting two numbers that size in floating point can come out <b>negative</b> — which becomes a missing value the moment you take a square root. It would appear on some people and not others, in one feature out of eighteen.</div>
+
+<p>So the code uses pandas' <code>expanding()</code> aggregations, which accumulate with a numerically stable running update instead. It is slower in principle and completely irrelevant in practice — 464,687 rows by 18 features takes about three seconds.</p>
+
+<p>There is a test that exists solely to fail if someone ever “optimises” this back into cumulative sums: it builds a feature with values around 10<sup>8</sup> and asserts no missing values appear.</p>
+
+<h2>4 — The lines someone might point at</h2>
+
+<div class="card">
+<h4>Sort to compute, restore to write</h4>
+<pre><span class="filetag">baseline.py</span><code># Sort for the computation, remember how to put it back. Causality is
+# defined by chronological order, so this is not cosmetic -- but the
+# contract with Stage 4 is that row order survives the stage untouched.
+order = counts.sort_values(list(KEY_COLUMNS), kind="stable").index
+...
+z = z_ordered.reindex(counts.index)</code></pre>
+<p>Two requirements pull in opposite directions. “Days before today” only means anything if the rows are in date order. But every later stage relies on row order being unchanged, because that is how the labels line up.</p>
+<p>Sorting without restoring would silently reshuffle Stage 4's rows. Restoring without sorting would silently mis-score an unsorted input. A test does both: it scores a table, scores a shuffled copy of the same table, joins the two results back together by person and day, and asserts they agree.</p>
+
+<h4>The floor is a median over people who actually do the thing</h4>
+<pre><span class="filetag">baseline.py</span><code>per_user_std = counts.groupby(USER_COLUMN, sort=False)[columns].std(ddof=1)
+if active_only:
+    per_user_std = per_user_std.where(per_user_std > 0)
+typical = per_user_std.median(skipna=True)
+floors = (multiplier * typical).astype("float64")</code></pre>
+<p>One line — <code>.where(per_user_std > 0)</code> — and it is the biggest single decision in the file. 73.5% of employees have a USB count that never varies, 81% for after-hours logins, 88.6% for after-hours USB. Include them and the median is exactly zero for eight of eighteen features, the floor falls back to its default of 1, and “one USB connection” becomes one standard deviation on a count that is normally nought.</p>
+<p>Measured both ways: the validation gate goes from <b>54/70 to 66/70</b> and KPC0073's first USB day from <b>z=2.0 to z=20.9</b>, while the ordinary-day rate moves only 11.6% → 13.4%. The <code>active_only</code> switch is a real argument with a CLI flag behind it, so the comparison is reproducible rather than asserted.</p>
+
+<h4>A feature nobody varies still gets a floor</h4>
+<pre><span class="filetag">baseline.py</span><code>dead = ~np.isfinite(floors.to_numpy()) | (floors.to_numpy() <= 0.0)
+floors[dead] = fallback   # 1.0</code></pre>
+<p>Even after excluding inactive people, one feature has no variation anywhere: <code>large_attachment_count</code> is identically zero for all 1,000 employees on r4.2 — a known dead feature carried over from Stage 1, because the definition is right and the release simply has no data for it. Its floor becomes 1.0, so it contributes exactly zero forever rather than dividing by nothing the day it moves.</p>
+
+<h4>Two blanking rules, not one</h4>
+<pre><span class="filetag">baseline.py</span><code>warmup_ordered = _warmup_mask(users, max(min_history, MIN_PRIOR_DAYS))
+scores[warmup_ordered, :] = 0.0</code></pre>
+<p><code>MIN_HISTORY_DAYS</code> is 30 and is the judgement call: a baseline from three days is fiction. <code>MIN_PRIOR_DAYS</code> is 2 and is arithmetic: with no earlier days there is no average, and with one earlier day there is no spread.</p>
+<p>At 30 the second bound never binds and changes not one value in the delivered file. It exists so that lowering the warm-up later — a reasonable thing for someone to try — degrades gracefully instead of injecting 1,000 fake spikes. <b>It was added because a test found the bug, not because anyone reasoned about it.</b> See §6.</p>
+
+<h4>The scores are written unclipped, on purpose</h4>
+<pre><span class="filetag">config.py</span><code># Stage 3 does NOT apply this -- it writes the raw z-scores, because the
+# whole point of the KPC0073 hand-check is to see the un-clipped number.
+Z_CLIP: Final[float] = 10.0</code></pre>
+<p><code>Z_CLIP</code> exists, and Stage 3 deliberately does not use it. Clipping at 10 here would flatten the 107σ that makes the hand-check convincing, and it would do it inside the saved file where nobody could get it back. The constant is a hint for whoever builds the training tensors, and it is the threshold for the “rows with any |z| &gt; 10” line in the report — 2,138 rows, 0.46%, which is how we know the floor is not set absurdly low.</p>
+</div>
+
+<h2>5 — Two kinds of checking, and why both</h2>
+
+<p>Same split as Stages 1 and 2. Tests prove the code does what we wrote. Runtime checks prove that what we wrote is true of the real world.</p>
+
+<table>
+  <tr><th></th><th><code>verify()</code> — stops the program</th><th><code>format_report()</code> — just prints</th></tr>
+  <tr><td><b>Contains</b></td><td>things that are impossible</td><td>things that are surprising</td></tr>
+  <tr><td><b>If it fails</b></td><td>error, run stops</td><td>the number is printed for a human to read</td></tr>
+  <tr><td><b>Example</b></td><td>a missing value anywhere in the 18 features</td><td>an insider whose attack does not stand out</td></tr>
+</table>
+
+<p>The distinction is worth being able to explain. A missing value <em>cannot</em> exist if the arithmetic is right, so that is a broken program and it stops. An insider who does not stand out is a statement about the world — that person's attack really is quiet — and stopping there would be the code overruling the dataset.</p>
+
+<div class="card">
+<h4>The four things that stop the run</h4>
+<ul>
+  <li><b>Any missing value or infinity in the 18 features.</b> This is the stage where a wrong floor or an unstable variance formula would show up, and the error message names which columns.</li>
+  <li><b>Row count or column order changed.</b> Column order is the CNN's channel order — reordering raises nothing and silently invalidates every checkpoint trained afterwards.</li>
+  <li><b>Either label column changed.</b> This stage never reads the labels to decide anything, so if they moved, something merged that shouldn't have.</li>
+  <li><b>An attack day inside somebody's warm-up.</b> It would come out as a row of eighteen zeros and be undetectable forever. On r4.2 it cannot happen — the earliest attack is 10 June against data from 2 January — which is exactly why an assertion is the right shape: free, and it catches a changed release.</li>
+</ul>
+
+<h4>And one that catches the laziest possible bug</h4>
+<pre><span class="filetag">baseline.py</span><code>if not (values &lt; 0).any():
+    raise BaselineError(
+        "no negative z-scores anywhere, so the values are still raw counts")</code></pre>
+<p>Raw counts are never negative; z-scores are negative about half the time. If this stage silently passed its input straight through — a plausible bug, one wrong variable name — the output file would have exactly the right shape, exactly the right row count, exactly the right labels, and would train exactly as well as noise. Nothing else in the pipeline would object. One line catches it.</p>
+</div>
+
+<h2>6 — The 16 tests, and the bug they found</h2>
+
+<p>The rule for choosing them is inherited from Stages 1 and 2: <b>test the things that go wrong silently.</b> No crash, no missing value — just a number that is subtly wrong and survives all the way to the results table.</p>
+
+<h4>The arithmetic — 5 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">spike_is_scored_against_the_pre_spike_mean</td><td><b>the reason this stage exists.</b> 60 flat days then a spike; asserts the spike is divided by the pre-spike average and explicitly <em>not</em> by the one including it</td></tr>
+  <tr><td class="mono">first_day_of_a_user_has_no_history_and_scores_zero</td><td>scoring a day against a baseline that does not exist</td></tr>
+  <tr><td class="mono">constant_history_gives_a_finite_score_when_it_changes</td><td>dividing by zero on a never-done-it-before day</td></tr>
+  <tr><td class="mono">the_floor_binds_only_when_it_exceeds_the_prior_std</td><td>the floor swallowing everybody, so real variation stops mattering</td></tr>
+  <tr><td class="mono">a_feature_constant_for_everybody_stays_at_zero</td><td>the dead feature exploding instead of staying silent</td></tr>
+</table>
+
+<h4>Blanking and isolation — 4 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">warmup_rows_are_exactly_zero_and_the_next_row_is_not</td><td>off by one at the boundary — checks both sides of it</td></tr>
+  <tr><td class="mono">a_positive_day_inside_the_warmup_is_a_hard_failure</td><td>the guard not actually firing — testing the alarm, not the building</td></tr>
+  <tr class="hi"><td class="mono">users_are_scored_only_against_themselves</td><td>one person's history leaking into another's score. Two people at 1000× different levels, interleaved in one table</td></tr>
+  <tr><td class="mono">row_order_survives_an_unsorted_input</td><td>the sort-and-restore being half implemented in either direction</td></tr>
+</table>
+
+<h4>The output contract — 2 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">shape_column_order_and_labels_survive_unchanged</td><td>a reordered channel that would invalidate every later checkpoint</td></tr>
+  <tr><td class="mono">verify_rejects_a_table_that_was_never_z_scored</td><td>a pass-through bug producing a perfectly-shaped useless file</td></tr>
+</table>
+
+<h4>Stability, the floor, and the gate — 5 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">values_around_1e8_produce_no_nan</td><td>somebody rewriting the maths as cumulative sums for speed (§3.1)</td></tr>
+  <tr><td class="mono">active_only_ignores_users_who_never_exercise_the_feature</td><td>the floor rule silently reverting to the version that scored 54/70</td></tr>
+  <tr><td class="mono">the_gate_measures_the_window_against_the_days_before_it</td><td>the gate comparing the wrong two sets of days</td></tr>
+  <tr><td class="mono">collapse_reports_both_max_and_mean</td><td>the two summaries being confused — one is 18× the other</td></tr>
+  <tr><td class="mono">an_empty_input_does_not_crash</td><td>an edge case worth one line</td></tr>
+</table>
+
+<div class="note bad"><b>Two of these failed on the first run, and one was a real bug.</b> <code>first_day_of_a_user_has_no_history_and_scores_zero</code> and <code>users_are_scored_only_against_themselves</code> both failed for the same reason: with no earlier days at all, the average came out as “missing”, got replaced by zero, and the first row of every person was being scored as <code>value ÷ floor</code>. For a heavy user that is an enormous number that means nothing except “this person exists”. The warm-up was hiding it in production, so it would never have shown up in the output — until somebody lowered the warm-up. The fix is <code>MIN_PRIOR_DAYS = 2</code>.</div>
+
+<p>The second failure was a test that was wrong, not code: a fixture built from a perfectly constant history, which makes every z-score exactly zero and would have passed for the wrong reason. It was rebuilt with variation in it.</p>
+
+<div class="say">
+  <span class="lbl">If asked “only sixteen tests?”</span>
+  <p>“Sixteen chosen by a rule, not sixteen to hit a coverage number. Every one targets a failure that gives no error message — a spike measured against an average that includes itself, a division by zero, an off-by-one at the warm-up edge, one person's history leaking into another's. The one I'd point at is the first: sixty flat days and one spike, and it checks the spike was divided by the average from before it — and explicitly not by the one that includes it. That single assertion is the whole idea of the stage, written as a test. And two of the sixteen failed on the first run, which is the best evidence I have that they were worth writing.”</p>
+</div>
+
+<h4>What the tests deliberately don't do</h4>
+<p>None of them read the real dataset. Each builds its own synthetic person with a handful of days, so the whole suite runs in under a second and stays honest — a test that read the real file and checked for 66 of 70 would still pass if the formula were wrong in a way that happened to give the same total.</p>
+
+<h2>7 — How the finished file was checked</h2>
+
+<div class="callout">
+  <p><strong>The tests check the code. This checks the file.</strong></p>
+  <p>The delivered <code>dataset.parquet</code> was recomputed by a second, deliberately naive program: a plain Python loop written from the <em>written specification</em> rather than from the module, re-deriving the floors from scratch and re-slicing every person's history by hand. Sixteen people, including every one we hand-checked.</p>
+  <p><b>Worst disagreement: 6 parts in 100 million.</b></p>
+</div>
+
+<p>Alongside it, checked directly on the saved file rather than the in-memory table: row count, the person and day columns, column order, number types, both label columns, no missing values, the warm-up rows all exactly zero, and no attack day inside a warm-up.</p>
+
+<pre><span class="filetag">actual output from the real run</span><code>Rows in / out            : 464,687 -> 464,687
+Distinct users           : 1,000
+Warm-up rows zeroed      : 30,000 (first 30 days of each user)
+Positives inside warm-up : 0   ok
+z range                  : -34.94 .. 716.26
+mean |z|                 : 0.421
+Rows with any |z| > 10   : 2,138 (0.46%; if huge, the floor is too small)
+NaN / inf                : 0 / 0
+Negative values present  : yes   &lt;- proves z-scoring actually happened</code></pre>
+
+<h2>8 — The report is part of the program</h2>
+
+<p>Stage 3 prints its validation gate on every run, and one line of that report is there specifically to stop us fooling ourselves:</p>
+
+<pre><code>What a 'pass' is worth - the same threshold on BENIGN users' scored days:
+  414,954 benign days: 13.41% already exceed 2 sigma on max|z|, 0.105% on mean|z|</code></pre>
+
+<div class="note"><b>Why that line is in the code and not just in the write-up.</b> “66 of 70 insiders exceed 2σ” is unreadable on its own. If a seventh of every ordinary employee's days also clear the bar, then passing means the insider is loud <em>and</em> the bar is cheap. Printing the benign rate next to the gate, on every run, means the caveat cannot be separated from the headline by accident.</div>
+
+<h2>9 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Walk me through what happens when I run this.</div><div class="a">
+<p>It reads the labelled table. First it works out one floor per feature: each person's own spread in that feature, the median across the people who actually vary, times 0.1. Then it sorts by person and day, and for each person runs an expanding average and spread shifted down one row, so each day is summarised by everything before it. Divide, floor the denominator, blank each person's first 30 days, convert to 32-bit floats and put the rows back in their original order.</p>
+<p>Then four impossible-things checks, the validation gate over the 70 insiders, save the file, print the report. About five seconds.</p></div></div>
+
+<div class="qa"><div class="q">What is the most dangerous line in this file?</div><div class="a">
+<p>The <code>.shift(1)</code>. Without it every day is scored against an average that includes itself, which means a big day partly cancels itself out — and nothing anywhere would signal a problem. The row count is right, there are no missing values, the numbers are all plausible and simply too small. It would look like a weak signal, and we'd have spent the remaining time blaming the models.</p>
+<p>Runner-up is the variance formula. If someone rewrote the expanding aggregation as cumulative sums for speed, <code>total_email_size</code> at 10<sup>8</sup> would produce a negative variance in floating point and a missing value under the square root — in one feature, for some people. There's a test for each.</p></div></div>
+
+<div class="qa"><div class="q">You sort the table and then unsort it. Why not just keep it sorted?</div><div class="a">
+<p>Because two different things need to be true. The maths only means anything in date order — “days before today” is defined by the sort. But the contract every later stage relies on is that row order and row count come through this stage untouched, so the labels stay lined up.</p>
+<p>Sorting and leaving it sorted would silently reorder Stage 4's rows. Not sorting at all would silently mis-score if anything upstream ever changed its order. So it sorts, computes, and restores — and there's a test that scores a table and a shuffled copy of it and asserts they agree row for row.</p></div></div>
+
+<div class="qa"><div class="q">Why does one function compute the floors and another use them?</div><div class="a">
+<p>So the arithmetic can be tested with a floor I chose by hand. If <code>causal_z_scores</code> computed its own floors, every test of the division would depend on a population statistic, and I couldn't write an assertion like “this must equal 99 divided by 0.5”. Passing the floors in means the maths tests check the maths and the floor tests check the floor.</p>
+<p>It also made the floor comparison possible at all — running the whole pipeline both ways is a one-line change because the floor is an argument, not a hidden step.</p></div></div>
+
+<div class="qa"><div class="q">Your gate says 66 of 70 pass. Isn't that the code marking its own homework?</div><div class="a">
+<p>It would be, if that were the only number printed. That's why the same report prints how many ordinary employee-days clear the identical bar — 13.4% — right underneath. And it prints both ways of summarising a day side by side, which disagree: 66 of 70 on the peak, 18 of 70 on the average.</p>
+<p>The gate's job isn't to say the method works. It's to say whether there is anything for a model to find, before we spend two days building one. If it had come back at 5 of 70 we'd have gone back to Stage 1 instead.</p></div></div>
+
+<div class="qa"><div class="q">How would you find out if this stage were subtly wrong?</div><div class="a">
+<p>The failure I worry about is a z-score that's plausible and too small, because nothing visible changes — no crash, no missing values, sensible-looking ranges. So there are three defences.</p>
+<p>Tests pin the arithmetic against hand-computed numbers, including one that asserts the answer is <em>not</em> the value you'd get by including today. The finished file was recomputed by an independent naive loop written from the spec, agreeing to six parts in a hundred million. And there's a hand check in the README: KPC0073's 6 July has to be large and finite. Infinity means the floor isn't applied; a small number means the shift is inverted. That one value discriminates between the three ways this stage can be wrong.</p></div></div>
+
+<div class="qa"><div class="q">Why is this a separate stage from the models?</div><div class="a">
+<p>Because it's the part that has to be right before anything else matters, and it's cheap to re-run — five seconds against several minutes of training. Keeping it separate is also what made the validation gate possible: it's a stage whose main output is a question answered, not a file, and that question had to be answered before Stage 5 existed.</p>
+<p>And there's a specific thing it must not absorb. Stage 5 standardises each feature across the population; Stage 3 standardises across time within a person. They look similar and they're orthogonal, and merging them would make it impossible to say which normalisation the models are benefiting from.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Four lines of arithmetic, sixteen tests, five seconds. The code is small because the idea is small — compare today to your own past. The difficulty is in the three or four places where getting it wrong produces no error at all: an average that includes the day it's measuring, a variance formula that goes negative at 10<sup>8</sup>, a floor computed over people who never do the thing, and a first row scored against a history that doesn't exist. Two of those, the tests found before I did.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 3 code · <code>baseline/baseline.py</code> and <code>baseline/test_baseline.py</code>.
+  Every code snippet is copied from the real file. Every number was measured from the run on 8 August 2026.
+</footer>
+
+</div>
+</body>
+</html>

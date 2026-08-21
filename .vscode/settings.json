@@ -1,0 +1,17 @@
+{
+  // The project's own virtual environment, built by setup.sh from
+  // requirements.txt. Pinning it here means Pylance resolves numpy, pandas and
+  // torch against the same versions the pipeline actually ran under, rather
+  // than against whatever interpreter happened to be active.
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // Imports in this project are top-level: `from config import ...`,
+  // `from modeling.data import ...`. The workspace root has to be on the
+  // analysis path for those to resolve.
+  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "python.analysis.typeCheckingMode": "basic",
+
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["."]
+}

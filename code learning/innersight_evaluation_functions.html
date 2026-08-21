@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight &mdash; every function in evaluation/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight &middot; Stage 7 &middot; reference</p>
+  <h1>Every function in <code>evaluation/</code></h1>
+  <p class="sub">All 194 of them, in file order, in plain language. One line each.</p>
+</header>
+
+<p class="big"><code>evaluation/</code> is the stage that turns six saved models into the numbers the project is submitted on. It reads checkpoints and never trains, never refits a scaling and never re-picks a decision cutoff &mdash; all three travel <em>inside</em> the checkpoint files precisely so this stage cannot recompute them by accident. Roughly half the package exists not to produce numbers but to prove the numbers are believable: named checks that print their own evidence, a phase ordering enforced by a missing-file error, and an audit trail for every opening of the test split.</p>
+
+<div class="callout">
+  <p><strong>16 files, 194 functions.</strong> 88 at module level, 104 methods and properties on the dataclasses, 2 nested inside other functions. <code>test_evaluation.py</code> is 68 of them on its own.</p>
+  <p>The &starf; marks the ones where the real thinking is &mdash; 24 across the package. The rest is plumbing, and can be read once and forgotten.</p>
+</div>
+
+<div class="note"><b>Where the code and its own documentation disagree.</b> Five places, listed here rather than left buried:
+<ul>
+<li><code>Corpus.refit_train_standardiser</code>'s docstring names <code>guards.standardiser_guard</code> as its only caller. No such function exists &mdash; it is <code>guards.standardiser_from_checkpoint</code>, and the test suite calls it too.</li>
+<li><code>phase1.py</code>'s module docstring says &ldquo;three of Phase 1's <em>four</em> tasks live here&rdquo;, then refers to &ldquo;the fourth and <em>fifth</em>&rdquo;.</li>
+<li><code>phase1.PHASE1_ARTIFACT</code> and <code>phase1.DETECTION_CSV</code> are defined and never read. Both <code>write()</code> and <code>require_phase1()</code> rebuild those paths themselves, so they can add the <code>.sample</code> suffix.</li>
+<li>Four functions are dead across the whole repository: <code>corpus.as_tensor_labels</code>, <code>corpus.require_no_gaps</code>, <code>falsepositives.is_insider_row</code> and <code>Checkpoint.threshold_choice</code>.</li>
+<li><code>load_variant_checkpoint</code> is exercised only by the tests. <code>run_b7</code> writes <code>w7</code> checkpoints but never reloads them &mdash; which is why the wrong window length stamped onto those files is tolerated rather than fixed.</li>
+</ul>
+</div>
+
+<h2><span class="n">1</span><code>__init__.py</code></h2>
+<p class="sub">Stage 7's contract, written down where the imports are &mdash; <b>0 functions</b>, 67 lines.</p>
+<div class="card">
+<p>The only file in the package with nothing to call: all docstring, plus one <code>__all__</code> list. What it carries instead is the contract &mdash; the five commands in the order they must be run, the rule that Phase 1 must finish <em>in full</em> before the test split is opened, the rule that nothing is refitted or re-swept because the scaling and the cutoff travel inside each checkpoint, and the rule that the losing Model B v2 tuning attempt appears nowhere in the result. Then a table giving each module its one job.</p>
+<p>Worth reading before the rest, because nearly every refusal elsewhere in the package is one of those four sentences turned into code.</p>
+</div>
+
+
+<h2><span class="n">2</span><code>corpus.py</code></h2>
+<p class="sub">The table Stage 7 scores, built once and sliced many times. &mdash; <b>13 functions</b>, 315 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">EvalSplit.name</td><td>Passes through the split's name (<code>val</code> or <code>test</code>) from the training-side object underneath, so callers don't have to reach two levels down.</td></tr>
+<tr><td class="mono">EvalSplit.n_rows</td><td>How many rows are actually scored — target rows only, with each user's 27-day warm-up already dropped.</td></tr>
+<tr><td class="mono">EvalSplit.n_positives</td><td>Counts the labelled attack days present; about 0.4% of rows on the real release.</td></tr>
+<tr><td class="mono">EvalSplit.random_baseline</td><td>The fraction of rows that are positive, which is exactly the average precision a coin flip would score here. Every AUPRC in the project is meant to be printed beside this number.</td></tr>
+<tr><td class="mono">EvalSplit.fingerprint</td><td>Hashes the user, date and label of every row into a short digest, so two models can be <em>proved</em> to have scored identical rows in identical order. A row count would miss a reordering.</td></tr>
+<tr><td class="mono">EvalSplit.describe</td><td>Builds the one-line summary printed to the run log: user count, row count, positive count and rate, and the digest.</td></tr>
+<tr><td class="mono">Corpus.load</td><td>Reads the dataset and applies the clip and the scorable-row mask using Stage 5's own functions, so evaluation cannot diverge from training. Warns if a labelled attack day lands in the warm-up.</td></tr>
+<tr><td class="mono">Corpus.users_for</td><td>Looks up which people Stage 4 assigned to train, validation and test under one seed.</td></tr>
+<tr class="hi"><td class="mono">&starf; Corpus.build</td><td>Cuts one split's rows using a scaling the <em>caller</em> supplies &mdash; nothing here can fit one &mdash; then re-derives the dates separately and refuses to continue unless both agree who owns which row.</td></tr>
+<tr class="hi"><td class="mono">&starf; Corpus.refit_train_standardiser</td><td>Fits a fresh mean and spread on this seed's training rows purely so a check has something to compare the checkpoint's stored values against. The result is never applied to anything.</td></tr>
+<tr><td class="mono">as_tensor_labels</td><td>Converts the stored 0/1 integers into the float tensor a loss function expects. Nothing in the repository calls it.</td></tr>
+<tr class="hi"><td class="mono">&starf; positions_within</td><td>Turns dates into &ldquo;day 1, day 2, day 31&hellip;&rdquo; from a given start &mdash; the arithmetic behind &ldquo;caught on day N&rdquo;. An off-by-one here is one in the headline claim.</td></tr>
+<tr><td class="mono">require_no_gaps</td><td>Raises if any person's scorable days skip a calendar date, since a missing day would make &ldquo;day N of the attack&rdquo; mean different things for different people. Currently unused.</td></tr>
+</table>
+<h3>zone 1 · the error and the split names</h3>
+<p>Two constants and one exception. No functions live here.</p>
+<h3>zone 2 · one split's rows</h3>
+<p>The <code>EvalSplit</code> object — the tensors a model is scored on, plus the dates, users and unscaled numbers needed to explain any individual row.</p>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">@property def name(self) -&gt; str</span></h3>
+  <p>Passes through the split's name (<code>val</code> or <code>test</code>) from the training-side object underneath, so callers don't have to reach two levels down.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">@property def n_rows(self) -&gt; int</span></h3>
+  <p>How many rows are actually scored — target rows only, with each user's 27-day warm-up already dropped.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">@property def n_positives(self) -&gt; int</span></h3>
+  <p>Counts the labelled attack days present; about 0.4% of rows on the real release.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">@property def random_baseline(self) -&gt; float</span></h3>
+  <p>The fraction of rows that are positive, which is exactly the average precision a coin flip would score here. Every AUPRC in the project is meant to be printed beside this number.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">def fingerprint(self) -&gt; str</span></h3>
+  <p>Hashes the user, date and label of every row into a short digest, so two models can be <em>proved</em> to have scored identical rows in identical order. A row count would miss a reordering.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">EvalSplit</span><span class="path">def describe(self) -&gt; str</span></h3>
+  <p>Builds the one-line summary printed to the run log: user count, row count, positive count and rate, and the digest.</p>
+</div>
+<h3>zone 3 · the whole table</h3>
+<p>The <code>Corpus</code> object — the parquet read once, clipped and masked once, then sliced repeatedly.</p>
+<div class="card">
+  <h3><span class="stage">Corpus</span><span class="path">@classmethod def load(cls, *, sample: bool = False, window_days: int = WINDOW_DAYS, frame: pd.DataFrame | None = None, splits_file: Path | None = None) -&gt; Corpus</span></h3>
+  <p>Reads the dataset and applies the clip and the scorable-row mask using Stage 5's own functions, so evaluation cannot diverge from training. Warns if a labelled attack day lands in the warm-up.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Corpus</span><span class="path">def users_for(self, seed: int) -&gt; dict[str, tuple[str, ...]]</span></h3>
+  <p>Looks up which people Stage 4 assigned to train, validation and test under one seed.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="stage">Corpus</span><span class="path">def build(self, name: str, seed: int, standardiser: Standardiser, *, users: Sequence[str] | None = None) -&gt; EvalSplit</span></h3>
+  <p>Cuts one split's rows using a scaling the <em>caller</em> supplies &mdash; nothing here can fit one &mdash; then re-derives the dates separately and refuses to continue unless both agree who owns which row.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="stage">Corpus</span><span class="path">def refit_train_standardiser(self, seed: int) -&gt; Standardiser</span></h3>
+  <p>Fits a fresh mean and spread on this seed's training rows purely so a check has something to compare the checkpoint's stored values against. The result is never applied to anything.</p>
+</div>
+<h3>zone 4 · small shared helpers</h3>
+<p>Three module-level utilities. Two of them are currently called by nothing.</p>
+<div class="card">
+  <h3><span class="path">def as_tensor_labels(split: EvalSplit) -&gt; torch.Tensor</span></h3>
+  <p>Converts the stored 0/1 integers into the float tensor a loss function expects. Nothing in the repository calls it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def positions_within(days: np.ndarray, first_day: np.datetime64) -&gt; np.ndarray</span></h3>
+  <p>Turns dates into &ldquo;day 1, day 2, day 31&hellip;&rdquo; from a given start &mdash; the arithmetic behind &ldquo;caught on day N&rdquo;. An off-by-one here is one in the headline claim.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def require_no_gaps(split: EvalSplit) -&gt; None</span></h3>
+  <p>Raises if any person's scorable days skip a calendar date, since a missing day would make &ldquo;day N of the attack&rdquo; mean different things for different people. Currently unused.</p>
+</div>
+
+<h2><span class="n">3</span><code>checkpoints.py</code></h2>
+<p class="sub">One loader for both models, with the refusals that keep the wrong files out. &mdash; <b>12 functions</b>, 322 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">Checkpoint.context_days</td><td>Reports 28 for the window model and 1 for the point model, so the report can state how much history each one saw without branching on which is which.</td></tr>
+<tr><td class="mono">Checkpoint.build</td><td>Recreates the network named in the file and loads the weights with strict matching on — the one check that the weights actually belong to the architecture claimed.</td></tr>
+<tr><td class="mono">Checkpoint.view</td><td>Reshapes a split into the input format this model was trained on: single days for Model A, 28-day stacks for Model B.</td></tr>
+<tr><td class="mono">Checkpoint.threshold_choice</td><td>Wraps the stored cutoff in the small object the shared metrics code takes, so applying it goes through the training-time path with the search switched off. Nothing calls it.</td></tr>
+<tr><td class="mono">Checkpoint.describe</td><td>The one-line summary of a loaded model, printed at the start of every run.</td></tr>
+<tr><td class="mono">_read</td><td>Opens the saved file and refuses it unless it is a dictionary carrying all seven fields the training code was supposed to write, naming the ones that are missing.</td></tr>
+<tr><td class="mono">_assemble</td><td>Turns the raw dictionary into the typed object, rejecting three inconsistencies: an unknown architecture, an architecture paired with the wrong input format, and a cutoff not inside (0, 1).</td></tr>
+<tr><td class="mono">_optional_float</td><td>Converts a value to a float unless it is absent, in which case it stays absent.</td></tr>
+<tr class="hi"><td class="mono">&starf; load_checkpoint</td><td>Loads a reported model and rejects any filename carrying a variant tag &mdash; how &ldquo;the losing v2 attempt must never reach a comparison table&rdquo; is enforced by code, not memory.</td></tr>
+<tr class="hi"><td class="mono">&starf; load_variant_checkpoint</td><td>Loads a control run's file, still refusing v2, and &mdash; because training stamped the wrong window length on disk &mdash; takes the true length from the caller and proves the weights accept it.</td></tr>
+<tr><td class="mono">_assert_accepts_window</td><td>Pushes one batch of zeros of the stated width through the network; if the width is wrong the model raises, which is the proof being sought.</td></tr>
+<tr><td class="mono">headline_checkpoints</td><td>Loads both models for one seed together and refuses if their recorded seeds disagree &mdash; a stage that loads one model at a time can compare seed 42 against seed 123 unnoticed.</td></tr>
+</table>
+<h3>zone 1 · the error, the factory table and the filename pattern</h3>
+<p>An exception plus four constants, including the regular expression that decides which filenames are allowed to load at all. No functions.</p>
+<h3>zone 2 · the loaded model</h3>
+<p>The <code>Checkpoint</code> object — weights, plus the two things Stage 7 is forbidden from recomputing.</p>
+<div class="card">
+  <h3><span class="stage">Checkpoint</span><span class="path">@property def context_days(self) -&gt; int</span></h3>
+  <p>Reports 28 for the window model and 1 for the point model, so the report can state how much history each one saw without branching on which is which.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Checkpoint</span><span class="path">def build(self) -&gt; nn.Module</span></h3>
+  <p>Recreates the network named in the file and loads the weights with strict matching on — the one check that the weights actually belong to the architecture claimed.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Checkpoint</span><span class="path">def view(self, split: SplitData) -&gt; InputView</span></h3>
+  <p>Reshapes a split into the input format this model was trained on: single days for Model A, 28-day stacks for Model B.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Checkpoint</span><span class="path">def threshold_choice(self) -&gt; ThresholdChoice</span></h3>
+  <p>Wraps the stored cutoff in the small object the shared metrics code takes, so applying it goes through the training-time path with the search switched off. Nothing calls it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Checkpoint</span><span class="path">def describe(self) -&gt; str</span></h3>
+  <p>The one-line summary of a loaded model, printed at the start of every run.</p>
+</div>
+<h3>zone 3 · reading a file</h3>
+<p>Opening the <code>.pt</code> and turning its dictionary into something typed — the layer where a malformed file is caught.</p>
+<div class="card">
+  <h3><span class="path">def _read(path: Path) -&gt; dict[str, Any]</span></h3>
+  <p>Opens the saved file and refuses it unless it is a dictionary carrying all seven fields the training code was supposed to write, naming the ones that are missing.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _assemble(path: Path, payload: dict[str, Any], model_name: str) -&gt; Checkpoint</span></h3>
+  <p>Turns the raw dictionary into the typed object, rejecting three inconsistencies: an unknown architecture, an architecture paired with the wrong input format, and a cutoff not inside (0, 1).</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _optional_float(value: Any) -&gt; float | None</span></h3>
+  <p>Converts a value to a float unless it is absent, in which case it stays absent.</p>
+</div>
+<h3>zone 4 · the two public loaders</h3>
+<p>One for the six models the result is reported on, one for the control runs — with different refusals.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def load_checkpoint(path: Path | str) -&gt; Checkpoint</span></h3>
+  <p>Loads a reported model and rejects any filename carrying a variant tag &mdash; how &ldquo;the losing v2 attempt must never reach a comparison table&rdquo; is enforced by code, not memory.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def load_variant_checkpoint(path: Path | str, *, model_name: str, expected_window_days: int | None = None) -&gt; Checkpoint</span></h3>
+  <p>Loads a control run's file, still refusing v2, and &mdash; because training stamped the wrong window length on disk &mdash; takes the true length from the caller and proves the weights accept it.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _assert_accepts_window(checkpoint: Checkpoint, days: int) -&gt; None</span></h3>
+  <p>Pushes one batch of zeros of the stated width through the network; if the width is wrong the model raises, which is the proof being sought.</p>
+</div>
+<h3>zone 5 · loading both models at once</h3>
+<p>The pairing function, so a comparison cannot silently mix seeds.</p>
+<div class="card">
+  <h3><span class="path">def headline_checkpoints(seed: int, *, sample: bool = False, directory: Path = CHECKPOINT_DIR) -&gt; dict[str, Checkpoint]</span></h3>
+  <p>Loads both models for one seed together and refuses if their recorded seeds disagree &mdash; a stage that loads one model at a time can compare seed 42 against seed 123 unnoticed.</p>
+</div>
+
+<h2><span class="n">4</span><code>scoring.py</code></h2>
+<p class="sub">The thinnest module in the package, and deliberately so. &mdash; <b>7 functions</b>, 186 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">Scored.model_name</td><td>Passes through which of the two models produced these probabilities.</td></tr>
+<tr><td class="mono">Scored.seed</td><td>Passes through which split-and-initialisation run this came from.</td></tr>
+<tr><td class="mono">Scored.flagged</td><td>Marks the rows whose probability reaches the stored cutoff — the rows an analyst would actually be handed.</td></tr>
+<tr><td class="mono">Scored.as_dict</td><td>Flattens one model on one split into JSON, including a fixed note recording that the cutoff was chosen on validation and not here.</td></tr>
+<tr><td class="mono">score</td><td>Runs the weights over every row through the same inference path training used, then measures performance at the cutoff the file already carried. Nothing is searched for or refitted.</td></tr>
+<tr class="hi"><td class="mono">&starf; describe_at_threshold</td><td>Reports what a given cutoff <em>does</em> &mdash; rows flagged, how many are right &mdash; rather than searching for the cutoff that flatters the result. The easiest leak in the project to commit by accident.</td></tr>
+<tr><td class="mono">log_scored</td><td>Prints the block a reader of the run log needs: ranking scores with the coin-flip baseline beside them, then the cutoff and what it flagged, then one line per attack scenario.</td></tr>
+</table>
+<h3>zone 1 · the result object</h3>
+<p><code>Scored</code> — one model's probabilities over one split, kept alongside the aggregate because most Stage 7 questions are about individual rows.</p>
+<div class="card">
+  <h3><span class="stage">Scored</span><span class="path">@property def model_name(self) -&gt; str</span></h3>
+  <p>Passes through which of the two models produced these probabilities.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Scored</span><span class="path">@property def seed(self) -&gt; int</span></h3>
+  <p>Passes through which split-and-initialisation run this came from.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Scored</span><span class="path">@property def flagged(self) -&gt; np.ndarray</span></h3>
+  <p>Marks the rows whose probability reaches the stored cutoff — the rows an analyst would actually be handed.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Scored</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>Flattens one model on one split into JSON, including a fixed note recording that the cutoff was chosen on validation and not here.</p>
+</div>
+<h3>zone 2 · the work</h3>
+<p>Running the model. Deliberately thin — the batching and the sigmoid come from the training code.</p>
+<div class="card">
+  <h3><span class="path">def score(checkpoint: Checkpoint, split: EvalSplit, *, device: str = "cpu", batch_size: int = BATCH_SIZE) -&gt; Scored</span></h3>
+  <p>Runs the weights over every row through the same inference path training used, then measures performance at the cutoff the file already carried. Nothing is searched for or refitted.</p>
+</div>
+<h3>zone 3 · the arithmetic</h3>
+<p>The one function whose name is doing real work: <em>describe</em>, not <em>choose</em>.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def describe_at_threshold(labels: np.ndarray, probs: np.ndarray, threshold: float) -&gt; ThresholdChoice</span></h3>
+  <p>Reports what a given cutoff <em>does</em> &mdash; rows flagged, how many are right &mdash; rather than searching for the cutoff that flatters the result. The easiest leak in the project to commit by accident.</p>
+</div>
+<h3>zone 4 · the log</h3>
+<p>What one model on one split looks like in the terminal.</p>
+<div class="card">
+  <h3><span class="path">def log_scored(scored: Scored, *, label: str | None = None) -&gt; None</span></h3>
+  <p>Prints the block a reader of the run log needs: ranking scores with the coin-flip baseline beside them, then the cutoff and what it flagged, then one line per attack scenario.</p>
+</div>
+
+<h2><span class="n">5</span><code>guards.py</code></h2>
+<p class="sub">The brief's guard list turned into code that runs and prints values. &mdash; <b>11 functions</b>, 341 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">GuardResult.line</td><td>Formats one check as the <code>ok</code> / <code>FAIL</code> line the log prints, with the supporting values attached.</td></tr>
+<tr><td class="mono">GuardResult.as_dict</td><td>The same check as JSON, so the results file carries the evidence and not only the verdict.</td></tr>
+<tr><td class="mono">split_disjointness</td><td>Confirms no person is both trained and tested on, checked per seed &mdash; the same person in different roles under <em>different</em> seeds is fine; only an overlap within one seed invalidates it.</td></tr>
+<tr class="hi"><td class="mono">&starf; standardiser_from_checkpoint</td><td>Refits the scaling on training rows alone and proves the stored values match it, and each other, printing the first few numbers rather than merely passing.</td></tr>
+<tr><td class="mono">threshold_from_checkpoint</td><td>Compares the cutoff actually applied against the one on disk, value for value. Cheap, and it is the check that would catch a re-search introduced later by somebody tidying up.</td></tr>
+<tr><td class="mono">identical_rows</td><td>Compares the row digests of the splits the two models were given, which catches a reordering that an equal row count would let through.</td></tr>
+<tr><td class="mono">finite_predictions</td><td>Confirms no prediction came out as NaN or infinity, and reports how many were inspected.</td></tr>
+<tr><td class="mono">beats_random</td><td>Confirms every model ranks better than chance on the split it was given, and names the weakest one.</td></tr>
+<tr class="hi"><td class="mono">&starf; not_suspiciously_good</td><td>Fails a model scoring above ~0.95 average precision, since at a 0.4% positive rate that means leakage, not success. The one check that fires on a number the project would be delighted by.</td></tr>
+<tr class="hi"><td class="mono">&starf; reproduces_training</td><td>Re-scores validation from the saved files and compares against the figure training recorded, allowing a thousandth for hardware. Non-fatal, but if it fails nothing downstream means anything.</td></tr>
+<tr><td class="mono">report</td><td>Prints every check, logs failures at error level, and answers whether any <em>run-stopping</em> one failed — the non-fatal ones warn and let the run finish.</td></tr>
+</table>
+<h3>zone 1 · the result type</h3>
+<p>Each check returns a verdict <em>and</em> the numbers behind it, because a bare boolean saying &ldquo;no leakage&rdquo; is as convincing as no check at all.</p>
+<div class="card">
+  <h3><span class="stage">GuardResult</span><span class="path">def line(self) -&gt; str</span></h3>
+  <p>Formats one check as the <code>ok</code> / <code>FAIL</code> line the log prints, with the supporting values attached.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">GuardResult</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The same check as JSON, so the results file carries the evidence and not only the verdict.</p>
+</div>
+<h3>zone 2 · the brief's six checks</h3>
+<p>One function per line of the guard list, in the order the brief writes them.</p>
+<div class="card">
+  <h3><span class="path">def split_disjointness(corpus: Corpus, seeds: Sequence[int]) -&gt; GuardResult</span></h3>
+  <p>Confirms no person is both trained and tested on, checked per seed &mdash; the same person in different roles under <em>different</em> seeds is fine; only an overlap within one seed invalidates it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def standardiser_from_checkpoint(corpus: Corpus, seed: int, checkpoints: Iterable[Checkpoint]) -&gt; GuardResult</span></h3>
+  <p>Refits the scaling on training rows alone and proves the stored values match it, and each other, printing the first few numbers rather than merely passing.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def threshold_from_checkpoint(scored: Sequence[Scored]) -&gt; GuardResult</span></h3>
+  <p>Compares the cutoff actually applied against the one on disk, value for value. Cheap, and it is the check that would catch a re-search introduced later by somebody tidying up.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def identical_rows(seed: int, splits: Sequence[EvalSplit]) -&gt; GuardResult</span></h3>
+  <p>Compares the row digests of the splits the two models were given, which catches a reordering that an equal row count would let through.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def finite_predictions(scored: Sequence[Scored]) -&gt; GuardResult</span></h3>
+  <p>Confirms no prediction came out as NaN or infinity, and reports how many were inspected.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def beats_random(scored: Sequence[Scored]) -&gt; GuardResult</span></h3>
+  <p>Confirms every model ranks better than chance on the split it was given, and names the weakest one.</p>
+</div>
+<h3>zone 3 · the two judgement calls</h3>
+<p>Not pass/fail arithmetic but thresholds someone decided on in advance — which is why both print both figures.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def not_suspiciously_good(scored: Sequence[Scored]) -&gt; GuardResult</span></h3>
+  <p>Fails a model scoring above ~0.95 average precision, since at a 0.4% positive rate that means leakage, not success. The one check that fires on a number the project would be delighted by.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def reproduces_training(scored: Sequence[Scored]) -&gt; GuardResult</span></h3>
+  <p>Re-scores validation from the saved files and compares against the figure training recorded, allowing a thousandth for hardware. Non-fatal, but if it fails nothing downstream means anything.</p>
+</div>
+<h3>zone 4 · printing</h3>
+<p>Turning the list of verdicts into the block the brief asks for.</p>
+<div class="card">
+  <h3><span class="path">def report(results: Sequence[GuardResult]) -&gt; bool</span></h3>
+  <p>Prints every check, logs failures at error level, and answers whether any <em>run-stopping</em> one failed — the non-fatal ones warn and let the run finish.</p>
+</div>
+
+<h2><span class="n">6</span><code>latency.py</code></h2>
+<p class="sub">The analysis that decides what the project is allowed to claim. &mdash; <b>17 functions</b>, 511 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">Bucket.contains</td><td>Marks which positions fall inside one range, treating a missing upper bound as open-ended.</td></tr>
+<tr><td class="mono">AttackWindow.span_days</td><td>Counts calendar days from the first labelled attack day to the last, inclusive — which can exceed the number of labelled days when the window has holes in it.</td></tr>
+<tr><td class="mono">attack_windows</td><td>Works out each insider's attack period from the labels themselves, not the original answer key, so &ldquo;day 1&rdquo; means the same here as when the model was scored. Warns on non-consecutive days.</td></tr>
+<tr><td class="mono">InsiderDetection.detected</td><td>Whether this model ever flagged any of this person's labelled attack days.</td></tr>
+<tr><td class="mono">InsiderDetection.attack_day_recall</td><td>The share of a person's attack days that were flagged, across the whole window rather than just up to the first hit.</td></tr>
+<tr><td class="mono">InsiderDetection.as_dict</td><td>One person's detection record as JSON, for the per-insider appendix table.</td></tr>
+<tr class="hi"><td class="mono">&starf; detections</td><td>For each insider, finds the earliest day that is both labelled an attack and flagged, as day N of their window. A high score <em>outside</em> the window deliberately doesn't count.</td></tr>
+<tr><td class="mono">LatencySummary.n_never_detected</td><td>How many insiders in this pool were never flagged on any attack day — a result, not missing data.</td></tr>
+<tr><td class="mono">LatencySummary.phrase</td><td>Writes the sentence about first-detection timing that goes into the log, with separate wording for the case where nobody was caught at all.</td></tr>
+<tr><td class="mono">LatencySummary.as_dict</td><td>The pooled timing figures as JSON.</td></tr>
+<tr><td class="mono">summarise</td><td>Pools insiders across seeds for median, quartiles and never-caught count. One seed holds about a dozen insiders, and per-scenario counts swing 75% from the split draw alone.</td></tr>
+<tr><td class="mono">BucketRecall.recall</td><td>Hits divided by attack days for one position range, or nothing at all when that range contains no attack days.</td></tr>
+<tr><td class="mono">BucketRecall.as_dict</td><td>One position range's counts and rate as JSON.</td></tr>
+<tr class="hi"><td class="mono">&starf; recall_by_position</td><td>Sums hits and attack days across seeds per position range, keeping counts rather than averaging per-seed percentages &mdash; those sit on wildly different row counts.</td></tr>
+<tr><td class="mono">LatencyVerdict.as_dict</td><td>The reading, the claim it licenses, and the numbers behind it, as JSON.</td></tr>
+<tr class="hi"><td class="mono">&starf; read_verdict</td><td>Compares late against early recall and the median first-detection day, returning one of four readings. This is the function that decides what the project is allowed to claim.</td></tr>
+<tr><td class="mono">log_latency</td><td>Prints the whole latency section: per-scenario summaries, the position table as counts and percentages, then each model's reading in capitals.</td></tr>
+</table>
+<h3>zone 1 · windows and buckets</h3>
+<p>Establishing when each attack ran, and how positions inside it are grouped.</p>
+<div class="card">
+  <h3><span class="stage">Bucket</span><span class="path">def contains(self, position: np.ndarray) -&gt; np.ndarray</span></h3>
+  <p>Marks which positions fall inside one range, treating a missing upper bound as open-ended.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">AttackWindow</span><span class="path">@property def span_days(self) -&gt; int</span></h3>
+  <p>Counts calendar days from the first labelled attack day to the last, inclusive — which can exceed the number of labelled days when the window has holes in it.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def attack_windows(split: EvalSplit) -&gt; dict[str, AttackWindow]</span></h3>
+  <p>Works out each insider's attack period from the labels themselves, not the original answer key, so &ldquo;day 1&rdquo; means the same here as when the model was scored. Warns on non-consecutive days.</p>
+</div>
+<h3>zone 2 · first detection</h3>
+<p>The headline latency number: how far into the attack the model first said something.</p>
+<div class="card">
+  <h3><span class="stage">InsiderDetection</span><span class="path">@property def detected(self) -&gt; bool</span></h3>
+  <p>Whether this model ever flagged any of this person's labelled attack days.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">InsiderDetection</span><span class="path">@property def attack_day_recall(self) -&gt; float</span></h3>
+  <p>The share of a person's attack days that were flagged, across the whole window rather than just up to the first hit.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">InsiderDetection</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>One person's detection record as JSON, for the per-insider appendix table.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def detections(scored: Scored) -&gt; list[InsiderDetection]</span></h3>
+  <p>For each insider, finds the earliest day that is both labelled an attack and flagged, as day N of their window. A high score <em>outside</em> the window deliberately doesn't count.</p>
+</div>
+<h3>zone 3 · pooling across seeds</h3>
+<p>Turning per-insider records into a median and a never-caught count.</p>
+<div class="card">
+  <h3><span class="stage">LatencySummary</span><span class="path">@property def n_never_detected(self) -&gt; int</span></h3>
+  <p>How many insiders in this pool were never flagged on any attack day — a result, not missing data.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">LatencySummary</span><span class="path">def phrase(self) -&gt; str</span></h3>
+  <p>Writes the sentence about first-detection timing that goes into the log, with separate wording for the case where nobody was caught at all.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">LatencySummary</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The pooled timing figures as JSON.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def summarise(records: Iterable[InsiderDetection], model: str, scenario: int | None = None) -&gt; LatencySummary</span></h3>
+  <p>Pools insiders across seeds for median, quartiles and never-caught count. One seed holds about a dozen insiders, and per-scenario counts swing 75% from the split draw alone.</p>
+</div>
+<h3>zone 4 · recall by position</h3>
+<p>The second view — not <em>when</em> the first hit came, but how recall behaves as the attack wears on.</p>
+<div class="card">
+  <h3><span class="stage">BucketRecall</span><span class="path">@property def recall(self) -&gt; float | None</span></h3>
+  <p>Hits divided by attack days for one position range, or nothing at all when that range contains no attack days.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">BucketRecall</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>One position range's counts and rate as JSON.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def recall_by_position(scored: Sequence[Scored], scenario: int | None = None) -&gt; list[BucketRecall]</span></h3>
+  <p>Sums hits and attack days across seeds per position range, keeping counts rather than averaging per-seed percentages &mdash; those sit on wildly different row counts.</p>
+</div>
+<h3>zone 5 · the verdict</h3>
+<p>The decision rule, with its thresholds declared above it <em>before</em> any numbers existed.</p>
+<div class="card">
+  <h3><span class="stage">LatencyVerdict</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The reading, the claim it licenses, and the numbers behind it, as JSON.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def read_verdict(buckets: Sequence[BucketRecall], summary: LatencySummary) -&gt; LatencyVerdict</span></h3>
+  <p>Compares late against early recall and the median first-detection day, returning one of four readings. This is the function that decides what the project is allowed to claim.</p>
+</div>
+<h3>zone 6 · the log</h3>
+<p>The block the brief asks to be read before anything else.</p>
+<div class="card">
+  <h3><span class="path">def log_latency(summaries: Sequence[LatencySummary], buckets: Sequence[BucketRecall], verdicts: Sequence[LatencyVerdict]) -&gt; None</span></h3>
+  <p>Prints the whole latency section: per-scenario summaries, the position table as counts and percentages, then each model's reading in capitals.</p>
+</div>
+
+<h2><span class="n">7</span><code>falsepositives.py</code></h2>
+<p class="sub">Reading the rows the model got &lsquo;wrong&rsquo;, because the label may be the thing that is wrong. &mdash; <b>8 functions</b>, 273 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">FalsePositive.loud_features</td><td>Picks out which of the eighteen behaviours were at least two standard deviations from that person's own normal that day, loudest first.</td></tr>
+<tr><td class="mono">FalsePositive.line</td><td>Formats one row for the log — rank, probability, who, when, how it was classified, and the four loudest behaviours.</td></tr>
+<tr><td class="mono">FalsePositive.as_dict</td><td>One row as JSON, carrying all eighteen numbers rather than only the loud ones.</td></tr>
+<tr><td class="mono">top_false_positives</td><td>Collects the highest-scoring rows the labels call benign, keeping each one's rank in the <em>overall</em> ordering &mdash; &ldquo;a benign row at rank 3&rdquo; is the claim the brief is about.</td></tr>
+<tr><td class="mono">FalsePositiveReading.as_dict</td><td>The category counts and the sentence they support, as JSON.</td></tr>
+<tr class="hi"><td class="mono">&starf; read</td><td>Tallies which of four categories the inspected rows fall into and returns the sentence that tally justifies &mdash; including the unflattering one, that these really are ordinary mistakes.</td></tr>
+<tr><td class="mono">log_inspection</td><td>Prints each inspected row, then the tally by category, then the resulting sentence.</td></tr>
+<tr><td class="mono">is_insider_row</td><td>Answers whether a row belongs to one of the 70 people with a labelled attack, by comparing its scenario code against the benign one. Nothing in the repository calls it.</td></tr>
+</table>
+<h3>zone 1 · one inspected row</h3>
+<p>A single high-scoring day the labels call benign, with enough context attached to judge it.</p>
+<div class="card">
+  <h3><span class="stage">FalsePositive</span><span class="path">@property def loud_features(self) -&gt; list[tuple[str, float]]</span></h3>
+  <p>Picks out which of the eighteen behaviours were at least two standard deviations from that person's own normal that day, loudest first.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">FalsePositive</span><span class="path">def line(self) -&gt; str</span></h3>
+  <p>Formats one row for the log — rank, probability, who, when, how it was classified, and the four loudest behaviours.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">FalsePositive</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>One row as JSON, carrying all eighteen numbers rather than only the loud ones.</p>
+</div>
+<h3>zone 2 · finding them</h3>
+<p>Walking down the ranking and collecting the top benign rows.</p>
+<div class="card">
+  <h3><span class="path">def top_false_positives(scored: Scored, k: int = 10) -&gt; list[FalsePositive]</span></h3>
+  <p>Collects the highest-scoring rows the labels call benign, keeping each one's rank in the <em>overall</em> ordering &mdash; &ldquo;a benign row at rank 3&rdquo; is the claim the brief is about.</p>
+</div>
+<h3>zone 3 · what they collectively mean</h3>
+<p>Turning the inspection into a countable claim instead of an impression.</p>
+<div class="card">
+  <h3><span class="stage">FalsePositiveReading</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The category counts and the sentence they support, as JSON.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def read(rows: Sequence[FalsePositive], *, model: str | None = None, seed: int | None = None) -&gt; FalsePositiveReading</span></h3>
+  <p>Tallies which of four categories the inspected rows fall into and returns the sentence that tally justifies &mdash; including the unflattering one, that these really are ordinary mistakes.</p>
+</div>
+<h3>zone 4 · printing, and one leftover</h3>
+<p>The log block, plus a small predicate nothing calls.</p>
+<div class="card">
+  <h3><span class="path">def log_inspection(rows: Sequence[FalsePositive], reading: FalsePositiveReading) -&gt; None</span></h3>
+  <p>Prints each inspected row, then the tally by category, then the resulting sentence.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def is_insider_row(scenario: int) -&gt; bool</span></h3>
+  <p>Answers whether a row belongs to one of the 70 people with a labelled attack, by comparing its scenario code against the benign one. Nothing in the repository calls it.</p>
+</div>
+
+<h2><span class="n">8</span><code>phase1.py</code></h2>
+<p class="sub">Everything that can still be asked, asked before the test split is touched. &mdash; <b>8 functions</b>, 266 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">Phase1Result.passed</td><td>True when every check marked as run-stopping came out clean; non-fatal failures don't count against it.</td></tr>
+<tr><td class="mono">Phase1Result.pooled_fp_reading</td><td>Re-runs the false-positive classification over every inspected row from every model and seed at once, so the report's sentence isn't drawn from whichever run happened to be looked at first.</td></tr>
+<tr><td class="mono">Phase1Result.as_dict</td><td>The whole validation phase as JSON — the artifact whose existence Phase 2 later demands.</td></tr>
+<tr><td class="mono">run</td><td>Scores validation with both models on all three seeds, then measures timing, inspects the loudest benign rows and runs every check. Nothing here trains or chooses anything.</td></tr>
+<tr><td class="mono">_score_seed</td><td>Builds each model's validation rows from that model's own stored scaling and scores them. Building separately and then proving they match is stronger than building once and asserting it.</td></tr>
+<tr><td class="mono">_analyse_latency</td><td>Fills in the pooled timing summaries overall and per scenario, the position buckets, and each model's reading.</td></tr>
+<tr><td class="mono">write</td><td>Writes the validation JSON and the per-insider CSV, adding a <code>.sample</code> suffix when the run used the 30-user smoke-test data.</td></tr>
+<tr><td class="mono">_write_detection_csv</td><td>Writes one line per model, seed and insider, sorted so the same run always produces a byte-identical file.</td></tr>
+</table>
+<h3>zone 1 · the result object</h3>
+<p>Everything the validation phase measured, in one structure the report later reads back.</p>
+<div class="card">
+  <h3><span class="stage">Phase1Result</span><span class="path">@property def passed(self) -&gt; bool</span></h3>
+  <p>True when every check marked as run-stopping came out clean; non-fatal failures don't count against it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Phase1Result</span><span class="path">def pooled_fp_reading(self) -&gt; dict[str, Any] | None</span></h3>
+  <p>Re-runs the false-positive classification over every inspected row from every model and seed at once, so the report's sentence isn't drawn from whichever run happened to be looked at first.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Phase1Result</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The whole validation phase as JSON — the artifact whose existence Phase 2 later demands.</p>
+</div>
+<h3>zone 2 · the orchestration</h3>
+<p>The public entry point: score validation, then run every analysis that needs no training.</p>
+<div class="card">
+  <h3><span class="path">def run(*, seeds: Sequence[int] = SEEDS, sample: bool = False, device: str = "cpu", top_k: int = 10, corpus: Corpus | None = None) -&gt; Phase1Result</span></h3>
+  <p>Scores validation with both models on all three seeds, then measures timing, inspects the loudest benign rows and runs every check. Nothing here trains or chooses anything.</p>
+</div>
+<h3>zone 3 · the private steps</h3>
+<p>Two helpers pulled out of <code>run</code> for readability.</p>
+<div class="card">
+  <h3><span class="path">def _score_seed(corpus: Corpus, seed: int, checkpoints: dict[str, Checkpoint], device: str) -&gt; tuple[list[EvalSplit], list[Scored]]</span></h3>
+  <p>Builds each model's validation rows from that model's own stored scaling and scores them. Building separately and then proving they match is stronger than building once and asserting it.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _analyse_latency(result: Phase1Result) -&gt; None</span></h3>
+  <p>Fills in the pooled timing summaries overall and per scenario, the position buckets, and each model's reading.</p>
+</div>
+<h3>zone 4 · writing</h3>
+<p>Two files: the artifact Phase 2 requires, and the appendix table.</p>
+<div class="card">
+  <h3><span class="path">def write(result: Phase1Result, *, directory: Path = OUTPUT_DIR) -&gt; tuple[Path, Path]</span></h3>
+  <p>Writes the validation JSON and the per-insider CSV, adding a <code>.sample</code> suffix when the run used the 30-user smoke-test data.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _write_detection_csv(records: Sequence[InsiderDetection], path: Path) -&gt; None</span></h3>
+  <p>Writes one line per model, seed and insider, sorted so the same run always produces a byte-identical file.</p>
+</div>
+
+<h2><span class="n">9</span><code>testpass.py</code></h2>
+<p class="sub">The module that can only be run honestly once. &mdash; <b>11 functions</b>, 370 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">TestResult.passed</td><td>True when no run-stopping check failed on the test pass.</td></tr>
+<tr><td class="mono">TestResult.for_model</td><td>Picks one model's results out of the pile holding both.</td></tr>
+<tr><td class="mono">TestResult.headline</td><td>Averages the ranking scores across seeds with a spread. Recall at the cutoff is deliberately absent &mdash; it swings too hard across seeds to be quoted that way, so it is pooled as counts.</td></tr>
+<tr><td class="mono">TestResult.per_scenario</td><td>Sums hits and attack days per attack type across seeds. Counts, not averaged rates: scenario 3 has four positive rows per split, where a percentage would impersonate a measurement.</td></tr>
+<tr><td class="mono">TestResult.as_dict</td><td>The whole test pass as JSON — headline, pooled counts, timing, per-seed detail and every check.</td></tr>
+<tr class="hi"><td class="mono">&starf; require_phase1</td><td>Refuses to go any further unless the validation phase has already written its file, turning &ldquo;finish the validation work first&rdquo; from a resolution into a missing-file error.</td></tr>
+<tr class="hi"><td class="mono">&starf; record_opening</td><td>Appends a timestamped entry each time the test split is opened, refusing a second real opening without a written reason. Not security &mdash; a note to the person doing it.</td></tr>
+<tr><td class="mono">run</td><td>Per seed: load both models, prove their scaling matches a training-only refit, build the rows under it, apply each model's own stored cutoff, and score. Nothing is fitted, chosen or swept.</td></tr>
+<tr><td class="mono">_shape_guard</td><td>Checks the split against Stage 4's measured shape &mdash; ~93,000 rows, 376 positives, exactly four scenario-3 attack days &mdash; as a tripwire for splits and dataset drifting apart. Non-fatal.</td></tr>
+<tr><td class="mono">log_headline</td><td>Prints the results table the report opens with, stamped &ldquo;meaningless&rdquo; when the run used smoke-test data.</td></tr>
+<tr><td class="mono">write</td><td>Writes the test-pass JSON.</td></tr>
+</table>
+<h3>zone 1 · the result object</h3>
+<p>The final numbers, and the rules about how they may be quoted baked into the methods.</p>
+<div class="card">
+  <h3><span class="stage">TestResult</span><span class="path">@property def passed(self) -&gt; bool</span></h3>
+  <p>True when no run-stopping check failed on the test pass.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestResult</span><span class="path">def for_model(self, model: str) -&gt; list[Scored]</span></h3>
+  <p>Picks one model's results out of the pile holding both.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestResult</span><span class="path">def headline(self, model: str) -&gt; dict[str, Any]</span></h3>
+  <p>Averages the ranking scores across seeds with a spread. Recall at the cutoff is deliberately absent &mdash; it swings too hard across seeds to be quoted that way, so it is pooled as counts.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestResult</span><span class="path">def per_scenario(self, model: str) -&gt; dict[str, Any]</span></h3>
+  <p>Sums hits and attack days per attack type across seeds. Counts, not averaged rates: scenario 3 has four positive rows per split, where a percentage would impersonate a measurement.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestResult</span><span class="path">def as_dict(self) -&gt; dict[str, Any]</span></h3>
+  <p>The whole test pass as JSON — headline, pooled counts, timing, per-seed detail and every check.</p>
+</div>
+<h3>zone 2 · the two gates</h3>
+<p>The reason this module can only be run honestly once, expressed as code rather than as discipline.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def require_phase1(*, sample: bool = False, directory: Path = OUTPUT_DIR) -&gt; Path</span></h3>
+  <p>Refuses to go any further unless the validation phase has already written its file, turning &ldquo;finish the validation work first&rdquo; from a resolution into a missing-file error.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def record_opening(*, reason: str, seeds: Sequence[int], sample: bool, force: bool) -&gt; dict[str, Any]</span></h3>
+  <p>Appends a timestamped entry each time the test split is opened, refusing a second real opening without a written reason. Not security &mdash; a note to the person doing it.</p>
+</div>
+<h3>zone 3 · the single pass</h3>
+<p>One run over the test rows, plus a tripwire on the shape of what came back.</p>
+<div class="card">
+  <h3><span class="path">def run(*, seeds: Sequence[int] = SEEDS, sample: bool = False, device: str = "cpu", corpus: Corpus | None = None) -&gt; TestResult</span></h3>
+  <p>Per seed: load both models, prove their scaling matches a training-only refit, build the rows under it, apply each model's own stored cutoff, and score. Nothing is fitted, chosen or swept.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _shape_guard(seed: int, split: EvalSplit) -&gt; guards.GuardResult</span></h3>
+  <p>Checks the split against Stage 4's measured shape &mdash; ~93,000 rows, 376 positives, exactly four scenario-3 attack days &mdash; as a tripwire for splits and dataset drifting apart. Non-fatal.</p>
+</div>
+<h3>zone 4 · printing and writing</h3>
+<p>The terminal table and the artifact.</p>
+<div class="card">
+  <h3><span class="path">def log_headline(result: TestResult) -&gt; None</span></h3>
+  <p>Prints the results table the report opens with, stamped &ldquo;meaningless&rdquo; when the run used smoke-test data.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def write(result: TestResult, *, directory: Path = OUTPUT_DIR) -&gt; Path</span></h3>
+  <p>Writes the test-pass JSON.</p>
+</div>
+
+<h2><span class="n">10</span><code>report.py</code></h2>
+<p class="sub">Two deliverables assembled entirely from numbers a previous run measured. &mdash; <b>25 functions</b>, 757 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">_name</td><td>Swaps an internal filename stem for the name a reader should see; a report that prints <code>model_a</code> is one nobody read before submitting it.</td></tr>
+<tr><td class="mono">_load</td><td>Reads a JSON artifact if it is there and returns nothing, with a warning, if it isn't — which is what makes the optional sections optional.</td></tr>
+<tr><td class="mono">Sources.load</td><td>Gathers all six inputs, insisting on the two phase artifacts and tolerating the four that the brief's cut order allows to be missing.</td></tr>
+<tr><td class="mono">_pm</td><td>Renders a mean and spread, or an em dash when the figure was never measured.</td></tr>
+<tr><td class="mono">_counts</td><td>Renders &ldquo;hits of total (rate)&rdquo; — the count first, always — with separate wording when there were no attack days at all.</td></tr>
+<tr><td class="mono">_table</td><td>Assembles a markdown table from a header and a list of rows.</td></tr>
+<tr><td class="mono">_preamble</td><td>Writes the opening — what the project asks, and that the two models differ in exactly one respect — plus a warning banner when the numbers came from smoke-test data.</td></tr>
+<tr class="hi"><td class="mono">&starf; _headline</td><td>Builds the main results table, then picks its concluding sentence from the measured ratio &mdash; with wording ready for Model B <em>losing</em>, so the conclusion follows the number.</td></tr>
+<tr><td class="mono">_per_scenario</td><td>Builds the per-attack-type table as pooled counts and explains in prose why it is counts and not an average of per-seed percentages.</td></tr>
+<tr><td class="mono">_verdict_line</td><td>Turns one model's latency reading into a bullet with the early and late recall and the median day in brackets.</td></tr>
+<tr><td class="mono">_latency</td><td>Writes the timing section: why the question exists at all, the first-detection table, the position table, and the reading — which is taken from validation, where the decision rule was fixed.</td></tr>
+<tr><td class="mono">_control</td><td>Writes the capacity-control section, choosing one of three conclusions from where the 7-day model lands between the other two. When the control wasn't run, it says so and prints the command.</td></tr>
+<tr><td class="mono">_ablation</td><td>Writes the class-weighting comparison, wording its verdict differently depending on whether the collapse check actually fired during that run.</td></tr>
+<tr><td class="mono">_ablation.row</td><td>Formats one line of that comparison, or a line of dashes when the figures are absent.</td></tr>
+<tr><td class="mono">_auroc_gap</td><td>Writes the section arguing that the same predictions score around 0.94 on one metric and 0.15 on another, and why the low one is the honest headline at a 0.4% positive rate.</td></tr>
+<tr><td class="mono">_scenario_one_note</td><td>Picks the paragraph explaining the short-burst scenario from which way it actually moved — better, worse, or a tie — with a fourth wording for when it had no attack days to score.</td></tr>
+<tr class="hi"><td class="mono">&starf; _prediction_scorecard</td><td>Scores the predictions written down before Model B existed against what test produced, marking each held or missed &mdash; and treating a scenario with no attack days as unscored, not failed.</td></tr>
+<tr><td class="mono">_prediction_scorecard.rate</td><td>Formats one scenario's pooled recall as a percentage, or &ldquo;n/a&rdquo; when there were no attack days.</td></tr>
+<tr><td class="mono">_prediction_scorecard.improved</td><td>The change in pooled recall from Model A to Model B for one scenario, in percentage points.</td></tr>
+<tr><td class="mono">_limitations</td><td>Writes the limitations — each one a measured fact rather than a hedge — and splices in whichever sentence the false-positive inspection produced.</td></tr>
+<tr><td class="mono">_future_work</td><td>Fixed prose naming three things the project measured itself into wanting.</td></tr>
+<tr><td class="mono">_guard_appendix</td><td>Lists every check from both phases with its verdict and its supporting values.</td></tr>
+<tr><td class="mono">build</td><td>Joins the eleven sections in the brief's order, separated by horizontal rules.</td></tr>
+<tr><td class="mono">final_results</td><td>Assembles the machine-readable file, including an explicit entry recording that the losing tuning attempt is excluded and why.</td></tr>
+<tr><td class="mono">write</td><td>Writes the report and the results file and returns where they landed.</td></tr>
+</table>
+<h3>zone 1 · naming and inputs</h3>
+<p>Loading the six artifacts the report is assembled from — two required, four optional.</p>
+<div class="card">
+  <h3><span class="path">def _name(model: str) -&gt; str</span></h3>
+  <p>Swaps an internal filename stem for the name a reader should see; a report that prints <code>model_a</code> is one nobody read before submitting it.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _load(path: Path) -&gt; dict[str, Any] | None</span></h3>
+  <p>Reads a JSON artifact if it is there and returns nothing, with a warning, if it isn't — which is what makes the optional sections optional.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">Sources</span><span class="path">@classmethod def load(cls, *, sample: bool = False, directory: Path = OUTPUT_DIR) -&gt; Sources</span></h3>
+  <p>Gathers all six inputs, insisting on the two phase artifacts and tolerating the four that the brief's cut order allows to be missing.</p>
+</div>
+<h3>zone 2 · formatting helpers</h3>
+<p>Three tiny functions that enforce the project's reporting conventions everywhere at once.</p>
+<div class="card">
+  <h3><span class="path">def _pm(entry: dict[str, Any] | None, places: int = 4) -&gt; str</span></h3>
+  <p>Renders a mean and spread, or an em dash when the figure was never measured.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _counts(entry: dict[str, Any]) -&gt; str</span></h3>
+  <p>Renders &ldquo;hits of total (rate)&rdquo; — the count first, always — with separate wording when there were no attack days at all.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _table(header: list[str], rows: list[list[str]]) -&gt; str</span></h3>
+  <p>Assembles a markdown table from a header and a list of rows.</p>
+</div>
+<h3>zone 3 · the sections</h3>
+<p>One function per section of the report, in the order the brief asks for them. Each returns finished markdown.</p>
+<div class="card">
+  <h3><span class="path">def _preamble(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the opening — what the project asks, and that the two models differ in exactly one respect — plus a warning banner when the numbers came from smoke-test data.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def _headline(sources: Sources) -&gt; str</span></h3>
+  <p>Builds the main results table, then picks its concluding sentence from the measured ratio &mdash; with wording ready for Model B <em>losing</em>, so the conclusion follows the number.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _per_scenario(sources: Sources) -&gt; str</span></h3>
+  <p>Builds the per-attack-type table as pooled counts and explains in prose why it is counts and not an average of per-seed percentages.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _verdict_line(verdict: dict[str, Any]) -&gt; str</span></h3>
+  <p>Turns one model's latency reading into a bullet with the early and late recall and the median day in brackets.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _latency(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the timing section: why the question exists at all, the first-detection table, the position table, and the reading — which is taken from validation, where the decision rule was fixed.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _control(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the capacity-control section, choosing one of three conclusions from where the 7-day model lands between the other two. When the control wasn't run, it says so and prints the command.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _ablation(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the class-weighting comparison, wording its verdict differently depending on whether the collapse check actually fired during that run.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_ablation</span><span class="path">def row(name: str, agg: dict[str, Any] | None) -&gt; list[str]</span></h3>
+  <p>Formats one line of that comparison, or a line of dashes when the figures are absent.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _auroc_gap(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the section arguing that the same predictions score around 0.94 on one metric and 0.15 on another, and why the low one is the honest headline at a 0.4% positive rate.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _scenario_one_note(gap: float) -&gt; str</span></h3>
+  <p>Picks the paragraph explaining the short-burst scenario from which way it actually moved — better, worse, or a tie — with a fourth wording for when it had no attack days to score.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def _prediction_scorecard(sources: Sources) -&gt; str</span></h3>
+  <p>Scores the predictions written down before Model B existed against what test produced, marking each held or missed &mdash; and treating a scenario with no attack days as unscored, not failed.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_prediction_scorecard</span><span class="path">def rate(entry: dict[str, Any]) -&gt; str</span></h3>
+  <p>Formats one scenario's pooled recall as a percentage, or &ldquo;n/a&rdquo; when there were no attack days.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_prediction_scorecard</span><span class="path">def improved(key: str) -&gt; float</span></h3>
+  <p>The change in pooled recall from Model A to Model B for one scenario, in percentage points.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _limitations(sources: Sources) -&gt; str</span></h3>
+  <p>Writes the limitations — each one a measured fact rather than a hedge — and splices in whichever sentence the false-positive inspection produced.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _future_work() -&gt; str</span></h3>
+  <p>Fixed prose naming three things the project measured itself into wanting.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _guard_appendix(sources: Sources) -&gt; str</span></h3>
+  <p>Lists every check from both phases with its verdict and its supporting values.</p>
+</div>
+<h3>zone 4 · assembly</h3>
+<p>Joining the sections, and writing the two deliverables that must survive if time runs out.</p>
+<div class="card">
+  <h3><span class="path">def build(sources: Sources) -&gt; str</span></h3>
+  <p>Joins the eleven sections in the brief's order, separated by horizontal rules.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def final_results(sources: Sources) -&gt; dict[str, Any]</span></h3>
+  <p>Assembles the machine-readable file, including an explicit entry recording that the losing tuning attempt is excluded and why.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def write(sources: Sources, *, report_path: Path = REPORT_PATH, results_path: Path = FINAL_RESULTS_PATH) -&gt; tuple[Path, Path]</span></h3>
+  <p>Writes the report and the results file and returns where they landed.</p>
+</div>
+
+<h2><span class="n">11</span><code>figures.py</code></h2>
+<p class="sub">Two figures, built so a missing plotting library can never cost a run. &mdash; <b>6 functions</b>, 279 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">_pyplot</td><td>Imports matplotlib with the no-display backend selected, or returns nothing — figures are the first deliverable the cut order sacrifices, so they must never be able to fail a run.</td></tr>
+<tr><td class="mono">comparison</td><td>Draws the four panels answering a reader's two questions — &ldquo;did these train properly&rdquo; from the curves, and &ldquo;what did that buy&rdquo; from the bars.</td></tr>
+<tr><td class="mono">_curves_panel</td><td>Plots score per epoch, one line per seed with the best epoch marked, and the coin-flip level dotted. Writes &ldquo;metrics file not found&rdquo; into the panel when there is nothing to draw.</td></tr>
+<tr><td class="mono">_headline_panel</td><td>Draws the test scores as bars with error whiskers, the coin-flip level as a line across them, and the row count in the axis label so the bars are readable as evidence.</td></tr>
+<tr><td class="mono">_scenario_panel</td><td>Draws recall per attack type as paired bars with the raw &ldquo;hits/total&rdquo; printed above each — otherwise a bar over four attack days looks identical to one over 990.</td></tr>
+<tr class="hi"><td class="mono">&starf; latency</td><td>Draws recall against position within the attack window. Flat bars mean the model catches the onset; rising bars mean it notices a campaign already under way &mdash; different products.</td></tr>
+</table>
+<h3>zone 1 · the import guard</h3>
+<p>Why a missing plotting library costs a warning instead of the run.</p>
+<div class="card">
+  <h3><span class="path">def _pyplot()</span></h3>
+  <p>Imports matplotlib with the no-display backend selected, or returns nothing — figures are the first deliverable the cut order sacrifices, so they must never be able to fail a run.</p>
+</div>
+<h3>zone 2 · figure one and its panels</h3>
+<p>The four-panel comparison, and one private function per panel.</p>
+<div class="card">
+  <h3><span class="path">def comparison(phase2: dict[str, Any], val_a: dict[str, Any] | None, val_b: dict[str, Any] | None, *, path: Path | None = None) -&gt; Path | None</span></h3>
+  <p>Draws the four panels answering a reader's two questions — &ldquo;did these train properly&rdquo; from the curves, and &ldquo;what did that buy&rdquo; from the bars.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _curves_panel(axis, metrics: dict[str, Any] | None, title: str, colours) -&gt; None</span></h3>
+  <p>Plots score per epoch, one line per seed with the best epoch marked, and the coin-flip level dotted. Writes &ldquo;metrics file not found&rdquo; into the panel when there is nothing to draw.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _headline_panel(axis, phase2: dict[str, Any]) -&gt; None</span></h3>
+  <p>Draws the test scores as bars with error whiskers, the coin-flip level as a line across them, and the row count in the axis label so the bars are readable as evidence.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _scenario_panel(axis, phase2: dict[str, Any]) -&gt; None</span></h3>
+  <p>Draws recall per attack type as paired bars with the raw &ldquo;hits/total&rdquo; printed above each — otherwise a bar over four attack days looks identical to one over 990.</p>
+</div>
+<h3>zone 3 · figure two</h3>
+<p>The single plot that decides the wording of the report's central claim.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def latency(phase2: dict[str, Any], *, path: Path | None = None) -&gt; Path | None</span></h3>
+  <p>Draws recall against position within the attack window. Flat bars mean the model catches the onset; rising bars mean it notices a campaign already under way &mdash; different products.</p>
+</div>
+
+<h2><span class="n">12</span><code>run_phase1.py</code></h2>
+<p class="sub">Entry point for the validation phase. &mdash; <b>2 functions</b>, 113 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">build_parser</td><td>Defines the validation run's options, with help text stating that the smoke-test numbers must never be reported and that inference should use the machine the models were trained on.</td></tr>
+<tr><td class="mono">main</td><td>Sets up logging, resolves the device, runs the validation analyses and writes them out. Exits 2 on an unusable device and 3 when a run-stopping check failed.</td></tr>
+</table>
+<h3>zone 1 · the CLI</h3>
+<p>Both functions are the same shape as every other stage's CLI: one builds the arguments, one wires them up and returns an exit code.</p>
+<div class="card">
+  <h3><span class="path">def build_parser() -&gt; argparse.ArgumentParser</span></h3>
+  <p>Defines the validation run's options, with help text stating that the smoke-test numbers must never be reported and that inference should use the machine the models were trained on.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def main(argv: list[str] | None = None) -&gt; int</span></h3>
+  <p>Sets up logging, resolves the device, runs the validation analyses and writes them out. Exits 2 on an unusable device and 3 when a run-stopping check failed.</p>
+</div>
+
+<h2><span class="n">13</span><code>run_phase2.py</code></h2>
+<p class="sub">Entry point for the one test pass. &mdash; <b>2 functions</b>, 135 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">build_parser</td><td>Defines the test run's options, including the force-and-reason pair required before the test split may be opened a second time.</td></tr>
+<tr class="hi"><td class="mono">&starf; main</td><td>Confirms the validation phase finished, records the opening in the audit trail, then scores test once. Exits 4 when the ordering or audit trail refuses, 3 on a failed check.</td></tr>
+</table>
+<h3>zone 1 · the CLI</h3>
+<p>Both functions are the same shape as every other stage's CLI: one builds the arguments, one wires them up and returns an exit code.</p>
+<div class="card">
+  <h3><span class="path">def build_parser() -&gt; argparse.ArgumentParser</span></h3>
+  <p>Defines the test run's options, including the force-and-reason pair required before the test split may be opened a second time.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def main(argv: list[str] | None = None) -&gt; int</span></h3>
+  <p>Confirms the validation phase finished, records the opening in the audit trail, then scores test once. Exits 4 when the ordering or audit trail refuses, 3 on a failed check.</p>
+</div>
+
+<h2><span class="n">14</span><code>run_b7.py</code></h2>
+<p class="sub">Entry point for the 7-day capacity control. The only file here that trains anything. &mdash; <b>2 functions</b>, 173 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">build_parser</td><td>Defines the control's options and refuses a window shorter than the 7 days the network's two dilated layers reach back.</td></tr>
+<tr class="hi"><td class="mono">&starf; main</td><td>Confirms the 7-day and 28-day versions have <em>exactly</em> the same parameter count and stops if not &mdash; the control separates context from size only if size is fixed &mdash; then trains three seeds.</td></tr>
+</table>
+<h3>zone 1 · the CLI</h3>
+<p>Both functions are the same shape as every other stage's CLI: one builds the arguments, one wires them up and returns an exit code.</p>
+<div class="card">
+  <h3><span class="path">def build_parser() -&gt; argparse.ArgumentParser</span></h3>
+  <p>Defines the control's options and refuses a window shorter than the 7 days the network's two dilated layers reach back.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def main(argv: list[str] | None = None) -&gt; int</span></h3>
+  <p>Confirms the 7-day and 28-day versions have <em>exactly</em> the same parameter count and stops if not &mdash; the control separates context from size only if size is fixed &mdash; then trains three seeds.</p>
+</div>
+
+<h2><span class="n">15</span><code>run_stage7.py</code></h2>
+<p class="sub">Entry point that reads artifacts and writes the report. &mdash; <b>2 functions</b>, 105 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr><td class="mono">build_parser</td><td>Defines the two options for building the deliverables: build from smoke-test artifacts, and skip the figures.</td></tr>
+<tr><td class="mono">main</td><td>Loads the artifacts, warns by name about each optional one that is missing, writes the report, results file and figures. Returns 3 if any check failed in the runs behind it.</td></tr>
+</table>
+<h3>zone 1 · the CLI</h3>
+<p>Both functions are the same shape as every other stage's CLI: one builds the arguments, one wires them up and returns an exit code.</p>
+<div class="card">
+  <h3><span class="path">def build_parser() -&gt; argparse.ArgumentParser</span></h3>
+  <p>Defines the two options for building the deliverables: build from smoke-test artifacts, and skip the figures.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def main(argv: list[str] | None = None) -&gt; int</span></h3>
+  <p>Loads the artifacts, warns by name about each optional one that is missing, writes the report, results file and figures. Returns 3 if any check failed in the runs behind it.</p>
+</div>
+
+<h2><span class="n">16</span><code>test_evaluation.py</code></h2>
+<p class="sub">Written against the ways this stage produces a plausible <em>number</em> instead of an error. &mdash; <b>68 functions</b>, 870 lines.</p>
+<h3>Scan table</h3>
+<table>
+<tr><th class="mono">Function</th><th>What it does</th></tr>
+<tr class="hi"><td class="mono">&starf; _frame</td><td>A small dense table &mdash; ordinary people plus four with attacks, all on 90 consecutive days &mdash; with the planted signal <em>decaying</em> across the attack, as Stage 3 measured real ones do.</td></tr>
+<tr><td class="mono">_splits</td><td>Assigns the synthetic people to train, validation and test with insiders in both validation and test and no overlap — the property the disjointness check exists to find.</td></tr>
+<tr><td class="mono">corpus</td><td>Pytest fixture: the synthetic table loaded through the real loading path, with its split lists written to a temporary file.</td></tr>
+<tr><td class="mono">standardiser</td><td>Pytest fixture: a scaling fitted on the synthetic training people.</td></tr>
+<tr><td class="mono">_FeatureFiveModel.__init__</td><td>Stores a multiplier. There is nothing to learn.</td></tr>
+<tr><td class="mono">_FeatureFiveModel.forward</td><td>Scores a row by one feature alone, which gives the tests an exactly known ranking that a trained model could never provide.</td></tr>
+<tr><td class="mono">_checkpoint</td><td>Hand-builds a checkpoint object around the stub model, bypassing the file format entirely.</td></tr>
+<tr><td class="mono">_scored</td><td>Runs the stub model over the validation rows and packages the probabilities exactly as real scoring would, so every downstream analysis can be tested without training anything.</td></tr>
+<tr><td class="mono">TestCorpus.test_target_mask_costs_the_warm_up_and_no_positives</td><td>Confirms exactly 27 rows per person are dropped as warm-up, and that not one of them is a labelled attack day.</td></tr>
+<tr><td class="mono">TestCorpus.test_days_align_with_the_feature_tensor</td><td>Confirms the dates, people and labels kept beside the tensors line up with the tensors row for row.</td></tr>
+<tr><td class="mono">TestCorpus.test_build_applies_the_standardiser_given_not_one_it_fits</td><td>Hands over a deliberately wrong scaling and checks the output really does come out wrong — if the module quietly fitted its own, the numbers would look fine and the leak would be invisible.</td></tr>
+<tr><td class="mono">TestCorpus.test_unknown_split_is_refused</td><td>A split name that doesn't exist raises rather than returning something empty.</td></tr>
+<tr><td class="mono">TestCorpus.test_raw_features_are_unstandardised_z_scores</td><td>Confirms the copy kept for human reading is in the original units — a peak near 6 rather than near 1.</td></tr>
+<tr><td class="mono">TestCorpus.test_fingerprint_detects_a_reordering</td><td>Reverses one column and confirms the digest changes, which is the only thing that makes the identical-rows check worth running.</td></tr>
+<tr><td class="mono">TestPositions.test_day_one_is_the_windows_first_day</td><td>Pins the numbering: the window's first date is day 1, not day 0, and a date a month later is day 31.</td></tr>
+<tr><td class="mono">_write_checkpoint</td><td>Writes a real saved-model file with adjustable contents, so each of the loader's refusals can be provoked individually.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_v2_cannot_be_loaded_at_all</td><td>Confirms the losing tuning attempt is refused by <em>both</em> loaders — the ordinary one and the one meant for deliberate variants.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_variant_tags_are_refused_by_the_headline_loader</td><td>Confirms neither control run's filename can be picked up as though it were a reported model.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_headline_names_load</td><td>A properly named file loads, keeps its cutoff, reports one day of context, and rebuilds into the right architecture.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_sample_names_load</td><td>The smoke-test filename variant is accepted too.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_mismatched_input_kind_is_refused</td><td>A window model claiming to take single days is rejected at load time rather than blowing up part-way through a run.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_degenerate_threshold_is_refused</td><td>A cutoff of exactly 1 is refused, since it means the search found nothing and every flagged-row count would be empty.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_missing_keys_are_named</td><td>A file missing most of its fields fails with those fields listed, not with a bare key error.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_b7_window_length_is_taken_from_the_caller_not_the_file</td><td>The 7-day control claims 28 days on disk; this confirms the loader believes the caller and the weights instead of the stamp.</td></tr>
+<tr><td class="mono">TestCheckpointLoading.test_headline_pair_refuses_mismatched_seeds</td><td>Loading both models for one seed returns exactly those two, with the window model reporting the full 28 days of context.</td></tr>
+<tr><td class="mono">TestThresholdIsApplied.test_describe_at_threshold_uses_the_value_given</td><td>Handed a cutoff a search would never have picked, it reports what that cutoff actually does instead of quietly improving on it.</td></tr>
+<tr><td class="mono">TestThresholdIsApplied.test_no_rows_above_the_threshold_is_zero_not_a_crash</td><td>A cutoff nothing reaches yields zeros rather than a division by zero.</td></tr>
+<tr><td class="mono">TestThresholdIsApplied.test_scoring_never_reselects</td><td>The cutoff that comes out of scoring is the one that went in.</td></tr>
+<tr><td class="mono">TestThresholdIsApplied.test_score_runs_a_real_model_through_the_training_path</td><td>An actual saved model is loaded and run end to end, producing one finite probability per row.</td></tr>
+<tr><td class="mono">TestAttackWindows.test_window_is_derived_from_the_labels</td><td>Only the two insiders in this split get windows, and the window length matches the planted attack exactly.</td></tr>
+<tr><td class="mono">TestAttackWindows.test_benign_split_has_no_windows</td><td>A split holding only ordinary people produces nothing rather than an error.</td></tr>
+<tr><td class="mono">TestDetections.test_first_detection_day_is_one_based_from_the_window_start</td><td>With the signal peaking on the attack's opening day, a low cutoff has to report day 1 exactly.</td></tr>
+<tr><td class="mono">TestDetections.test_an_undetectable_insider_is_counted_not_dropped</td><td>With a cutoff nothing can reach, the insiders still appear in the results marked never-caught, instead of quietly leaving the denominator and flattering every rate computed from it.</td></tr>
+<tr><td class="mono">TestDetections.test_summary_separates_never_caught_from_the_median</td><td>When nobody is caught, the summary reports two insiders, none detected and no median — rather than a median over an empty set.</td></tr>
+<tr><td class="mono">TestPositionBuckets.test_buckets_partition_positions_without_overlap</td><td>Every position from 1 to 59 lands in exactly one range: no gaps, no double counting.</td></tr>
+<tr><td class="mono">TestPositionBuckets.test_bucket_totals_equal_the_attack_days</td><td>The ranges between them account for every attack day in the split and no more.</td></tr>
+<tr><td class="mono">TestPositionBuckets.test_verdict_reads_a_climbing_profile_as_persistence</td><td>A profile where late recall is nine times early recall is read as spotting an ongoing campaign, and the licensed wording says so.</td></tr>
+<tr><td class="mono">TestPositionBuckets.test_verdict_reads_a_flat_early_profile_as_onset</td><td>Flat recall with a median in the first couple of days is read as catching the attack at its start.</td></tr>
+<tr><td class="mono">TestFalsePositives.test_rank_is_over_all_rows_not_only_benign_ones</td><td>The ranks attached to the inspected rows increase and come from the full ordering, not from a benign-only one.</td></tr>
+<tr><td class="mono">TestFalsePositives.test_all_eighteen_z_scores_are_reported</td><td>Every inspected row carries all eighteen behaviours by name, not just the loud ones.</td></tr>
+<tr><td class="mono">TestFalsePositives.test_reading_classifies_benign_users_as_a_real_failure_mode</td><td>Rows belonging to people with no attack at all produce the unflattering sentence, not the excusing one.</td></tr>
+<tr><td class="mono">TestFalsePositives.test_reading_calls_precision_a_lower_bound_when_labels_are_narrow</td><td>Rows belonging to insiders, inside or near their window, produce the sentence saying the reported precision understates the model.</td></tr>
+<tr><td class="mono">TestGuards.test_disjointness_passes_on_a_clean_split</td><td>A properly separated split passes.</td></tr>
+<tr><td class="mono">TestGuards.test_disjointness_catches_a_test_user_in_train</td><td>Adding one test person to the training list fails the check, and their identifier appears in the message.</td></tr>
+<tr><td class="mono">TestGuards.test_standardiser_guard_passes_when_the_checkpoint_matches</td><td>A matching scaling passes, and the message contains the actual numbers — which is what the brief asked for, rather than a bare verdict.</td></tr>
+<tr class="hi"><td class="mono">&starf; TestGuards.test_standardiser_guard_catches_a_refit_on_evaluation_rows</td><td>Statistics fitted on the very rows about to be scored — the exact leak this stage exists to prevent — are caught.</td></tr>
+<tr><td class="mono">TestGuards.test_standardiser_guard_catches_two_models_scaled_differently</td><td>Two models carrying different scalings fail, because they were then never being compared on the same data.</td></tr>
+<tr><td class="mono">TestGuards.test_identical_rows_catches_a_different_row_set</td><td>A split compared against itself passes; the same split against a subset fails.</td></tr>
+<tr><td class="mono">TestGuards.test_threshold_guard_reads_the_applied_value</td><td>The applied cutoff passes and appears at full precision in the message.</td></tr>
+<tr><td class="mono">TestGuards.test_threshold_guard_catches_a_swapped_value</td><td>Changing the applied cutoff behind the file's back fails the check.</td></tr>
+<tr><td class="mono">TestGuards.test_finite_and_baseline_guards</td><td>On an ordinary scoring run, the no-NaN and better-than-chance checks both pass.</td></tr>
+<tr class="hi"><td class="mono">&starf; TestGuards.test_leakage_ceiling_fails_on_a_perfect_ranking</td><td>A model whose scores are just the labels is rejected as leakage &mdash; the check has to fire on exactly the result the project would most like to be true.</td></tr>
+<tr><td class="mono">TestGuards.test_leakage_ceiling_passes_on_an_ordinary_score</td><td>A better-than-chance but unremarkable ranking passes, so the ceiling is not simply always firing.</td></tr>
+<tr><td class="mono">TestPhaseOrdering.test_test_split_cannot_be_opened_before_phase_1</td><td>Without the validation artifact on disk, opening the test split raises.</td></tr>
+<tr><td class="mono">TestPhaseOrdering.test_phase_1_artifact_satisfies_the_precondition</td><td>Once that file exists the precondition is met and its path comes back.</td></tr>
+<tr><td class="mono">TestPhaseOrdering.test_second_opening_is_refused_without_a_reason</td><td>A second real opening raises, pointing at the timestamp of the first.</td></tr>
+<tr><td class="mono">TestPhaseOrdering.test_forced_reopening_is_recorded</td><td>A forced second opening is allowed, but both entries end up in the audit file with the reason and the forced flag recorded.</td></tr>
+<tr><td class="mono">TestPhaseOrdering.test_a_sample_run_does_not_burn_the_real_test_split</td><td>A smoke-test opening doesn't count against the real one, so rehearsing the run costs nothing.</td></tr>
+<tr><td class="mono">TestReport.test_optional_sections_say_not_run_rather_than_disappearing</td><td>With the optional inputs absent the headings are still there with &ldquo;not run&rdquo; underneath — a hole a reader can see beats a report that merely looks complete.</td></tr>
+<tr><td class="mono">TestReport.test_random_baseline_appears_beside_the_headline_auprc</td><td>The coin-flip figure appears in the text, since the headline score means nothing without it.</td></tr>
+<tr><td class="mono">TestReport.test_sample_reports_are_stamped_as_meaningless</td><td>A report built from smoke-test artifacts carries the warning banner.</td></tr>
+<tr><td class="mono">_agg</td><td>Builds the small mean/spread/count dictionary the report expects, for the fake artifacts below.</td></tr>
+<tr><td class="mono">_minimal_phase2</td><td>A hand-written test-phase artifact with plausible numbers, so the report builder can be exercised without running anything.</td></tr>
+<tr><td class="mono">_minimal_phase2.head</td><td>Fills in one model's headline block inside that fake artifact.</td></tr>
+<tr><td class="mono">_minimal_phase1</td><td>A hand-written validation artifact, deliberately missing the false-positive summary so the report's fallback wording gets exercised.</td></tr>
+<tr class="hi"><td class="mono">&starf; TestCapacityControl.test_shortening_the_window_does_not_change_the_parameter_count</td><td>7, 14 and 28 days give identical parameter counts. The entire control rests on this: if it were false, the shorter window would vary two things at once and separate nothing.</td></tr>
+<tr><td class="mono">TestCapacityControl.test_shortening_the_window_does_not_change_the_parameter_count.count</td><td>Adds up the trainable numbers in a Model B built for a given window length.</td></tr>
+<tr><td class="mono">TestCapacityControl.test_seven_is_the_floor</td><td>A 6-day window raises, because the two dilated layers reach back exactly 7 days and the second would be convolving over padding.</td></tr>
+</table>
+<h3>zone 1 · the synthetic world</h3>
+<p>A hand-built corpus and a stub model, so the arithmetic can be checked against numbers written down by hand.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="path">def _frame(n_benign: int = 6) -&gt; pd.DataFrame</span></h3>
+  <p>A small dense table &mdash; ordinary people plus four with attacks, all on 90 consecutive days &mdash; with the planted signal <em>decaying</em> across the attack, as Stage 3 measured real ones do.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _splits(frame: pd.DataFrame) -&gt; dict[str, dict[str, list[str]]]</span></h3>
+  <p>Assigns the synthetic people to train, validation and test with insiders in both validation and test and no overlap — the property the disjointness check exists to find.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def corpus(tmp_path: Path) -&gt; Corpus</span></h3>
+  <p>Pytest fixture: the synthetic table loaded through the real loading path, with its split lists written to a temporary file.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def standardiser(corpus: Corpus) -&gt; Standardiser</span></h3>
+  <p>Pytest fixture: a scaling fitted on the synthetic training people.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_FeatureFiveModel</span><span class="path">def __init__(self, scale: float = 1.0) -&gt; None</span></h3>
+  <p>Stores a multiplier. There is nothing to learn.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_FeatureFiveModel</span><span class="path">def forward(self, x: torch.Tensor) -&gt; torch.Tensor</span></h3>
+  <p>Scores a row by one feature alone, which gives the tests an exactly known ranking that a trained model could never provide.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _checkpoint(standardiser: Standardiser, threshold: float, tmp_path: Path) -&gt; Checkpoint</span></h3>
+  <p>Hand-builds a checkpoint object around the stub model, bypassing the file format entirely.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _scored(corpus: Corpus, standardiser: Standardiser, tmp_path: Path, threshold: float)</span></h3>
+  <p>Runs the stub model over the validation rows and packages the probabilities exactly as real scoring would, so every downstream analysis can be tested without training anything.</p>
+</div>
+<h3>zone 2 · the rows</h3>
+<p>That the thing being scored is the thing that was trained on, and that the day numbering starts where it should.</p>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_target_mask_costs_the_warm_up_and_no_positives(self, corpus: Corpus) -&gt; None</span></h3>
+  <p>Confirms exactly 27 rows per person are dropped as warm-up, and that not one of them is a labelled attack day.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_days_align_with_the_feature_tensor(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>Confirms the dates, people and labels kept beside the tensors line up with the tensors row for row.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_build_applies_the_standardiser_given_not_one_it_fits(self, corpus: Corpus) -&gt; None</span></h3>
+  <p>Hands over a deliberately wrong scaling and checks the output really does come out wrong — if the module quietly fitted its own, the numbers would look fine and the leak would be invisible.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_unknown_split_is_refused(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>A split name that doesn't exist raises rather than returning something empty.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_raw_features_are_unstandardised_z_scores(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>Confirms the copy kept for human reading is in the original units — a peak near 6 rather than near 1.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCorpus</span><span class="path">def test_fingerprint_detects_a_reordering(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>Reverses one column and confirms the digest changes, which is the only thing that makes the identical-rows check worth running.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPositions</span><span class="path">def test_day_one_is_the_windows_first_day(self) -&gt; None</span></h3>
+  <p>Pins the numbering: the window's first date is day 1, not day 0, and a date a month later is day 31.</p>
+</div>
+<h3>zone 3 · loading</h3>
+<p>Every way a saved file can be wrong, triggered one at a time.</p>
+<div class="card">
+  <h3><span class="path">def _write_checkpoint(path: Path, *, model_class: str = "ModelA", input_kind: str = "point", window_days: int = 1, threshold: float = 0.5, days: int = WINDOW_DAYS) -&gt; Path</span></h3>
+  <p>Writes a real saved-model file with adjustable contents, so each of the loader's refusals can be provoked individually.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_v2_cannot_be_loaded_at_all(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>Confirms the losing tuning attempt is refused by <em>both</em> loaders — the ordinary one and the one meant for deliberate variants.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_variant_tags_are_refused_by_the_headline_loader(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>Confirms neither control run's filename can be picked up as though it were a reported model.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_headline_names_load(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>A properly named file loads, keeps its cutoff, reports one day of context, and rebuilds into the right architecture.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_sample_names_load(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>The smoke-test filename variant is accepted too.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_mismatched_input_kind_is_refused(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>A window model claiming to take single days is rejected at load time rather than blowing up part-way through a run.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_degenerate_threshold_is_refused(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>A cutoff of exactly 1 is refused, since it means the search found nothing and every flagged-row count would be empty.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_missing_keys_are_named(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>A file missing most of its fields fails with those fields listed, not with a bare key error.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_b7_window_length_is_taken_from_the_caller_not_the_file(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>The 7-day control claims 28 days on disk; this confirms the loader believes the caller and the weights instead of the stamp.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCheckpointLoading</span><span class="path">def test_headline_pair_refuses_mismatched_seeds(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>Loading both models for one seed returns exactly those two, with the window model reporting the full 28 days of context.</p>
+</div>
+<h3>zone 4 · the cutoff</h3>
+<p>The distinction the whole stage rests on: applied, never re-chosen.</p>
+<div class="card">
+  <h3><span class="stage">TestThresholdIsApplied</span><span class="path">def test_describe_at_threshold_uses_the_value_given(self) -&gt; None</span></h3>
+  <p>Handed a cutoff a search would never have picked, it reports what that cutoff actually does instead of quietly improving on it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestThresholdIsApplied</span><span class="path">def test_no_rows_above_the_threshold_is_zero_not_a_crash(self) -&gt; None</span></h3>
+  <p>A cutoff nothing reaches yields zeros rather than a division by zero.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestThresholdIsApplied</span><span class="path">def test_scoring_never_reselects(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>The cutoff that comes out of scoring is the one that went in.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestThresholdIsApplied</span><span class="path">def test_score_runs_a_real_model_through_the_training_path(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>An actual saved model is loaded and run end to end, producing one finite probability per row.</p>
+</div>
+<h3>zone 5 · the latency arithmetic</h3>
+<p>The numbers the project's central claim is built on, checked against a window whose answer is known by construction.</p>
+<div class="card">
+  <h3><span class="stage">TestAttackWindows</span><span class="path">def test_window_is_derived_from_the_labels(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>Only the two insiders in this split get windows, and the window length matches the planted attack exactly.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestAttackWindows</span><span class="path">def test_benign_split_has_no_windows(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>A split holding only ordinary people produces nothing rather than an error.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestDetections</span><span class="path">def test_first_detection_day_is_one_based_from_the_window_start(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>With the signal peaking on the attack's opening day, a low cutoff has to report day 1 exactly.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestDetections</span><span class="path">def test_an_undetectable_insider_is_counted_not_dropped(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>With a cutoff nothing can reach, the insiders still appear in the results marked never-caught, instead of quietly leaving the denominator and flattering every rate computed from it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestDetections</span><span class="path">def test_summary_separates_never_caught_from_the_median(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>When nobody is caught, the summary reports two insiders, none detected and no median — rather than a median over an empty set.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPositionBuckets</span><span class="path">def test_buckets_partition_positions_without_overlap(self) -&gt; None</span></h3>
+  <p>Every position from 1 to 59 lands in exactly one range: no gaps, no double counting.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPositionBuckets</span><span class="path">def test_bucket_totals_equal_the_attack_days(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>The ranges between them account for every attack day in the split and no more.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPositionBuckets</span><span class="path">def test_verdict_reads_a_climbing_profile_as_persistence(self) -&gt; None</span></h3>
+  <p>A profile where late recall is nine times early recall is read as spotting an ongoing campaign, and the licensed wording says so.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPositionBuckets</span><span class="path">def test_verdict_reads_a_flat_early_profile_as_onset(self) -&gt; None</span></h3>
+  <p>Flat recall with a median in the first couple of days is read as catching the attack at its start.</p>
+</div>
+<h3>zone 6 · the false-positive inspection</h3>
+<p>That the ranking is read the way the brief asks, and that the conclusion can go either way.</p>
+<div class="card">
+  <h3><span class="stage">TestFalsePositives</span><span class="path">def test_rank_is_over_all_rows_not_only_benign_ones(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>The ranks attached to the inspected rows increase and come from the full ordering, not from a benign-only one.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestFalsePositives</span><span class="path">def test_all_eighteen_z_scores_are_reported(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>Every inspected row carries all eighteen behaviours by name, not just the loud ones.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestFalsePositives</span><span class="path">def test_reading_classifies_benign_users_as_a_real_failure_mode(self) -&gt; None</span></h3>
+  <p>Rows belonging to people with no attack at all produce the unflattering sentence, not the excusing one.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestFalsePositives</span><span class="path">def test_reading_calls_precision_a_lower_bound_when_labels_are_narrow(self) -&gt; None</span></h3>
+  <p>Rows belonging to insiders, inside or near their window, produce the sentence saying the reported precision understates the model.</p>
+</div>
+<h3>zone 7 · the guards</h3>
+<p>Each check tested twice — once on clean data, once on a deliberately corrupted version.</p>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_disjointness_passes_on_a_clean_split(self, corpus: Corpus) -&gt; None</span></h3>
+  <p>A properly separated split passes.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_disjointness_catches_a_test_user_in_train(self, corpus: Corpus, tmp_path: Path) -&gt; None</span></h3>
+  <p>Adding one test person to the training list fails the check, and their identifier appears in the message.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_standardiser_guard_passes_when_the_checkpoint_matches(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>A matching scaling passes, and the message contains the actual numbers — which is what the brief asked for, rather than a bare verdict.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="stage">TestGuards</span><span class="path">def test_standardiser_guard_catches_a_refit_on_evaluation_rows(self, corpus: Corpus, tmp_path: Path) -&gt; None</span></h3>
+  <p>Statistics fitted on the very rows about to be scored — the exact leak this stage exists to prevent — are caught.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_standardiser_guard_catches_two_models_scaled_differently(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>Two models carrying different scalings fail, because they were then never being compared on the same data.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_identical_rows_catches_a_different_row_set(self, corpus: Corpus, standardiser: Standardiser) -&gt; None</span></h3>
+  <p>A split compared against itself passes; the same split against a subset fails.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_threshold_guard_reads_the_applied_value(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>The applied cutoff passes and appears at full precision in the message.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_threshold_guard_catches_a_swapped_value(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>Changing the applied cutoff behind the file's back fails the check.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_finite_and_baseline_guards(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>On an ordinary scoring run, the no-NaN and better-than-chance checks both pass.</p>
+</div>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="stage">TestGuards</span><span class="path">def test_leakage_ceiling_fails_on_a_perfect_ranking(self, corpus: Corpus, standardiser: Standardiser, tmp_path: Path) -&gt; None</span></h3>
+  <p>A model whose scores are just the labels is rejected as leakage &mdash; the check has to fire on exactly the result the project would most like to be true.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestGuards</span><span class="path">def test_leakage_ceiling_passes_on_an_ordinary_score(self) -&gt; None</span></h3>
+  <p>A better-than-chance but unremarkable ranking passes, so the ceiling is not simply always firing.</p>
+</div>
+<h3>zone 8 · ordering and the audit trail</h3>
+<p>That the test split cannot be opened early, or twice, without leaving a record.</p>
+<div class="card">
+  <h3><span class="stage">TestPhaseOrdering</span><span class="path">def test_test_split_cannot_be_opened_before_phase_1(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>Without the validation artifact on disk, opening the test split raises.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPhaseOrdering</span><span class="path">def test_phase_1_artifact_satisfies_the_precondition(self, tmp_path: Path) -&gt; None</span></h3>
+  <p>Once that file exists the precondition is met and its path comes back.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPhaseOrdering</span><span class="path">def test_second_opening_is_refused_without_a_reason(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -&gt; None</span></h3>
+  <p>A second real opening raises, pointing at the timestamp of the first.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPhaseOrdering</span><span class="path">def test_forced_reopening_is_recorded(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -&gt; None</span></h3>
+  <p>A forced second opening is allowed, but both entries end up in the audit file with the reason and the forced flag recorded.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestPhaseOrdering</span><span class="path">def test_a_sample_run_does_not_burn_the_real_test_split(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -&gt; None</span></h3>
+  <p>A smoke-test opening doesn't count against the real one, so rehearsing the run costs nothing.</p>
+</div>
+<h3>zone 9 · the report builder</h3>
+<p>That missing inputs produce visible holes, plus the hand-written artifacts that make testing it possible.</p>
+<div class="card">
+  <h3><span class="stage">TestReport</span><span class="path">def test_optional_sections_say_not_run_rather_than_disappearing(self) -&gt; None</span></h3>
+  <p>With the optional inputs absent the headings are still there with &ldquo;not run&rdquo; underneath — a hole a reader can see beats a report that merely looks complete.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestReport</span><span class="path">def test_random_baseline_appears_beside_the_headline_auprc(self) -&gt; None</span></h3>
+  <p>The coin-flip figure appears in the text, since the headline score means nothing without it.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestReport</span><span class="path">def test_sample_reports_are_stamped_as_meaningless(self) -&gt; None</span></h3>
+  <p>A report built from smoke-test artifacts carries the warning banner.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _agg(mean: float, std: float = 0.0) -&gt; dict[str, float]</span></h3>
+  <p>Builds the small mean/spread/count dictionary the report expects, for the fake artifacts below.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _minimal_phase2() -&gt; dict[str, object]</span></h3>
+  <p>A hand-written test-phase artifact with plausible numbers, so the report builder can be exercised without running anything.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">_minimal_phase2</span><span class="path">def head(model: str, auprc: float, params: int, days: int) -&gt; dict[str, object]</span></h3>
+  <p>Fills in one model's headline block inside that fake artifact.</p>
+</div>
+<div class="card">
+  <h3><span class="path">def _minimal_phase1() -&gt; dict[str, object]</span></h3>
+  <p>A hand-written validation artifact, deliberately missing the false-positive summary so the report's fallback wording gets exercised.</p>
+</div>
+<h3>zone 10 · the control's premise</h3>
+<p>The one assumption the capacity control depends on, checked directly.</p>
+<div class="card">
+  <h3><span class="stage" style="border-color:var(--accent);color:var(--accent)">&starf;</span><span class="stage">TestCapacityControl</span><span class="path">def test_shortening_the_window_does_not_change_the_parameter_count(self) -&gt; None</span></h3>
+  <p>7, 14 and 28 days give identical parameter counts. The entire control rests on this: if it were false, the shorter window would vary two things at once and separate nothing.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCapacityControl.test_shortening_the_window_does_not_change_the_parameter_count</span><span class="path">def count(days: int) -&gt; int</span></h3>
+  <p>Adds up the trainable numbers in a Model B built for a given window length.</p>
+</div>
+<div class="card">
+  <h3><span class="stage">TestCapacityControl</span><span class="path">def test_seven_is_the_floor(self) -&gt; None</span></h3>
+  <p>A 6-day window raises, because the two dilated layers reach back exactly 7 days and the second would be convolving over padding.</p>
+</div>
+
+<h2><span class="n">17</span>The five functions to actually remember</h2>
+
+<p>Not the five most complicated. The five where, if you misunderstand what they do, you misunderstand what the project measured.</p>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b><code>corpus.Corpus.build</code></b>
+    <p>Everything downstream is these rows. It takes the scaling as an <em>argument</em> rather than computing one &mdash; there is deliberately no path in the module that could fit one on the rows it is about to score &mdash; and it re-derives the dates and raw numbers independently of the tensors, then refuses to continue if the two disagree about who owns which row. That refusal is what makes every latency figure a fact rather than a plausible table.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b><code>checkpoints.load_checkpoint</code></b>
+    <p>The brief says the losing v2 tuning attempt must not appear in any comparison. This function makes that survive a tired evening: the filename does not match the pattern, so the path does not load. A rule enforced by a regular expression outlasts a rule enforced by remembering it.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b><code>scoring.describe_at_threshold</code></b>
+    <p>The whole difference between a result and a leak, sitting in one function name. It is <em>handed</em> a cutoff and reports what that cutoff does. Its counterpart in the training code searches for the cutoff that flatters the numbers most, and is pointedly not imported here. Confusing the two produces a better-looking figure and no error at all.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b><code>guards.not_suspiciously_good</code></b>
+    <p>Fails the run when a model scores <em>too well</em>. At a 0.4% positive rate, average precision above about 0.95 means a split applied by row instead of by person, or a label leaking into a feature &mdash; not a triumph. It is the only check in the package that fires on the number the project would most like to be true, which is exactly why it is enforced in code and exits non-zero.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <b><code>latency.read_verdict</code></b>
+    <p>Decides which of two claims the project may make: that it detects insiders at onset, or that it notices exfiltration campaigns already under way. Its thresholds sit as constants immediately above it, fixed before any of the numbers existed, so the conclusion is a consequence of the measurement rather than a description written to fit it.</p>
+  </div>
+</div>
+
+<div class="note good"><b>The package in one sentence.</b> <code>corpus</code> gets the rows, <code>checkpoints</code> gets the models, <code>scoring</code> multiplies them together &mdash; and <em>everything else</em>, the guards, the latency analysis, the false-positive inspection and the phase ordering, exists to establish that the answer means what it appears to mean.</div>
+
+<footer>
+InnerSight &middot; Stage 7 &middot; <code>evaluation/</code> &mdash; 16 files, 194 functions. Written from the source, not the docstrings.
+</footer>
+
+</div>
+</body>
+</html>

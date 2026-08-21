@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 5 (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 5 · defence preparation</p>
+  <h1>The fair fight, and the number Model B has to beat</h1>
+  <p class="sub">Stage 5 is two jobs in one. It builds the machinery both models share — so that the comparison at the end measures the one thing it is supposed to measure — and it trains the first of the two. What came out, what it means, and the answers to the questions you are likely to be asked. Written to be read out loud.</p>
+</header>
+
+<div class="callout">
+  <p><strong>Say this first, if you say nothing else.</strong></p>
+  <p>“The whole project is one comparison: two networks, identical data, identical settings, and <em>one</em> difference — Model A sees a single day, Model B sees the twenty-eight days ending on that day. If anything else differs between them, the result means nothing. Stage 5 is where I made sure nothing else differs, and then trained Model A to find out what one day is worth.”</p>
+  <p>“It is worth about thirty-five times random guessing. That is the number Model B has to beat, and it is measured, not assumed.”</p>
+</div>
+
+<h4>Words used in this document</h4>
+<table>
+  <tr><td class="mono">z-score</td><td>Stage 3's output. How unlike their own past a person's day was, in standard deviations. −0.6 is a quiet day; +21 is the most abnormal day of that person's year.</td></tr>
+  <tr><td class="mono">positive</td><td>A day that falls inside a labelled attack window. 1,892 of 464,687 rows — 0.407%.</td></tr>
+  <tr><td class="mono">AUPRC</td><td>Average precision. Roughly: as you walk down the ranked list of days, how much of what you pick up is real. The headline metric here.</td></tr>
+  <tr><td class="mono">AUROC</td><td>Pick one attack day and one ordinary day at random; the chance the model scores the attack day higher. Reported because the literature uses it — see §6.</td></tr>
+  <tr><td class="mono">P@50</td><td>Of the 50 highest-scoring days, the fraction that were real. What an analyst with a finite queue actually experiences.</td></tr>
+  <tr><td class="mono">seed</td><td>One draw of the user split. Everything here is reported over three of them, because one is a lottery ticket.</td></tr>
+</table>
+
+<h2>1 — What Stage 5 does</h2>
+
+<p>Stages 1 to 4 produced a table: 464,687 person-days, eighteen z-scores each, a label saying whether that day was inside an attack, and a split assigning every person to train, validation or test. Nothing has been learned from it yet.</p>
+
+<p>Stage 5 does four things:</p>
+
+<ul>
+  <li><b>Decides exactly which rows get scored</b>, once, for both models — the decision that makes the final comparison honest or worthless.</li>
+  <li><b>Prepares the numbers</b> — clip the extremes, then rescale each feature across the population.</li>
+  <li><b>Builds a training loop that does not know which model it is training</b>, so Stage 6 can hand it a completely different architecture and change nothing else.</li>
+  <li><b>Trains Model A</b> — one day in, one number out — across three seeds, and reports what it can do.</li>
+</ul>
+
+<div class="note"><b>And one thing it deliberately does not do.</b> It never opens the test split. Not once, not to peek. Stage 5 trains on train, selects on validation, reports validation. The test users are read out of the split file only in order to be ignored. Test is opened a single time, in Stage 7, for both models together — which is also why there is exactly one place in the whole codebase that reads it.</div>
+
+<h2>2 — The real job: making the fight fair</h2>
+
+<p>It is tempting to think of Stage 5 as “the training code”. It is not. The training loop is about eighty lines and there is nothing clever in it. The part that took the thinking is a set of three decisions that all have the same shape: <b>get them wrong and you still get a number, a plausible one, with no error message anywhere.</b></p>
+
+<h3>2.1 — Rule one: one row set, for both models, for training <em>and</em> evaluation</h3>
+
+<p>Model B cannot score a person's first 27 days. There is no 28-day window ending there. So the obvious thing is to let Model A score them and let Model B skip them.</p>
+
+<div class="callout">
+  <p><strong>That obvious thing would have handed Model B roughly 6% of its result for free.</strong></p>
+  <p>The rows Model B cannot see are the warm-up period — Stage 3 blanks everyone's first 30 days, because a baseline built from three days is fiction, so every feature on those rows is exactly zero. They are the easiest negatives in the entire table.</p>
+  <p>Remove 27,000 easy negatives and the positive rate rises from <b>0.407% to 0.432%</b>. AUPRC rises with the positive rate mechanically — that is what the random baseline <em>is</em>. Model B would have scored about 6% higher than Model A while being no better at anything.</p>
+</div>
+
+<p>So the rule is written once and applied everywhere: <b>within each person, only days from their 28th onward are ever predicted</b> — by either model, for training and for evaluation alike.</p>
+
+<pre><code>rows                        464,687
+masked out as warm-up        27,000   (5.8%)   = 1,000 people × 27 days
+positives lost to the mask         0   ← measured on every run, not assumed</code></pre>
+
+<p>Zero positives lost, and that is not luck: the earliest attack window in r4.2 opens on 10 June 2010, about 160 days into everybody's record. The code measures and prints it on every run anyway, because “it cannot happen” is exactly the kind of statement that stops being true when a dataset is regenerated.</p>
+
+<div class="note good"><b>The distinction to have ready.</b> The mask says which rows are <em>predicted</em>, not which rows are <em>readable</em>. Model B still reads the 27 days before each target to build its window — they are simply never themselves a thing it is asked about. That is why the code keeps each person's whole history in one array and carries positions into it, rather than pre-cutting a matrix of target rows.</div>
+
+<h3>2.2 — Rule two: clip the extremes <em>before</em> rescaling, not after</h3>
+
+<p>Stage 3's z-scores reach <b>716</b>. The typical absolute z-score is <b>0.42</b>. That is a single input roughly seventeen hundred times the normal magnitude.</p>
+
+<p>The instinct is to fix this by standardising — subtract the mean, divide by the standard deviation, everything comes out around 1. It does not work, and the reason is worth being able to say:</p>
+
+<div class="note bad"><b>Standardising a heavy tail makes it worse, not better.</b> An outlier at 716 dominates that feature's standard deviation. Divide by that inflated number and every ordinary day in the feature is squashed toward zero — you have not removed the outlier, you have deleted everything else. So the clip comes first, at a fixed ±10 decided in advance, identical for train, validation and test.</div>
+
+<p>It touches 2,138 rows — <b>0.46%</b> of the table. The defence is one sentence: <em>beyond ten standard deviations from a person's own baseline, the exact value carries no further information; it is equally off the charts.</em></p>
+
+<h3>2.3 — Rule three: fit the scaler on training rows only</h3>
+
+<p>Each of the eighteen features has its own typical magnitude, so the first layer of the network is handed a badly-conditioned problem unless they are put on a common scale. That rescaling is fitted on the training rows and then applied, unchanged, to validation and test.</p>
+
+<div class="card">
+<h4>This is not a second helping of Stage 3, and the difference is a likely question</h4>
+<table>
+  <tr><th></th><th>Stage 3</th><th>Stage 5</th></tr>
+  <tr><td><b>Normalises across</b></td><td>time, within a person</td><td>the population, within a feature</td></tr>
+  <tr><td><b>Answers</b></td><td>“is this unusual <em>for them</em>?”</td><td>“are these eighteen inputs on comparable scales?”</td></tr>
+  <tr><td><b>Fitted on</b></td><td>that person's own past</td><td>the training split's rows</td></tr>
+</table>
+<p>They look similar and they are orthogonal. Merging them would make it impossible to say which normalisation the models are benefiting from — which is precisely why Stage 3 was kept separate.</p>
+</div>
+
+<p>Fitting on all rows instead would leak validation statistics into training. Nothing would complain; the number would simply be slightly, unaccountably better. There is a test for it that builds a validation split fifty times larger and shifted by a thousand, and asserts the fitted statistics do not move at all.</p>
+
+<div class="say">
+  <span class="lbl">The line to use if asked why the order matters</span>
+  <p>“Load, clip, mask, split, fit on train, apply, build tensors — in exactly that order. Swap any two of those and you still get a trained model and a plausible number. Clip after standardising and you have rescaled by a deviation the outlier inflated. Fit before splitting and you have leaked. Mask after fitting and your scaler describes twenty-seven thousand rows that no model ever sees. None of those three raises an error. That is why the order lives in one function and the tests check it.”</p>
+</div>
+
+<h2>3 — The loss: the most likely way this project fails</h2>
+
+<p>Positives are 0.4% of the data. A batch of 512 days contains, on average, <b>2.2</b> attack days.</p>
+
+<p>Train that with an ordinary loss and roughly 510 examples say “predict lower” while two say “predict higher”. The cheapest way to reduce the loss is to output near-zero for everything. The model converges on <em>“nobody is an insider”</em> — which is 99.6% accurate and completely worthless.</p>
+
+<div class="note bad"><b>And the loss curve looks perfectly healthy the whole time.</b> There is no error, no warning, no missing value. Training loss goes down, validation loss goes down, everything looks like a model learning. It is the single most likely way this project produces a beautiful graph and nothing else.</div>
+
+<p>The fix is to weight the rare class by how rare it is — <code>n_negatives / n_positives</code>, computed from the <b>training split</b>, at training time, on every run:</p>
+
+<pre><code>seed  42    pos_weight = 229.7    [263,462 negatives / 1,147 positives]
+seed 123    pos_weight = 225.3    [260,841 negatives / 1,158 positives]
+seed 456    pos_weight = 232.1    [259,723 negatives / 1,119 positives]</code></pre>
+
+<p>Three different numbers, because three different training splits. Hardcoding one value, or computing it from the whole table, would put the test set's class balance into the loss function — leakage, and of a kind nothing will ever flag.</p>
+
+<div class="note"><b>A detail worth knowing before it is asked.</b> The brief predicted this weight would be about 244; it came out about 230. That is correct and not a discrepancy: it is computed on the rows that are actually scored, <em>after</em> the warm-up mask, where the training positive rate is 0.43% rather than 0.41%. If a later stage ever prints 244, the mask is not being applied before the weight.</div>
+
+<h4>How we would know if it happened anyway</h4>
+
+<p>Every epoch prints five numbers, not one, and the last two exist solely to catch this:</p>
+
+<pre><code>epoch   train_loss   val_loss   val_AUPRC   val_P@50   mean_predicted_prob   distinct</code></pre>
+
+<p>A collapsed model gives every row essentially the same score. So the code counts <b>distinct predicted values</b>. In the real run it saw <b>84,067 to 87,393</b> distinct scores across 85,000–88,000 validation rows: essentially every day got its own number. A collapse would show single or double digits.</p>
+
+<div class="note good"><b>The ablation.</b> Rather than assert any of this, the code has a <code>--no-pos-weight</code> switch that trains the identical model on the identical rows with a plain unweighted loss, writing to separate output files so it cannot overwrite the real result. It is the difference between “weighting the loss matters” and “weighting the loss matters, and here is the table”. <b>This is the one measurement still outstanding at the time of writing</b> — one command, about ninety seconds.</div>
+
+<h2>4 — Model A, and why it is deliberately tiny</h2>
+
+<pre><code>18 inputs  →  32 hidden units (ReLU)  →  1 output        641 parameters</code></pre>
+
+<p>The output is a raw score, not a probability — the sigmoid lives inside the loss function, and putting a second one in the model would squash the output twice, shrink the gradients and leave it barely able to train, with no error and a merely disappointing curve.</p>
+
+<div class="callout">
+  <p><strong>The instinct to make the network bigger is backwards here, and this is a good thing to be asked.</strong></p>
+  <p>There are about 1,140 attack days in the training split and 641 parameters — roughly <b>1.8 positive examples per parameter</b>. That ratio is healthy. Double the network and the model has enough capacity to memorise those 1,140 rows individually, at which point it generalises to nothing and the validation score gets <em>worse</em> while the training loss gets better.</p>
+  <p>Model A is also the control arm. Its job is not to be the best possible one-day model; it is to be an honest measurement of what one day is worth, so that whatever Model B gains is attributable to temporal context rather than to capacity.</p>
+</div>
+
+<h2>5 — The result</h2>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">0.151</div><div class="k">validation AUPRC (± 0.020)</div></div>
+  <div class="stat"><div class="v">0.0043</div><div class="k">random baseline</div></div>
+  <div class="stat"><div class="v">35×</div><div class="k">better than guessing</div></div>
+  <div class="stat"><div class="v">0.573</div><div class="k">precision @ 50 (± 0.115)</div></div>
+</div>
+
+<table>
+  <tr><th>Seed</th><th class="mono">AUPRC</th><th class="mono">× random</th><th class="mono">AUROC</th><th class="mono">P@10</th><th class="mono">P@50</th><th class="mono">best epoch</th></tr>
+  <tr><td>42</td><td class="num">0.1237</td><td class="num">29.1×</td><td class="num">0.9403</td><td class="num">0.60</td><td class="num">0.44</td><td class="num">16 of 23</td></tr>
+  <tr><td>123</td><td class="num">0.1687</td><td class="num">39.7×</td><td class="num">0.9544</td><td class="num">0.90</td><td class="num">0.56</td><td class="num">40 of 47</td></tr>
+  <tr><td>456</td><td class="num">0.1615</td><td class="num">36.9×</td><td class="num">0.9201</td><td class="num">0.90</td><td class="num">0.72</td><td class="num">29 of 36</td></tr>
+  <tr class="hi"><td><b>mean ± sd</b></td><td class="num"><b>0.1513 ± 0.0197</b></td><td class="num"><b>35×</b></td><td class="num"><b>0.9383 ± 0.0141</b></td><td class="num"><b>0.800 ± 0.141</b></td><td class="num"><b>0.573 ± 0.115</b></td><td></td></tr>
+</table>
+
+<p>Three seeds, reported as mean and spread, because Stage 4 measured that <em>which</em> insiders land in which split moves the positive counts substantially. One run is one draw of that lottery.</p>
+
+<h2>6 — The same model, three honest descriptions of it</h2>
+
+<div class="callout">
+  <p><strong>Show this table and stop talking for a second.</strong></p>
+  <p>These are three ways of describing <b>exactly the same set of predictions</b>, from seed 42, on the same 85,191 validation days containing 362 real attack days.</p>
+</div>
+
+<table>
+  <tr><th>How you look at it</th><th>What you see</th><th>What it means</th></tr>
+  <tr><td><b>AUROC</b></td><td class="mono">0.94</td><td>Pick a random attack day and a random ordinary day: it scores the attack day higher 94 times out of 100. <em>Sounds nearly solved.</em></td></tr>
+  <tr class="hi"><td><b>AUPRC</b></td><td class="mono">0.12</td><td>Same predictions. Against a random baseline of 0.004 — thirty times better than chance, and nowhere near solved.</td></tr>
+  <tr><td><b>The analyst's queue</b></td><td class="mono">1,168 flagged<br>143 real<br>1,025 false<br>219 attacks missed</td><td>At the chosen threshold, over a 500-day period across 200 people: about <b>two alerts a day</b>, of which roughly <b>one in eight</b> is real, and it still misses 60% of the attack days.</td></tr>
+</table>
+
+<div class="note bad"><b>Why AUROC flatters so badly here.</b> 99.6% of the days are ordinary. A model gets enormous credit under AUROC simply for correctly ignoring them, and there are 85,000 of them to be right about. AUPRC only ever asks about the part of the ranking you would actually look at. On balanced data the two metrics broadly agree; at 0.4% positives they tell almost opposite stories, and this table is the demonstration.</div>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“The same predictions score 0.94 by the metric most insider-threat papers report, and 0.12 by the one that reflects what an analyst experiences. I report both, and I lead with the second. If I had reported only the AUROC I could have written that this project detects insider threats with 94% accuracy — and it would have been technically true and completely misleading.”</p>
+</div>
+
+<h4>And the one genuinely encouraging number</h4>
+
+<p><b>P@50 = 0.573.</b> Take the fifty highest-scoring days out of eighty-five thousand and about twenty-nine of them are real attack days. That is a usable queue built by a 641-parameter network that has never seen more than one day at a time. It is the number to lead with when asked whether any of this works.</p>
+
+<h2>7 — The finding nobody planned: the threshold is the unstable part</h2>
+
+<p>Per-scenario recall, at each seed's own chosen threshold:</p>
+
+<table>
+  <tr><th></th><th class="mono">seed 42</th><th class="mono">seed 123</th><th class="mono">seed 456</th><th class="mono">pooled</th></tr>
+  <tr><td>scenario 1 — leaving with data</td><td class="num">12 / 33</td><td class="num">21 / 43</td><td class="num">16 / 45</td><td class="num"><b>49 of 121 (40.5%)</b></td></tr>
+  <tr class="hi"><td>scenario 2 — sabotage / job-hunting</td><td class="num">130 / 325</td><td class="num">65 / 328</td><td class="num">30 / 337</td><td class="num"><b>225 of 990 (22.7%)</b></td></tr>
+  <tr><td>scenario 3 — the quiet two-day theft</td><td class="num">1 / 4</td><td class="num">1 / 4</td><td class="num">2 / 4</td><td class="num"><b>4 of 12 (33.3%)</b></td></tr>
+  <tr><td><b>chosen threshold</b></td><td class="num">0.9582</td><td class="num">0.9739</td><td class="num">0.9939</td><td></td></tr>
+  <tr><td><b>days flagged</b></td><td class="num">1,168</td><td class="num">481</td><td class="num">107</td><td></td></tr>
+</table>
+
+<p>Scenario 2 recall reads <b>40% → 20% → 9%</b>. It looks like the model falling apart. It is not.</p>
+
+<div class="callout">
+  <p><strong>The ranking barely moved. The <em>threshold</em> moved.</strong></p>
+  <p>AUPRC across those same three runs is 0.124, 0.169, 0.162 — a narrow band. What jumped is where the cut was placed: 0.958, then 0.974, then 0.994. Choosing a threshold by maximising F1 at 0.4% positives means searching a very flat, very noisy surface, so the winning point hops around even when the underlying model does not.</p>
+  <p>Seed 42 produces a system that raises two alerts a day and catches 40% of attack days at 12% precision. Seed 456 produces one that raises an alert every five days and catches 12% at 45% precision. <b>Same architecture, same settings, same data — two entirely different products,</b> and the difference is one number chosen on a noisy curve.</p>
+</div>
+
+<div class="note"><b>The reporting rule this forces, and it applies to Stage 7 as well.</b> AUPRC is stable across seeds and may be quoted as mean ± standard deviation. Recall-at-a-threshold is not, and a single-seed per-scenario recall is a statement about the threshold lottery rather than about the model. Per-scenario results are therefore reported <em>pooled across all three seeds, as counts</em>.</div>
+
+<p>Scenario 3 makes the same point in miniature. Every validation split contains exactly four scenario-3 attack days — arithmetic, not luck, because all ten of those insiders have precisely two attack days each. Recall on four rows has five possible values. “2 of 4 attack days” is honest; “50%” is a percentage doing an impression of a measurement.</p>
+
+<h2>8 — What this predicts about Model B</h2>
+
+<p>Model A's per-scenario pattern is the interesting part, because the three attack types are not equally suited to a one-day model.</p>
+
+<ul>
+  <li><b>Scenario 1</b> (40.5%) — someone leaving the company who uploads data on the way out. Often a single loud day. A one-day model can see this.</li>
+  <li><b>Scenario 2</b> (22.7%) — long, gradual behaviour change over weeks; the median window is around eight weeks. <b>This is precisely what a one-day model cannot see</b>, because each individual day is only mildly odd. It also supplies about 88% of all positives, so it dominates any unweighted average.</li>
+  <li><b>Scenario 3</b> (33.3%, 4 of 12) — two days, quiet, deliberate. Very few rows; treat any percentage here with suspicion.</li>
+</ul>
+
+<div class="note good"><b>The specific, falsifiable prediction to make before Stage 6 runs.</b> If temporal context is worth anything, the gain should show up <em>disproportionately in scenario 2</em> — the slow drift that only becomes visible as a trend across a month. If Model B improves scenario 1 and leaves scenario 2 where it is, then the 28-day window is adding capacity rather than context, and the honest conclusion is that the thesis was not supported. Writing that down in advance is what makes the eventual answer worth something.</div>
+
+<h2>9 — Weaknesses, said before anyone asks</h2>
+
+<div class="card">
+<h4>The threshold selection is the weakest link</h4>
+<p>Covered in §7. F1-maximisation on this class balance is genuinely noisy. A stronger design would fix the operating point by budget — “the 500 highest-scoring days” — which is both more stable and closer to how an analyst team actually works. It is the first thing I would change with more time.</p>
+
+<h4>Seed 42 probably stopped a little early</h4>
+<p>Its best epoch was 16 and it stopped at 23, while the other two were still improving at 40 and 29. Its early AUPRC curve was noisy — 0.072 at epoch 4, then 0.052 at epoch 5 — so a patience of seven likely cut it short, which is the most probable reason it is the lowest of the three. Left as is deliberately: the rule is identical for both models, so it cannot bias the comparison it exists to serve.</p>
+
+<h4>The labels are windows, not events</h4>
+<p>Every day inside an attack window is labelled positive, including days the insider did nothing unusual. Some of what Model A “misses” is days that carry no signal to find. This inflates the apparent miss rate and there is no way to fix it without re-labelling by hand.</p>
+
+<h4>One dead feature</h4>
+<p><code>large_attachment_count</code> is identically zero throughout r4.2. It survives into the model as a permanently silent input. Kept because the definition is right and the release simply lacks the data; the scaler handles it explicitly rather than dividing by nothing.</p>
+
+<h4>Validation is being used twice</h4>
+<p>It selects the stopping epoch and it selects the threshold, and then it is reported. That is mildly optimistic, and it is exactly why the test set exists and stays sealed until Stage 7. The honest framing: every number in this document is a <em>selection</em> number, not a final one.</p>
+</div>
+
+<h2>10 — The check to run in front of the examiner</h2>
+
+<pre><code>python -m pytest modeling/ -q          →  28 passed in ~5s
+python -m modeling.run_model_a         →  3 seeds, full data, ~2 minutes</code></pre>
+
+<p>The first block it prints is the one to point at, because every line of it is a way the project could have quietly failed:</p>
+
+<pre><code>rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 264,609 target rows, 1,147 positive (0.4335%)
+val:   200 users,  85,191 target rows,   362 positive (0.4249%)
+pos_weight (train only) = 229.7  [263,462 negatives / 1,147 positives]
+random-baseline AUPRC on validation = 0.00425</code></pre>
+
+<div class="note good"><b>And one guard that would refuse a good-looking result.</b> If validation AUPRC ever came back above 0.95, the run stops and exits with an error code instead of writing a results file. At 0.4% positives with labels this coarse, near-perfect ranking does not mean success — it means leakage, most likely a split applied by row instead of by person. The program is written to treat its own best-ever number as a bug.</div>
+
+<h2>11 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Your AUPRC is 0.15. That is not very good, is it?</div><div class="a">
+<p>Against a random baseline of 0.0043, so it is about thirty-five times better than chance — and the more useful way to say it is that of the fifty highest-scoring days out of eighty-five thousand, roughly twenty-nine are real attack days.</p>
+<p>But I would not argue that 0.15 is good. Model A is the control arm. It sees one day at a time, and two of the three attack types in this dataset are defined by behaviour that plays out over weeks. The number I actually care about is the <em>difference</em> between this and Model B, because that difference is the thing the project set out to measure. A high number here would arguably have been a worse result — it would have meant temporal context had nothing to add.</p></div></div>
+
+<div class="qa"><div class="q">Why not just report the AUROC of 0.94?</div><div class="a">
+<p>Because it would be misleading, and I can show why with the same predictions. 99.6% of days are ordinary. AUROC gives enormous credit for correctly ignoring eighty-five thousand of them. AUPRC only asks about the part of the ranking anyone would look at.</p>
+<p>Concretely: that 0.94 model, at its chosen threshold, flags 1,168 days of which 143 are real. Roughly one alert in eight. Both numbers are in the report, and I lead with the honest one.</p></div></div>
+
+<div class="qa"><div class="q">Why drop 27,000 rows? Isn't more data better?</div><div class="a">
+<p>Not when only one of the two models can use them. Model B has no 28-day window before someone's 28th day, so if Model A scored those rows and Model B did not, the two would be measured on different data and the comparison would be meaningless.</p>
+<p>And the direction of the bias is not neutral. Those rows are Stage 3's warm-up, where every feature is exactly zero — the easiest negatives in the table. Dropping them lifts the positive rate from 0.407% to 0.432%, which lifts AUPRC mechanically. Model B would have collected about 6% for nothing. It costs 27,000 rows and, measured on every run, zero positives.</p></div></div>
+
+<div class="qa"><div class="q">You standardised in Stage 3 and again in Stage 5. Isn't that doing the same thing twice?</div><div class="a">
+<p>They are orthogonal. Stage 3 normalises across <em>time within a person</em> — is this unusual for them. Stage 5 normalises across <em>the population within a feature</em> — are these eighteen inputs on scales the first layer can work with.</p>
+<p>They are kept in separate stages on purpose, so it stays possible to say which one the models are benefiting from. And the Stage 5 one is fitted on the training rows only, then applied unchanged to validation and test; fitting it on everything would leak, and there is a test that would catch that.</p></div></div>
+
+<div class="qa"><div class="q">How do you know the model didn't just learn to say “no” to everything?</div><div class="a">
+<p>Because that is the most likely failure mode at this class balance, so it is measured rather than hoped for. Every epoch logs the mean predicted probability and the number of <em>distinct</em> predicted values. A collapsed model gives nearly every row the same score.</p>
+<p>The real run produced 84,000 to 87,000 distinct scores across 85,000 to 88,000 validation rows — essentially every day got its own number. There is also a guard that warns automatically if the count falls below a floor, and a test that feeds a deliberately degenerate model through the whole loop to prove the guard actually fires. Testing the alarm, not just the building.</p></div></div>
+
+<div class="qa"><div class="q">Your scenario-2 recall is 40%, then 20%, then 9%. Which is it?</div><div class="a">
+<p>All three, and the spread is the finding. Across those same three runs the AUPRC is 0.124, 0.169 and 0.162 — a narrow band — so the model's ranking is stable. What moves is the threshold: 0.958, 0.974, 0.994, chosen by maximising F1 on a very flat surface at 0.4% positives.</p>
+<p>So I report AUPRC as mean ± standard deviation, and per-scenario results pooled across all three seeds as counts — 225 of 990 attack days. Quoting one seed's per-scenario recall would be quoting the threshold lottery. It is also the first thing I would change with more time: fix the operating point by alert budget instead, which is both more stable and closer to how an analyst team works.</p></div></div>
+
+<div class="qa"><div class="q">Why three seeds? Why not just run it once?</div><div class="a">
+<p>Because Stage 4 measured that the split alone moves the numbers a great deal — scenario-1 test positives swing from 32 to 56 across these three seeds, a 75% range, before any model exists. Attack windows differ enormously in length, so <em>which</em> insiders land in which split matters.</p>
+<p>One run is one draw of that lottery. Generating several and keeping the tidiest would be selection on the results; reporting the spread across all three is the honest version, and here the spread is itself informative — it is what revealed the threshold instability.</p></div></div>
+
+<div class="qa"><div class="q">What is the one thing most likely to be wrong with Stage 5?</div><div class="a">
+<p>The threshold selection, and I have said so in the write-up. Everything up to the ranking is tested and stable; the last step — converting a ranking into a yes/no decision — sits on a noisy surface and jumps between seeds.</p>
+<p>The thing I was <em>most</em> worried about was the class weighting failing silently and producing a beautiful loss curve attached to a model that says “no” to everyone. That one is now measured on every run rather than assumed, which is why the distinct-value count is in the per-epoch log.</p></div></div>
+
+<div class="qa"><div class="q">What has to be true for Stage 6's comparison to mean anything?</div><div class="a">
+<p>That the only difference between the two models is how many days each one sees. So the row set, the clipping, the scaler, the loss, the optimiser, the learning rate, the batch size, the stopping rule, the threshold procedure, the seeds and the hardware are all shared code, not shared intentions.</p>
+<p>Concretely, the training loop takes a model object and never inspects it — there is nothing in it that knows whether it is training a small network on one day or a convolutional one on twenty-eight. Stage 6 adds an architecture and an entry point. If it ever needed to edit the training loop, the two models would not have been trained identically and I would have to say so.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Stage 5 is mostly not about Model A. It is about making sure that when Model B arrives, the two of them differ in exactly one way. Three decisions carry that — one row set for both models, clip before you rescale, and fit the scaler on training data only — and all three share the property that getting them wrong produces a perfectly plausible number and no error at all. Model A then answers the question the project needed answered first: one day of a person's behaviour, scored against their own history, is worth about thirty-five times random guessing, and finds roughly twenty-nine real attack days in its top fifty. Whatever Model B adds to that is the measured value of remembering the previous month.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 5 · <code>modeling/</code> — the shared machinery and Model A.
+  Every number in this document was measured from the three-seed run on 8 August 2026, on validation data. The test split has not been opened.
+  The <code>--no-pos-weight</code> ablation is the one measurement still outstanding.
+</footer>
+
+</div>
+</body>
+</html>

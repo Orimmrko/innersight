@@ -21,7 +21,7 @@ Every stage writes a file; the next stage reads that file; nothing recomputes.
 | | Stage | Module | Writes |
 |---|---|---|---|
 | 0 | Skeleton & environment | `config.py`, `verify_setup.py` | this repo |
-| 1 | Extract | `extract.py` | `data/daily_counts.parquet` — user, day, 18 counts |
+| 1 | Extract | `extraction/` | `data/daily_counts.parquet` — user, day, 18 counts |
 | 2 | Label | `label.py` | adds `label`, `scenario` |
 | 3 | Baseline (z-scores) | `baseline.py` | `data/dataset.parquet` |
 | 4 | Split | `split.py` | `data/splits.json` |

@@ -1,0 +1,14 @@
+domain,list,status,hits_in_30_user_sample
+careerbuilder.com,job,in config,3347
+monster.com,job,in config,2927
+jobhuntersbible.com,job,in config,2185
+job-hunt.org,job,in config,2185
+indeed.com,job,in config,2183
+simplyhired.com,job,in config,2150
+craigslist.org,job,NOT in config,3855
+aol.com/jobs,job,NOT in config,2088
+linkedin.com,job,deliberately excluded,40446
+wikileaks.org,cloud,in config,7
+dropbox.com,cloud,in config,114
+mediafire.com,cloud,in config,340
+4shared.com,cloud,in config,1

@@ -1,6 +1,6 @@
-# Pinned from a clean resolve on 2026-08-07. Seven direct dependencies; their
-# transitive dependencies are left to the resolver so that the same file works
-# on macOS/arm64 and Linux.
+# Pinned from a clean resolve on 2026-08-07 (pytest added 2026-08-08). Direct
+# dependencies only; their transitive dependencies are left to the resolver so
+# that the same file works on macOS/arm64 and Linux.
 #
 # Explicitly NOT needed: xgboost, torch-geometric, flask, qdrant-client,
 # transformers, seaborn. An earlier over-scoped design used them; they are cut.
@@ -12,3 +12,8 @@ torch==2.13.0          # both models
 scikit-learn==1.9.0    # AUPRC, AUROC, stratified splits, metrics
 matplotlib==3.11.1     # training curves and figures
 tqdm==4.70.0           # progress bar for the multi-hour http.csv pass
+
+# Test runner. Every package in this project (extraction, labeling, baseline,
+# splitting, modeling) ships a test_*.py, so a venv without pytest can install
+# cleanly and still be unable to check its own work.
+pytest==8.4.2

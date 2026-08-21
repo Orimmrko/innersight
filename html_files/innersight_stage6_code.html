@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 6 Code (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:21px; margin:34px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:21px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 6 code · defence preparation</p>
+  <h1>Walk me through the code</h1>
+  <p class="sub">Stage 6 is the smallest stage in the project and the most consequential. One class, one entry point, nineteen tests, and nothing else touched. What was added, how the 28-day window is cut without allocating 880 MB, the three ways this stage could have produced numbers that were quietly meaningless, and the test the brief asked for that had to be thrown away because it did not work.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what did you write for Stage 6?”</strong></p>
+  <p>“A convolutional network that reads twenty-eight days instead of one, and a command-line entry point that hands it to the existing training loop. That is deliberately all of it — the data pipeline, the training loop, the metrics and the three-seed runner were written in Stage 5 to be model-agnostic, so Stage 6 changes nothing about how the two models are trained. If I had needed to edit any of those four files, the two models would not have been trained identically and the comparison would have been weaker for it.”</p>
+</div>
+
+<h2>1 — The whole diff</h2>
+
+<pre><code>modeling/
+├── data.py               UNCHANGED   byte-identical to Stage 5
+├── train.py              UNCHANGED   byte-identical to Stage 5
+├── runner.py             UNCHANGED   byte-identical to Stage 5
+├── metrics.py            UNCHANGED   byte-identical to Stage 5
+├── test_modeling.py      UNCHANGED   28 tests
+│
+├── models.py             MODIFIED    + class ModelB, + three constants
+├── run_model_b.py        NEW         the entry point
+└── test_model_b.py       NEW         19 tests
+
+                                      47 tests total, about 4 seconds</code></pre>
+
+<div class="note good"><b>“Unchanged” here means verified, not remembered.</b> Those four files were compared byte-for-byte against their Stage 5 versions after the run. That check is the structural half of the fairness argument — the printed row counts and class weights are the other half.</div>
+
+<h3>1.1 — The two expressions that differ from Model A's entry point</h3>
+
+<p><code>run_model_b.py</code> and <code>run_model_a.py</code> are the same file with two substitutions:</p>
+
+<table>
+  <tr><th></th><th class="mono">run_model_a.py</th><th class="mono">run_model_b.py</th></tr>
+  <tr><td>model</td><td class="mono">ModelA</td><td class="mono">ModelB</td></tr>
+  <tr><td>view of a split</td><td class="mono">split.point_view()</td><td class="mono">split.window_view()</td></tr>
+</table>
+
+<p>Everything else — device resolution, data preparation, the class weight, the three-seed sweep, checkpointing, aggregation, the curves figure — lives in <code>runner.py</code> and is executed by identical code for both models.</p>
+
+<div class="note"><b>One deliberate deviation from the project's own convention.</b> Model B's three architectural constants — 32 channels, kernel 3, dilation 2 — live in <code>models.py</code> rather than in <code>config.py</code> where every other hyperparameter lives. The reason is the prime directive: a constant added to <code>config.py</code> is harmless in fact but not <em>provably</em> harmless by inspection, and “both models ran under identical settings” is the claim the entire project rests on. It is a wart, it is intentional, and it is written down.</div>
+
+<h2>2 — Model B, line by line</h2>
+
+<span class="filetag">modeling/models.py</span>
+<pre><code>self.conv1 = nn.Conv1d(18, 32, kernel_size=3, padding=1, dilation=1)
+self.conv2 = nn.Conv1d(32, 32, kernel_size=3, padding=2, dilation=2)
+self.head  = nn.Linear(32, 1)
+
+def forward(self, x):                     # x is (batch, 18, 28)
+    h = relu(self.conv1(x))               #      (batch, 32, 28)
+    h = relu(self.conv2(h))               #      (batch, 32, 28)
+    return self.head(h.mean(dim=2)).squeeze(-1)   # (batch,)</code></pre>
+
+<h4>The input is channels-first, and that is not a formatting preference</h4>
+
+<p><code>Conv1d</code> reads <b>(batch, channels, length)</b>. Here the eighteen features are the channels and the twenty-eight days are the length, so the convolution slides along <em>time</em>. Getting this backwards is the central hazard of the whole stage — §5 is about nothing else.</p>
+
+<h4>Why the padding numbers are 1 and 2</h4>
+
+<p>Both layers use “same” padding, so the time axis stays 28 long from input to pool. For an odd kernel the required padding is <code>dilation × (kernel − 1) ÷ 2</code> — which is 1 for the first layer and 2 for the second. If it were left at 1 for both, the second layer would shorten the sequence and the average at the end would be taken over a shrinking remnant of the window rather than the window.</p>
+
+<h4>Why the second layer skips a day</h4>
+
+<p>Two stacked kernel-3 layers see five days. Setting the second layer's dilation to 2 — look at every other position rather than every position — extends that to <b>seven days</b>, at exactly the same parameter count.</p>
+
+<pre><code>1 + (3−1)·1 + (3−1)·2  =  7 days of reach, for 0 extra parameters</code></pre>
+
+<p>Since scenario 2 is a 45–59 day drift, temporal reach is the scarce resource. Buying it with more layers would cost parameters this model cannot afford; dilation buys it for nothing. The tests assert both that the reach is 7 and that the dilated and undilated versions have identical parameter counts, so the claim cannot silently stop being true.</p>
+
+<h4>The parameter count, and the tripwire on it</h4>
+
+<pre><code>conv1   18 × 32 × 3 + 32  =  1,760
+conv2   32 × 32 × 3 + 32  =  3,104
+head              32 + 1  =     33
+                             ─────
+                             4,897</code></pre>
+
+<p>There is a test asserting exactly 4,897. It exists as a tripwire against a future “improvement”: roughly 1,147 attack days in the training split against 4,897 parameters is about 0.23 positives per parameter, already thinner than Model A's 1.8. A deeper Model B would memorise those rows and win the comparison for the wrong reason.</p>
+
+<div class="note bad"><b>The return shape is <code>(batch,)</code>, not <code>(batch, 1)</code>, and the brief asked for the latter.</b> This is a deliberate departure. <code>BCEWithLogitsLoss</code> given a <code>(batch, 1)</code> input against a <code>(batch,)</code> target does not raise — it <em>broadcasts</em> to <code>(batch, batch)</code> and trains perfectly happily on a loss that compares every prediction to every label. There is no error and no warning; the model simply learns nothing meaningful. Model A returns <code>(batch,)</code>, the prediction buffer in the training loop is <code>(n,)</code>, and Model B matches both.</div>
+
+<div class="note"><b>And no sigmoid in <code>forward</code>.</b> The loss function applies one internally for numerical stability. A second one squashes the output twice: gradients shrink toward nothing and the model barely trains, with no error and a loss curve that merely looks disappointing. A test feeds inputs scaled by 50 and asserts the outputs land outside [0, 1].</div>
+
+<h2>3 — The window: 28 days per row without allocating 880 MB</h2>
+
+<p>The obvious implementation is to build a tensor of every window up front. It does not fit comfortably:</p>
+
+<pre><code>437,000 target rows × 18 features × 28 days × 4 bytes  ≈  880 MB</code></pre>
+
+<p>…and it would store every row up to 28 times over. Instead, <code>SplitData</code> keeps <b>every row of its people's history in one contiguous array</b> plus a list of <em>positions</em> marking which rows are prediction targets, and the windows are cut per batch:</p>
+
+<span class="filetag">modeling/data.py — written in Stage 5, called for the first time in Stage 6</span>
+<pre><code>offsets = arange(-27, 1)                       # -27 … 0
+rows    = positions[batch].unsqueeze(1) + offsets
+gathered = features.index_select(0, rows.flatten())
+return gathered.reshape(-1, 28, 18).permute(0, 2, 1)   # (batch, 18, 28)</code></pre>
+
+<div class="note good"><b>The reason this matters beyond memory.</b> Model B reads <em>the same array</em> Model A reads, with the same scaler already applied, through the same code path. A second tensor built by a second function is exactly where two runs quietly stop being identical. Slicing on demand costs nothing and removes that risk entirely.</div>
+
+<h4>Three properties this has to have, and how each is guaranteed</h4>
+
+<table>
+  <tr><th>Property</th><th>Why it would be silent if broken</th><th>Guaranteed by</th></tr>
+  <tr><td>The window <b>ends on</b> the target day, not the day before</td><td>Right shape, trains fine, and the model is judging yesterday while the report claims today</td><td>A test that encodes the day index into a feature, inverts the scaler, and asserts the last column is the target's own day</td></tr>
+  <tr><td>It never reaches into the <b>previous person</b></td><td>The borrowed rows still scale, still train, still score</td><td>People are contiguous in the array, and a target is never inside a person's first 27 rows — asserted, and <code>window_view()</code> raises if it ever is</td></tr>
+  <tr><td>The 28 rows are 28 <b>consecutive calendar days</b></td><td>A missing day turns a “28-day window” into 28 rows spanning 40 days</td><td><code>day_index()</code> refuses a non-dense calendar outright, before any tensor is built</td></tr>
+</table>
+
+<div class="note"><b>How the window test actually works, because it is the neatest thing in the file.</b> The synthetic table encodes the person's identity into feature 0 and the day index into feature 1, at magnitudes small enough to survive the ±10 clip untouched. Standardisation is affine, so inverting it recovers the codes <em>exactly</em>. The test then reads the gathered windows back and asserts that every one of the 28 rows carries the target's own person-code, and that the day-codes are 28 consecutive integers ending on the target's day. It checks the contents rather than the shape.</div>
+
+<h2>4 — The three lines that could have gone silently wrong</h2>
+
+<h4>The class weight is a fingerprint of which rows were used</h4>
+
+<p>It is computed from the training split on every run, never written down:</p>
+
+<pre><code>pos_weight (train only) = 229.7  [263,462 negatives / 1,147 positives]</code></pre>
+
+<p>Computed on the whole table it comes out near 244; computed on the rows that are actually scored — after the 27-day warm-up mask — it comes out near 230. So <b>the single number 229.7 proves the mask was applied before the weight</b>, and it matches Model A seed for seed. The entry point prints the three expected values as a banner before training starts, so a wrong number is visible immediately rather than in the metrics file afterwards.</p>
+
+<h4>The row set is decided once, in Stage 5, for both models</h4>
+
+<p>Model B cannot score anybody's first 27 days. If Model A scored them and Model B did not, the two would be measured on different data — and those rows are the warm-up period where every feature is exactly zero, the easiest negatives in the table. Dropping them lifts the positive rate, and AUPRC rises with the positive rate mechanically. Model B would have collected roughly 6% for nothing. So the mask applies to both models, for training and evaluation alike, and it is Stage 5's code rather than Stage 6's.</p>
+
+<h4>The fairness watch, which exists to catch a bias in Model B's favour being absent</h4>
+
+<span class="filetag">modeling/run_model_b.py</span>
+<pre><code>if best_epoch >= epochs_run - 1:
+    warn("validation AUPRC was still improving when training ended")</code></pre>
+
+<p>All three of Model A's seeds stopped on patience with room to spare. A 4,897-parameter CNN can converge more slowly than a 641-parameter network, and a Model B cut off while still improving would be biased <em>against</em> the hypothesis being tested. The fix, if it fired, would be to raise the budget for <b>both</b> models and re-run Model A too — raising it for B alone would turn the training budget into a second variable. It did not fire.</p>
+
+<h2>5 — The test the brief asked for, and why it was thrown away</h2>
+
+<div class="callout">
+  <p><strong>This is the part of Stage 6 worth talking about.</strong></p>
+  <p>The brief specified the most important test in the stage: prove the convolution runs across <em>days</em> and not across <em>features</em>. Its suggested method was to feed a ramp rising over the 28 days and assert the output changes when the ramp is reversed — since a feature-axis convolution would be blind to the reversal.</p>
+  <p><b>That test does not work.</b> It was written, and then it was tested against the bug it was supposed to catch.</p>
+</div>
+
+<h4>The mutation check that killed it</h4>
+
+<p>Rather than trust the test, the broken model was written out explicitly — a <code>Conv1d</code> stack wired around the day axis, days as channels — and the ramp test was run against it across eight random initialisations:</p>
+
+<pre><code>wrong-axis model, response to reversing the ramp:
+  8.67e-03  4.63e-03  3.34e-03  8.79e-03  1.34e-02  1.09e-02  1.19e-03  8.83e-03
+
+it responded every single time.  The test would have PASSED on the bug.</code></pre>
+
+<p>The reason, once seen, is obvious: reversing the ramp also permutes the <em>channels</em> that a feature-axis convolution reads, so that model notices too. Both models respond, so the test discriminates nothing. It would have sat in the suite looking reassuring while the model produced meaningless numbers.</p>
+
+<h4>What replaced it: translation invariance</h4>
+
+<p>The property that genuinely separates the two orientations is that a convolution over time, with “same” padding followed by a global average, gives the <em>identical</em> answer to a pattern that has moved along the window. Slide the pattern, the feature maps slide with it, the mean is unchanged. A feature-axis convolution hands the shifted pattern to an entirely different set of filters.</p>
+
+<pre><code>identical bump at days 8–11  vs.  days 16–19,  8 initialisations each:
+
+  ModelB              max response   1.49e-08     ← invariant, as required
+  _FeatureAxisModel   min response   7.47e-03     ← six orders of magnitude larger</code></pre>
+
+<div class="note good"><b>And the broken model ships in the test file permanently.</b> <code>_FeatureAxisModel</code> lives in <code>test_model_b.py</code> alongside a second test asserting that the first one <em>fails</em> on it. That is the difference between a guard and a decoration: the suite proves that its most important test would actually catch the failure it names, rather than merely passing on correct code.</div>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“The brief told me what the most dangerous silent failure was and suggested a test for it. I wrote the test, then I built the bug and ran the test against it — and the test passed. So I threw it away and found a property that does discriminate, by six orders of magnitude. The broken model is still in the test file, with a test asserting the guard fails on it. A test for a silent failure is only worth its lines if the failure would actually trip it.”</p>
+</div>
+
+<div class="note"><b>A smaller correction from the same investigation.</b> The brief also stated that <code>Conv1d</code> would accept a transposed <code>(batch, 28, 18)</code> batch “without error”. It would not: 18 ≠ 28, so PyTorch's own channel check raises. <code>ModelB.forward</code> validates the shape anyway and names the failure explicitly, because the dangerous version of this bug is a model <em>built</em> around the wrong axis rather than fed a wrong batch.</div>
+
+<h2>6 — The 19 tests</h2>
+
+<p>Same criterion as Stages 1 to 5: cover the failures that are <b>silent</b> — no exception, no missing value, just a number quietly wrong that survives into a results table.</p>
+
+<div class="card">
+<h4>The time axis — 6 tests</h4>
+<p>Translation invariance (the important one); the mutation check proving it fails on <code>_FeatureAxisModel</code>; that a transposed batch is refused rather than convolved; that the wiring is right (<code>conv1.in_channels == 18</code>, “same” padding on both layers); that the reach is 7 days at an unchanged parameter count; and that a sustained lift across the whole window actually reaches the output, which is what checks the pool is over days rather than a no-op.</p>
+
+<h4>The mechanism itself — 1 test</h4>
+<p>That the model can tell a rising trend from a falling one. Not a failure guard but a capability check, and it is the property the entire thesis depends on: a model blind to the direction of a drift would have no way to profit from a 28-day window.</p>
+
+<h4>Window contents and person boundaries — 3 tests</h4>
+<p>Every window holds 28 consecutive days ending on its target's own day; every row of every window carries the target's own person; and a target sitting inside its person's warm-up is refused rather than wrapping to the previous person.</p>
+
+<h4>Both models see the same rows — 2 tests</h4>
+<p>Same count, same order, same labels, and the last column of each window is exactly Model A's input row. Plus: the class weight comes from the prepared labels, so it cannot differ between the two views by construction.</p>
+
+<h4>Raw logits — 1 test</h4>
+<p>Outputs land outside [0, 1] under large inputs, and no sigmoid module exists anywhere in the graph.</p>
+
+<h4>Determinism — 2 tests</h4>
+<p>The same seed twice gives bit-identical weights, seeding in the order <code>runner.py</code> actually uses — <em>before</em> the model is constructed, because seeding afterwards draws the initial weights from whatever state the process happened to be in. Different seeds give different weights.</p>
+
+<h4>Shape and size contract — 3 tests</h4>
+<p><code>(B, 18, 28)</code> in and <code>(B,)</code> out for batch sizes 1, 7 and 512; the 4,897-parameter tripwire; and refusal of an even kernel or a reach longer than the window, either of which would silently make the second layer a no-op.</p>
+
+<h4>End to end — 1 test</h4>
+<p>The CNN and the window view go through the <em>unmodified</em> Stage 5 training loop and beat the random baseline. This is the prime directive expressed as a test: if it needed a change in <code>train.py</code>, the two models were not trained identically.</p>
+
+<p style="margin-top:18px; padding-top:14px; border-top:1px solid var(--line)"><b>6 + 1 + 3 + 2 + 1 + 2 + 3 + 1 = 19</b>, on top of Stage 5's 28, for 47 in about four seconds. None of them needs r4.2 present — they build a small synthetic calendar-dense table.</p>
+</div>
+
+<div class="note"><b>Why nineteen and not two hundred.</b> Stage 6 adds exactly one class, so it adds exactly one new <em>family</em> of failure: everything to do with the second axis of the input. A test that a function returns a float is not worth its line. A test that a window ends on the right day is the difference between a result and an artefact.</div>
+
+<h2>7 — What is in a checkpoint, and how Stage 7 loads both models</h2>
+
+<span class="filetag">outputs/checkpoints/model_b_seed42.pt</span>
+<pre><code>state_dict          the weights, from the best-AUPRC epoch — not the last
+threshold           the decision cut-off chosen on validation
+standardiser        the mean and std the weights were trained under,
+                    plus the feature order, so a reordering is refused
+input_kind          "point" | "window"     ← Stage 7 reads this
+window_days         1 | 28                 ← and this
+seed, device, pos_weight, best_epoch, training_config</code></pre>
+
+<div class="note good"><b>Why all three travel together.</b> A model whose decision threshold lives in a notebook and whose input scaling lives in a dataframe is not a working system — it is a matrix. Stage 7 has to apply <em>exactly</em> the transform these weights were trained under and <em>exactly</em> the threshold validation chose, and the only way to guarantee that months later is for the file to carry them.</div>
+
+<p>Both models' checkpoints are written by the same function in <code>runner.py</code> and have the same shape, and each declares its own <code>input_kind</code>. So Stage 7 loads both through a single code path and builds the right view from the file rather than from an assumption — which also means there will be exactly one place in the codebase that opens the test split.</p>
+
+<h2>8 — The tuning branch: built, run, measured, reverted</h2>
+
+<p>After the result was recorded, three changes to Model B were implemented behind a <code>--tuned</code> flag: dropout, mean-and-max pooling, and a cosine learning-rate decay. Two things about how that was done are worth describing, because they are the reason the reported result survived it.</p>
+
+<div class="card">
+<h4>Every option defaulted to the reported behaviour</h4>
+<p>Nothing was rewired. A new pooling mode, a new schedule option and a passthrough for training overrides were added, each defaulting to exactly what Model A and Model B had already been trained with. That was verified rather than claimed: both models' outputs were captured <em>before</em> the change and re-compared field by field afterwards, excluding wall-clock timings. Identical for both. A test was added pinning the defaults, so a future change that shifted one would fail a test instead of silently invalidating two runs and a report.</p>
+
+<h4>The variant could not overwrite the result</h4>
+<p>The flag forced an output tag, so the tuned run wrote to <code>*_v2_*</code> filenames. There is a test asserting that the tagged checkpoint, metrics and figure paths all differ from the untagged ones — because a variant silently overwriting thirteen minutes of reported results is the single most expensive mistake available in this stage, and in Stage 1 a smoke run did once replace a real table.</p>
+</div>
+
+<p>The tuned model scored <b>0.6022</b> against Model B's <b>0.6767</b>. It lost. The code was reverted to the exact state that produced the reported result — the shared files restored from the pristine Stage 5 copies and re-verified identical, the suite back to 47 tests, and the sample run re-checked field by field against a pre-change baseline. The measurement was kept, in <code>STAGE6_TUNING_RESULT.md</code>, because the way it lost is a finding: adding a maximum channel raised scenario-1 recall 6.6 points and cost 11.0 points of scenario 2, which is 88% of the positives.</p>
+
+<div class="note"><b>The honest note on that revert.</b> The flags are gone from the code, so the run instructions written for them were replaced with a stub pointing at the result. The <code>*_v2_*</code> output files were left in place deliberately — they are the evidence behind the claim, and deleting them would leave the write-up asserting a measurement with nothing behind it.</div>
+
+<h2>9 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Show me the part of the code that makes the comparison fair.</div><div class="a">
+<p>It is mostly the absence of code. The training loop takes a model object, two input views, labels and a config, and nothing in it inspects the model — there is no branch that knows whether it is training a small network on one day or a convolutional one on twenty-eight. So Stage 6 hands it a completely different architecture and changes nothing about how training happens.</p>
+<p>Concretely: <code>data.py</code>, <code>train.py</code>, <code>runner.py</code> and <code>metrics.py</code> are byte-identical to their Stage 5 versions, checked by file comparison after the run rather than remembered. The two entry points differ in two expressions: which model class, and which view of a split. Everything else executes the same lines.</p></div></div>
+
+<div class="qa"><div class="q">How do you know the convolution is looking at time and not at the features?</div><div class="a">
+<p>Because a pattern moved eight days later scores identically — 1.5 × 10⁻⁸ of difference across eight random initialisations. Convolution over time with “same” padding and a global average is translation-invariant; a convolution over features hands the shifted pattern to different filters and the answer moves by about 10⁻².</p>
+<p>And I know that test discriminates because I built the broken model and ran it against it. The first version of the test — the one suggested in the brief, reversing a rising ramp — passed on the broken model every time out of eight. It would have been a test that proved nothing. The broken model is still in the test file with a test asserting the guard fails on it.</p></div></div>
+
+<div class="qa"><div class="q">You have 437,000 windows of 18 by 28. How does that fit in memory?</div><div class="a">
+<p>It does not, and it is never built. Materialising them would be about 880 MB and would store each row up to 28 times over. Instead each split keeps every one of its people's rows in one contiguous array plus a list of positions marking which rows are prediction targets, and each batch's windows are cut on demand by an index operation.</p>
+<p>The memory saving is the smaller benefit. The important one is that Model B reads the same array Model A reads, with the same scaler already applied, through the same code path — rather than a second tensor built by a second function, which is exactly where two runs quietly stop being identical.</p></div></div>
+
+<div class="qa"><div class="q">What stops a window from reaching into the previous person's data?</div><div class="a">
+<p>Two things, one structural and one asserted. Structurally, each person's rows are contiguous and in date order, and the row mask guarantees no target is ever within a person's first 27 rows — so reaching back 27 always stays inside that person. Defensively, <code>window_view()</code> checks that invariant and raises if it is ever violated, rather than wrapping around to the previous person's history.</p>
+<p>And there is a test that proves it on real gathered data rather than by argument: the person's identity is encoded into a feature at a magnitude that survives the clip, the scaler is inverted to recover it exactly, and the test asserts that all 28 rows of every window carry the target's own code.</p></div></div>
+
+<div class="qa"><div class="q">Why does the model return a flat vector instead of a column?</div><div class="a">
+<p>Because a column would be a silent disaster. The loss function given a <code>(batch, 1)</code> input against a <code>(batch,)</code> target does not raise — it broadcasts to <code>(batch, batch)</code> and compares every prediction to every label. Training proceeds, the loss goes down, and the number means nothing.</p>
+<p>The brief actually specified a column. I departed from it and documented why. Model A returns a flat vector, the prediction buffer in the training loop is a flat vector, and there is a test asserting the shape for three different batch sizes.</p></div></div>
+
+<div class="qa"><div class="q">Why are Model B's constants not in the config file with everything else?</div><div class="a">
+<p>Because Stage 6's rule was that it adds an architecture and edits nothing else, so that Model A could not possibly have been trained under different settings. Adding constants to the config file would have been harmless in fact but not provably harmless by reading the diff.</p>
+<p>It is a deliberate inconsistency with the rest of the project, it is documented in the file itself, and it should be moved once the comparison is finished. I would rather have one visible wart than a change that requires trusting me about its effects.</p></div></div>
+
+<div class="qa"><div class="q">You added tuning code and then removed it. Did that disturb the result?</div><div class="a">
+<p>No, and I checked rather than assumed. Every option defaulted to the behaviour already reported, and the variant wrote to separate filenames with a test asserting it could not collide with the real ones. Before making any change I captured both models' outputs; afterwards I re-ran and compared them field by field, and they were identical.</p>
+<p>After the tuned model lost, I reverted. The shared files were restored from the pristine Stage 5 copies and re-verified byte-identical, the suite went back to 47 tests, and the sample run was re-compared against the pre-change baseline. The measurement was kept because the way it lost is a finding; the code was not.</p></div></div>
+
+<div class="qa"><div class="q">If you had to point at one line as the most dangerous in the stage, which is it?</div><div class="a">
+<p>The permute at the end of the window gather — the one that turns (rows, days, features) into (rows, features, days). Every silent failure in this stage lives there or downstream of it. Get it wrong and every tensor still has a plausible shape, training still converges, the loss curve still looks healthy, and the model is convolving across features while treating days as independent channels.</p>
+<p>That is why the most important test in the file is behavioural rather than structural, and why it ships with a proof that it catches the bug it names.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Stage 6 is about a hundred and twenty lines of model and entry point, and nineteen tests. It is small because Stage 5 was built so that it could be — the data pipeline, the training loop, the metrics and the three-seed runner are byte-identical to what Model A was trained under, checked rather than remembered. The interesting work was not writing the network; it was working out which mistakes would have produced a plausible number and no error at all, and then proving that the tests for them actually catch them — including the one the brief recommended, which did not.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 6 code · <code>modeling/models.py</code>, <code>modeling/run_model_b.py</code>, <code>modeling/test_model_b.py</code>.
+  47 tests, about 4 seconds, no r4.2 required. <code>data.py</code>, <code>train.py</code>, <code>runner.py</code> and <code>metrics.py</code> are byte-identical to Stage 5.
+  Measurements dated 8 August 2026; the test split has not been opened.
+</footer>
+
+
+</div>
+</body>
+</html>

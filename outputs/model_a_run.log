@@ -1,0 +1,193 @@
+Model A — 18 -> 32 -> 1 MLP, raw logit out. Device requested 'auto', resolved 'mps'. batch 512, lr 0.001, max epochs 50.
+========================================================================
+model_a | seed 42 | full data
+========================================================================
+rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 280,809 rows in memory, 264,609 target rows, 1,147 positive (0.4335%)
+val: 200 users, 90,591 rows in memory, 85,191 target rows, 362 positive (0.4249%)
+pos_weight (train only) = 229.7  [263,462 negatives / 1,147 positives]
+random-baseline AUPRC on validation = 0.00425
+ModelA: 641 trainable parameters
+training ModelA: 641 parameters, device mps, batch 512, lr 0.001, pos_weight 229.7
+epoch   1  train_loss 1.06119  val_loss 0.84237  val_AUPRC 0.0423  val_P@50 0.240  mean_prob 0.33423  distinct  84,067    0.9s
+  guard | predicted prob min 0.045485 max 1.000000 mean 0.334230 std 0.204481
+  guard | 84,067 distinct predicted values, ok
+  guard | val AUPRC 0.0423 > random baseline 0.00425, ok
+epoch   2  train_loss 0.81026  val_loss 0.76903  val_AUPRC 0.0451  val_P@50 0.260  mean_prob 0.25118  distinct  84,134    0.8s
+epoch   3  train_loss 0.76880  val_loss 0.74148  val_AUPRC 0.0543  val_P@50 0.300  mean_prob 0.23820  distinct  84,060    0.8s
+epoch   4  train_loss 0.74490  val_loss 0.72958  val_AUPRC 0.0718  val_P@50 0.320  mean_prob 0.24452  distinct  84,197    0.8s
+epoch   5  train_loss 0.72660  val_loss 0.71785  val_AUPRC 0.0520  val_P@50 0.240  mean_prob 0.23134  distinct  84,014    0.8s
+epoch   6  train_loss 0.71043  val_loss 0.69178  val_AUPRC 0.0789  val_P@50 0.240  mean_prob 0.22693  distinct  84,133    0.8s
+epoch   7  train_loss 0.69486  val_loss 0.68990  val_AUPRC 0.0757  val_P@50 0.260  mean_prob 0.23064  distinct  84,117    0.8s
+epoch   8  train_loss 0.68212  val_loss 0.67639  val_AUPRC 0.0839  val_P@50 0.280  mean_prob 0.22979  distinct  84,199    0.8s
+epoch   9  train_loss 0.66961  val_loss 0.66075  val_AUPRC 0.1006  val_P@50 0.300  mean_prob 0.20658  distinct  84,182    0.8s
+epoch  10  train_loss 0.65701  val_loss 0.65960  val_AUPRC 0.0978  val_P@50 0.360  mean_prob 0.19529  distinct  84,113    0.8s
+epoch  11  train_loss 0.64658  val_loss 0.64207  val_AUPRC 0.0989  val_P@50 0.280  mean_prob 0.21966  distinct  83,955    0.8s
+epoch  12  train_loss 0.63557  val_loss 0.64576  val_AUPRC 0.1055  val_P@50 0.360  mean_prob 0.21081  distinct  83,809    0.8s
+epoch  13  train_loss 0.62502  val_loss 0.69145  val_AUPRC 0.0819  val_P@50 0.280  mean_prob 0.21600  distinct  84,050    0.8s
+epoch  14  train_loss 0.61925  val_loss 0.65255  val_AUPRC 0.1140  val_P@50 0.400  mean_prob 0.19625  distinct  83,879    0.8s
+epoch  15  train_loss 0.60928  val_loss 0.63901  val_AUPRC 0.1189  val_P@50 0.360  mean_prob 0.19356  distinct  83,984    0.8s
+epoch  16  train_loss 0.60074  val_loss 0.63476  val_AUPRC 0.1237  val_P@50 0.440  mean_prob 0.20905  distinct  84,221    0.8s
+epoch  17  train_loss 0.59509  val_loss 0.63640  val_AUPRC 0.1119  val_P@50 0.400  mean_prob 0.19492  distinct  84,117    0.8s
+epoch  18  train_loss 0.58711  val_loss 0.64351  val_AUPRC 0.1227  val_P@50 0.460  mean_prob 0.21385  distinct  84,028    0.8s
+epoch  19  train_loss 0.58182  val_loss 0.65162  val_AUPRC 0.1169  val_P@50 0.420  mean_prob 0.17689  distinct  83,904    0.8s
+epoch  20  train_loss 0.57557  val_loss 0.63362  val_AUPRC 0.1149  val_P@50 0.440  mean_prob 0.18534  distinct  84,002    0.8s
+epoch  21  train_loss 0.57007  val_loss 0.61646  val_AUPRC 0.1171  val_P@50 0.380  mean_prob 0.19342  distinct  84,128    0.8s
+epoch  22  train_loss 0.56332  val_loss 0.62901  val_AUPRC 0.1061  val_P@50 0.340  mean_prob 0.18801  distinct  84,164    0.8s
+epoch  23  train_loss 0.55502  val_loss 0.64140  val_AUPRC 0.1105  val_P@50 0.380  mean_prob 0.20696  distinct  84,076    0.8s
+early stop: 7 epochs without a better validation AUPRC (best 0.1237 at epoch 16)
+validation (best epoch) AUPRC 0.1237  (random baseline 0.00425, 29.1x)  AUROC 0.9403
+validation (best epoch) P@10 0.600
+validation (best epoch) P@50 0.440
+validation (best epoch) predicted prob  min 0.000001  max 1.000000  mean 0.209052  std 0.244781  distinct 84,221
+threshold 0.958207 chosen on validation (best epoch): F1 0.1869, precision 0.1224, recall 0.3950, 1,168 rows flagged
+validation (best epoch) scenario 1: 12 of 33 attack days (36.4%)
+validation (best epoch) scenario 2: 130 of 325 attack days (40.0%)
+validation (best epoch) scenario 3: 1 of 4 attack days (25.0%)
+best epoch 16, best val AUPRC 0.1237, threshold 0.958207, 17.6s total (0.77s/epoch on mps)
+checkpoint -> /Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed42.pt
+========================================================================
+model_a | seed 123 | full data
+========================================================================
+rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 278,199 rows in memory, 261,999 target rows, 1,158 positive (0.4420%)
+val: 200 users, 93,721 rows in memory, 88,321 target rows, 375 positive (0.4246%)
+pos_weight (train only) = 225.3  [260,841 negatives / 1,158 positives]
+random-baseline AUPRC on validation = 0.00425
+ModelA: 641 trainable parameters
+training ModelA: 641 parameters, device mps, batch 512, lr 0.001, pos_weight 225.3
+epoch   1  train_loss 1.01834  val_loss 0.83148  val_AUPRC 0.0410  val_P@50 0.120  mean_prob 0.31007  distinct  87,100    0.8s
+  guard | predicted prob min 0.000365 max 1.000000 mean 0.310074 std 0.219375
+  guard | 87,100 distinct predicted values, ok
+  guard | val AUPRC 0.0410 > random baseline 0.00425, ok
+epoch   2  train_loss 0.79541  val_loss 0.75358  val_AUPRC 0.0527  val_P@50 0.240  mean_prob 0.27228  distinct  87,320    0.8s
+epoch   3  train_loss 0.74529  val_loss 0.72643  val_AUPRC 0.0550  val_P@50 0.240  mean_prob 0.25666  distinct  87,312    0.8s
+epoch   4  train_loss 0.71695  val_loss 0.70599  val_AUPRC 0.0605  val_P@50 0.220  mean_prob 0.24358  distinct  87,232    0.8s
+epoch   5  train_loss 0.69970  val_loss 0.70016  val_AUPRC 0.0679  val_P@50 0.240  mean_prob 0.25065  distinct  87,298    0.8s
+epoch   6  train_loss 0.68545  val_loss 0.68102  val_AUPRC 0.0778  val_P@50 0.280  mean_prob 0.23208  distinct  87,283    0.8s
+epoch   7  train_loss 0.67591  val_loss 0.67355  val_AUPRC 0.0828  val_P@50 0.300  mean_prob 0.21853  distinct  87,071    0.8s
+epoch   8  train_loss 0.66639  val_loss 0.67023  val_AUPRC 0.0799  val_P@50 0.280  mean_prob 0.22824  distinct  87,009    0.8s
+epoch   9  train_loss 0.65717  val_loss 0.65630  val_AUPRC 0.0901  val_P@50 0.340  mean_prob 0.21633  distinct  86,972    0.8s
+epoch  10  train_loss 0.64793  val_loss 0.64482  val_AUPRC 0.0848  val_P@50 0.280  mean_prob 0.22626  distinct  87,143    0.8s
+epoch  11  train_loss 0.63876  val_loss 0.63466  val_AUPRC 0.0932  val_P@50 0.340  mean_prob 0.21901  distinct  87,273    0.8s
+epoch  12  train_loss 0.63178  val_loss 0.64186  val_AUPRC 0.0839  val_P@50 0.280  mean_prob 0.22747  distinct  87,047    0.8s
+epoch  13  train_loss 0.61953  val_loss 0.62721  val_AUPRC 0.0972  val_P@50 0.360  mean_prob 0.21536  distinct  87,283    0.8s
+epoch  14  train_loss 0.60985  val_loss 0.61326  val_AUPRC 0.1048  val_P@50 0.340  mean_prob 0.20608  distinct  87,240    0.8s
+epoch  15  train_loss 0.60369  val_loss 0.61268  val_AUPRC 0.1065  val_P@50 0.360  mean_prob 0.19910  distinct  87,102    0.8s
+epoch  16  train_loss 0.59372  val_loss 0.60342  val_AUPRC 0.1162  val_P@50 0.360  mean_prob 0.18830  distinct  87,155    0.8s
+epoch  17  train_loss 0.58309  val_loss 0.59644  val_AUPRC 0.1250  val_P@50 0.400  mean_prob 0.21098  distinct  87,107    0.8s
+epoch  18  train_loss 0.57871  val_loss 0.59157  val_AUPRC 0.1205  val_P@50 0.380  mean_prob 0.19374  distinct  87,158    0.8s
+epoch  19  train_loss 0.56983  val_loss 0.58808  val_AUPRC 0.1264  val_P@50 0.440  mean_prob 0.19665  distinct  87,129    0.8s
+epoch  20  train_loss 0.56108  val_loss 0.58227  val_AUPRC 0.1204  val_P@50 0.340  mean_prob 0.18757  distinct  87,217    0.8s
+epoch  21  train_loss 0.55509  val_loss 0.57676  val_AUPRC 0.1277  val_P@50 0.380  mean_prob 0.19954  distinct  87,122    0.8s
+epoch  22  train_loss 0.54549  val_loss 0.59387  val_AUPRC 0.1214  val_P@50 0.440  mean_prob 0.20520  distinct  87,159    0.8s
+epoch  23  train_loss 0.53970  val_loss 0.57032  val_AUPRC 0.1490  val_P@50 0.460  mean_prob 0.18272  distinct  87,227    0.8s
+epoch  24  train_loss 0.53756  val_loss 0.58238  val_AUPRC 0.1343  val_P@50 0.480  mean_prob 0.18822  distinct  87,338    0.8s
+epoch  25  train_loss 0.52720  val_loss 0.56503  val_AUPRC 0.1406  val_P@50 0.480  mean_prob 0.19698  distinct  87,193    0.8s
+epoch  26  train_loss 0.51827  val_loss 0.56627  val_AUPRC 0.1427  val_P@50 0.460  mean_prob 0.17182  distinct  87,265    0.8s
+epoch  27  train_loss 0.51794  val_loss 0.55547  val_AUPRC 0.1578  val_P@50 0.540  mean_prob 0.17757  distinct  87,244    0.8s
+epoch  28  train_loss 0.51499  val_loss 0.54948  val_AUPRC 0.1489  val_P@50 0.480  mean_prob 0.17697  distinct  87,208    0.8s
+epoch  29  train_loss 0.50358  val_loss 0.56037  val_AUPRC 0.1526  val_P@50 0.480  mean_prob 0.18845  distinct  87,393    0.8s
+epoch  30  train_loss 0.49989  val_loss 0.55720  val_AUPRC 0.1539  val_P@50 0.520  mean_prob 0.17724  distinct  87,374    0.8s
+epoch  31  train_loss 0.49303  val_loss 0.54240  val_AUPRC 0.1526  val_P@50 0.520  mean_prob 0.16570  distinct  87,207    0.8s
+epoch  32  train_loss 0.48846  val_loss 0.54964  val_AUPRC 0.1535  val_P@50 0.500  mean_prob 0.16438  distinct  87,366    0.8s
+epoch  33  train_loss 0.48446  val_loss 0.55270  val_AUPRC 0.1645  val_P@50 0.560  mean_prob 0.16138  distinct  87,276    0.8s
+epoch  34  train_loss 0.48141  val_loss 0.55178  val_AUPRC 0.1577  val_P@50 0.520  mean_prob 0.16550  distinct  87,234    0.8s
+epoch  35  train_loss 0.47563  val_loss 0.57746  val_AUPRC 0.1506  val_P@50 0.520  mean_prob 0.16008  distinct  87,340    0.8s
+epoch  36  train_loss 0.47150  val_loss 0.53271  val_AUPRC 0.1657  val_P@50 0.540  mean_prob 0.16535  distinct  87,273    0.8s
+epoch  37  train_loss 0.46839  val_loss 0.57099  val_AUPRC 0.1624  val_P@50 0.540  mean_prob 0.16292  distinct  87,291    0.8s
+epoch  38  train_loss 0.46416  val_loss 0.55420  val_AUPRC 0.1534  val_P@50 0.540  mean_prob 0.18593  distinct  87,326    0.8s
+epoch  39  train_loss 0.45882  val_loss 0.57352  val_AUPRC 0.1574  val_P@50 0.520  mean_prob 0.16709  distinct  87,255    0.8s
+epoch  40  train_loss 0.45838  val_loss 0.55489  val_AUPRC 0.1687  val_P@50 0.560  mean_prob 0.16156  distinct  87,306    0.8s
+epoch  41  train_loss 0.45328  val_loss 0.53624  val_AUPRC 0.1585  val_P@50 0.540  mean_prob 0.16066  distinct  87,069    0.8s
+epoch  42  train_loss 0.45038  val_loss 0.58786  val_AUPRC 0.1563  val_P@50 0.560  mean_prob 0.15664  distinct  87,307    0.8s
+epoch  43  train_loss 0.44498  val_loss 0.53153  val_AUPRC 0.1671  val_P@50 0.540  mean_prob 0.17919  distinct  87,332    0.8s
+epoch  44  train_loss 0.44238  val_loss 0.54262  val_AUPRC 0.1646  val_P@50 0.520  mean_prob 0.16920  distinct  87,305    0.8s
+epoch  45  train_loss 0.43691  val_loss 0.53993  val_AUPRC 0.1651  val_P@50 0.560  mean_prob 0.14726  distinct  87,287    0.8s
+epoch  46  train_loss 0.43629  val_loss 0.55509  val_AUPRC 0.1675  val_P@50 0.580  mean_prob 0.15425  distinct  87,316    0.8s
+epoch  47  train_loss 0.43692  val_loss 0.53886  val_AUPRC 0.1585  val_P@50 0.560  mean_prob 0.15413  distinct  87,267    0.8s
+early stop: 7 epochs without a better validation AUPRC (best 0.1687 at epoch 40)
+validation (best epoch) AUPRC 0.1687  (random baseline 0.00425, 39.7x)  AUROC 0.9544
+validation (best epoch) P@10 0.900
+validation (best epoch) P@50 0.560
+validation (best epoch) predicted prob  min 0.000000  max 1.000000  mean 0.161556  std 0.253334  distinct 87,306
+threshold 0.973918 chosen on validation (best epoch): F1 0.2033, precision 0.1809, recall 0.2320, 481 rows flagged
+validation (best epoch) scenario 1: 21 of 43 attack days (48.8%)
+validation (best epoch) scenario 2: 65 of 328 attack days (19.8%)
+validation (best epoch) scenario 3: 1 of 4 attack days (25.0%)
+best epoch 40, best val AUPRC 0.1687, threshold 0.973918, 36.4s total (0.78s/epoch on mps)
+checkpoint -> /Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed123.pt
+========================================================================
+model_a | seed 456 | full data
+========================================================================
+rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 277,042 rows in memory, 260,842 target rows, 1,119 positive (0.4290%)
+val: 200 users, 93,525 rows in memory, 88,125 target rows, 386 positive (0.4380%)
+pos_weight (train only) = 232.1  [259,723 negatives / 1,119 positives]
+random-baseline AUPRC on validation = 0.00438
+ModelA: 641 trainable parameters
+training ModelA: 641 parameters, device mps, batch 512, lr 0.001, pos_weight 232.1
+epoch   1  train_loss 0.99757  val_loss 0.84216  val_AUPRC 0.0590  val_P@50 0.200  mean_prob 0.30591  distinct  87,159    0.8s
+  guard | predicted prob min 0.003288 max 0.999989 mean 0.305909 std 0.216623
+  guard | 87,159 distinct predicted values, ok
+  guard | val AUPRC 0.0590 > random baseline 0.00438, ok
+epoch   2  train_loss 0.76683  val_loss 0.79501  val_AUPRC 0.0717  val_P@50 0.300  mean_prob 0.23978  distinct  87,189    0.8s
+epoch   3  train_loss 0.72400  val_loss 0.77512  val_AUPRC 0.0673  val_P@50 0.280  mean_prob 0.22253  distinct  87,193    0.8s
+epoch   4  train_loss 0.70239  val_loss 0.76583  val_AUPRC 0.0763  val_P@50 0.280  mean_prob 0.21416  distinct  87,193    0.8s
+epoch   5  train_loss 0.68352  val_loss 0.78108  val_AUPRC 0.0974  val_P@50 0.340  mean_prob 0.20798  distinct  87,254    0.8s
+epoch   6  train_loss 0.67251  val_loss 0.75165  val_AUPRC 0.0945  val_P@50 0.280  mean_prob 0.21807  distinct  87,045    0.8s
+epoch   7  train_loss 0.66066  val_loss 0.75611  val_AUPRC 0.0922  val_P@50 0.300  mean_prob 0.19693  distinct  87,233    0.8s
+epoch   8  train_loss 0.64889  val_loss 0.75521  val_AUPRC 0.1008  val_P@50 0.320  mean_prob 0.19506  distinct  86,932    0.8s
+epoch   9  train_loss 0.64060  val_loss 0.74540  val_AUPRC 0.1134  val_P@50 0.360  mean_prob 0.20997  distinct  87,218    0.8s
+epoch  10  train_loss 0.63291  val_loss 0.75271  val_AUPRC 0.1176  val_P@50 0.360  mean_prob 0.19720  distinct  87,103    0.8s
+epoch  11  train_loss 0.62665  val_loss 0.73844  val_AUPRC 0.1179  val_P@50 0.400  mean_prob 0.19416  distinct  86,837    0.8s
+epoch  12  train_loss 0.61552  val_loss 0.74564  val_AUPRC 0.1215  val_P@50 0.480  mean_prob 0.18727  distinct  87,133    0.8s
+epoch  13  train_loss 0.60968  val_loss 0.74957  val_AUPRC 0.1365  val_P@50 0.480  mean_prob 0.20028  distinct  87,229    0.8s
+epoch  14  train_loss 0.60646  val_loss 0.74961  val_AUPRC 0.1231  val_P@50 0.380  mean_prob 0.18397  distinct  87,167    0.8s
+epoch  15  train_loss 0.59903  val_loss 0.75844  val_AUPRC 0.1356  val_P@50 0.440  mean_prob 0.17350  distinct  87,234    0.8s
+epoch  16  train_loss 0.59086  val_loss 0.76482  val_AUPRC 0.1209  val_P@50 0.540  mean_prob 0.17706  distinct  86,876    0.8s
+epoch  17  train_loss 0.58912  val_loss 0.74923  val_AUPRC 0.1446  val_P@50 0.500  mean_prob 0.18655  distinct  87,216    0.8s
+epoch  18  train_loss 0.58658  val_loss 0.75142  val_AUPRC 0.1254  val_P@50 0.420  mean_prob 0.19528  distinct  87,240    0.8s
+epoch  19  train_loss 0.57951  val_loss 0.74753  val_AUPRC 0.1414  val_P@50 0.520  mean_prob 0.18276  distinct  87,223    0.8s
+epoch  20  train_loss 0.57315  val_loss 0.74224  val_AUPRC 0.1452  val_P@50 0.580  mean_prob 0.20165  distinct  87,250    0.8s
+epoch  21  train_loss 0.57213  val_loss 0.73668  val_AUPRC 0.1238  val_P@50 0.460  mean_prob 0.19263  distinct  86,629    0.8s
+epoch  22  train_loss 0.56658  val_loss 0.75023  val_AUPRC 0.1380  val_P@50 0.480  mean_prob 0.18713  distinct  87,219    0.8s
+epoch  23  train_loss 0.56168  val_loss 0.73698  val_AUPRC 0.1482  val_P@50 0.640  mean_prob 0.18863  distinct  87,222    0.8s
+epoch  24  train_loss 0.55773  val_loss 0.78170  val_AUPRC 0.1545  val_P@50 0.640  mean_prob 0.17213  distinct  87,237    0.8s
+epoch  25  train_loss 0.55451  val_loss 0.72853  val_AUPRC 0.1356  val_P@50 0.500  mean_prob 0.17647  distinct  87,117    0.8s
+epoch  26  train_loss 0.55152  val_loss 0.74771  val_AUPRC 0.1494  val_P@50 0.500  mean_prob 0.18211  distinct  87,075    0.8s
+epoch  27  train_loss 0.54792  val_loss 0.74493  val_AUPRC 0.1571  val_P@50 0.580  mean_prob 0.19264  distinct  87,066    0.8s
+epoch  28  train_loss 0.54133  val_loss 0.73212  val_AUPRC 0.1316  val_P@50 0.520  mean_prob 0.17760  distinct  87,137    0.8s
+epoch  29  train_loss 0.53974  val_loss 0.73121  val_AUPRC 0.1615  val_P@50 0.720  mean_prob 0.18041  distinct  87,233    0.8s
+epoch  30  train_loss 0.53568  val_loss 0.73962  val_AUPRC 0.1516  val_P@50 0.540  mean_prob 0.17601  distinct  87,220    0.8s
+epoch  31  train_loss 0.53016  val_loss 0.73169  val_AUPRC 0.1585  val_P@50 0.540  mean_prob 0.17424  distinct  87,202    0.8s
+epoch  32  train_loss 0.52692  val_loss 0.76115  val_AUPRC 0.1614  val_P@50 0.700  mean_prob 0.15957  distinct  87,200    0.8s
+epoch  33  train_loss 0.52499  val_loss 0.72558  val_AUPRC 0.1371  val_P@50 0.700  mean_prob 0.16545  distinct  87,167    0.8s
+epoch  34  train_loss 0.51773  val_loss 0.72984  val_AUPRC 0.1573  val_P@50 0.680  mean_prob 0.17887  distinct  87,190    0.8s
+epoch  35  train_loss 0.51663  val_loss 0.71405  val_AUPRC 0.1610  val_P@50 0.700  mean_prob 0.17720  distinct  87,209    0.8s
+epoch  36  train_loss 0.51291  val_loss 0.71051  val_AUPRC 0.1584  val_P@50 0.680  mean_prob 0.16792  distinct  87,233    0.8s
+early stop: 7 epochs without a better validation AUPRC (best 0.1615 at epoch 29)
+validation (best epoch) AUPRC 0.1615  (random baseline 0.00438, 36.9x)  AUROC 0.9201
+validation (best epoch) P@10 0.900
+validation (best epoch) P@50 0.720
+validation (best epoch) predicted prob  min 0.000000  max 1.000000  mean 0.180409  std 0.244673  distinct 87,233
+threshold 0.993927 chosen on validation (best epoch): F1 0.1947, precision 0.4486, recall 0.1244, 107 rows flagged
+validation (best epoch) scenario 1: 16 of 45 attack days (35.6%)
+validation (best epoch) scenario 2: 30 of 337 attack days (8.9%)
+validation (best epoch) scenario 3: 2 of 4 attack days (50.0%)
+best epoch 29, best val AUPRC 0.1615, threshold 0.993927, 27.7s total (0.77s/epoch on mps)
+checkpoint -> /Users/michaelkuksov/Developer/innersight/outputs/checkpoints/model_a_seed456.pt
+metrics -> /Users/michaelkuksov/Developer/innersight/outputs/model_a_metrics.json
+figure  -> /Users/michaelkuksov/Developer/innersight/outputs/figures/model_a_curves.png
+========================================================================
+model_a | full data | validation over seeds [42, 123, 456]
+AUPRC        0.1513 +/- 0.0197    random baseline 0.00429
+AUROC        0.9383 +/- 0.0141
+P@10         0.800 +/- 0.141
+P@50         0.573 +/- 0.115
+scenario 1   49 of 121 attack days across all seeds  (40.5%)
+scenario 2   225 of 990 attack days across all seeds  (22.7%)
+scenario 3   4 of 12 attack days across all seeds  (33.3%)

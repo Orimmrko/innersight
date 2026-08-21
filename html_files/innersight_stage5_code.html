@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 5 Code (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:21px; margin:34px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:21px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 5 code · defence preparation</p>
+  <h1>Walk me through the code</h1>
+  <p class="sub">The seven files in <code>modeling/</code>, what each part does and why it is written that way, the one abstraction that makes Stage 6 nearly free, the lines someone might point at, and why there are 28 tests and not 200.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what does your code do?”</strong></p>
+  <p>“It takes the z-scored table, decides once which rows either model is allowed to be asked about, clips the extremes, rescales each feature using only the training people, and then runs a training loop that has no idea which model it is training — so the second model can be dropped in later without any of that changing. Then it trains the first model three times, on three different splits, and keeps the best epoch's weights together with the threshold and the scaler in one file.”</p>
+</div>
+
+<h2>1 — What is in the folder</h2>
+
+<pre><code>modeling/
+├── __init__.py           what the stage is, and how to run it
+├── data.py               load → clip → row mask → split → scale → tensors
+├── models.py             ModelA. Stage 6 adds ModelB here and nowhere else
+├── metrics.py            AUPRC, AUROC, P@k, per-scenario recall, the threshold sweep
+├── train.py              the training loop — model-agnostic
+├── runner.py             three seeds, checkpoints, aggregation, curves
+├── run_model_a.py        the entry point: argument parsing and two Model-A lines
+├── test_modeling.py      28 tests
+└── README.md             the stage written up, with the measured results</code></pre>
+
+<p>Same layout as <code>extraction/</code>, <code>labeling/</code>, <code>baseline/</code> and <code>splitting/</code>: program, tests, README, run from the project folder. Every path, column name and constant comes from <code>config.py</code>.</p>
+
+<pre><span class="filetag">terminal</span><code>python -m modeling.run_model_a                  # 3 seeds, full data,  ~2 minutes
+python -m modeling.run_model_a --sample         # 30-person sample,     ~6 seconds
+python -m modeling.run_model_a --no-pos-weight  # the ablation
+python -m modeling.run_model_a --device cpu     # force the backend
+python -m pytest modeling/ -q                   # 28 tests, ~5 seconds</code></pre>
+
+<div class="note"><b>Fifth stage, fifth separate sample filename.</b> Stage 1 was burned once when a 7-second test run overwrote the 1,000-person table. Here <code>--sample</code> appends <code>.sample</code> to every checkpoint, metrics file and figure, and <code>--no-pos-weight</code> adds <code>_nopw</code>, so the ablation cannot overwrite the real result either. The filenames are built by functions in <code>config.py</code> rather than formatted inline, because a forgotten suffix is exactly how this goes wrong.</div>
+
+<h3>1.1 — The one file the brief did not ask for</h3>
+
+<p><code>runner.py</code> is an addition, and the reason is the whole point of the stage. Everything around the training loop — resolving the device, preparing the data, computing the class weight, running the three seeds, saving a checkpoint, aggregating mean ± spread, drawing the curves — is <em>identical</em> for both models. Leaving it inside <code>run_model_a.py</code> would force Stage 6 either to import from a file named after the other model, or to copy it.</p>
+
+<div class="note bad"><b>And a copy is where two runs quietly stop being identical.</b> Not immediately — later, when someone fixes something in one of them. The comparison would still produce a number and nobody would know.</div>
+
+<h2>2 — How the program is put together</h2>
+
+<pre><code>run_model_a.py          parse arguments, resolve the device
+      │
+      └─→ runner.run_experiment(model_factory, view_selector, ...)
+                │
+                for each seed:
+                ├─→ data.prepare(seed)          the whole pipeline, one function
+                ├─→ data.log_preparation(...)   the guards, printed before training
+                ├─→ seed_everything(seed)       BEFORE the model is built
+                ├─→ train.train_model(model, views, labels, config)
+                └─→ runner.save_checkpoint(...) weights + threshold + scaler
+                │
+                ├─→ summarise()   mean ± sd across seeds
+                ├─→ write metrics.json
+                └─→ plot_curves()</code></pre>
+
+<p>Every function takes data in and gives data back. <code>prepare</code> accepts an optional dataframe and split dictionary purely so the tests can hand it twelve synthetic people instead of the real file — which is why the whole suite runs in five seconds and never touches r4.2.</p>
+
+<h3>2.1 — The abstraction that makes Stage 6 nearly free</h3>
+
+<p><code>train_model</code> takes a model object and two <em>views</em>. A view is a tiny thing: it can tell you how many rows it has, and it can hand you a batch given a list of indices.</p>
+
+<pre><span class="filetag">train.py</span><code>class InputView(Protocol):
+    """What the loop needs from an input source, and nothing more."""
+
+    def __len__(self) -> int: ...
+    def gather(self, index: torch.Tensor) -> torch.Tensor: ...
+    def to(self, device: str | torch.device) -> InputView: ...</code></pre>
+
+<p>Model A passes a <code>PointView</code> — one row per day, shape <code>(batch, 18)</code>. Model B will pass a <code>WindowView</code>, shape <code>(batch, 18, 28)</code>. The training loop cannot tell the difference, and there is nothing anywhere in it that inspects the model's type or the shape of its input.</p>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“The training loop has no idea which model it is training. That is not tidiness, it is the experimental control. If Stage 6 ever needed to edit that file, the two models would not have been trained identically and I would have to say so in the results.”</p>
+</div>
+
+<h4>Why the windows are cut on demand rather than built up front</h4>
+
+<pre><span class="filetag">data.py</span><code>def gather(self, index: torch.Tensor) -> torch.Tensor:
+    selected = self.positions.index_select(0, index.to(self.positions.device))
+    offsets = torch.arange(-(self.days - 1), 1, dtype=torch.int64, ...)
+    rows = (selected.unsqueeze(1) + offsets.unsqueeze(0)).reshape(-1)
+    gathered = self.features.index_select(0, rows.to(device))
+    return gathered.reshape(-1, self.days, self.features.shape[1]).permute(...)</code></pre>
+
+<p>Materialising every 28-day window would store each row up to 28 times over: 437,000 × 18 × 28 floats, about <b>880 MB</b>. Slicing per batch costs nothing measurable, and — more importantly — it means Model B reads <em>the same array</em> Model A does, with the same scaler already applied, rather than a second tensor built by a second code path.</p>
+
+<h2>3 — The order of operations, and why swapping any two is silent</h2>
+
+<div class="callout">
+  <p><strong>This sequence is the stage. Everything else is arithmetic.</strong></p>
+</div>
+
+<pre><span class="filetag">data.py — prepare()</span><code>load dataset.parquet
+  → clip to ±10
+  → select target rows (day_index >= 27 within user)
+  → split rows by user using splits.json[seed]
+  → fit mean/std on TRAIN target rows only
+  → apply to every row (targets and history alike)
+  → build tensors</code></pre>
+
+<table>
+  <tr><th>Swap</th><th>What happens</th><th>Error?</th></tr>
+  <tr><td>standardise before clipping</td><td>rescaled by a deviation the 716-outlier inflated; every ordinary day squashed toward zero</td><td class="mono">none</td></tr>
+  <tr><td>fit the scaler before splitting</td><td>validation statistics leak into training; results improve slightly and inexplicably</td><td class="mono">none</td></tr>
+  <tr><td>mask after fitting</td><td>scaler describes 27,000 warm-up rows no model ever sees</td><td class="mono">none</td></tr>
+  <tr class="hi"><td>skip the mask for Model B only</td><td>Model B gains ~6% AUPRC for free</td><td class="mono">none</td></tr>
+</table>
+
+<p>Four ways to get a wrong answer with no symptom. That is why the order lives inside one function rather than being spread across a script, and why three of the four have a test pinning them.</p>
+
+<h2>4 — The lines someone might point at</h2>
+
+<div class="card">
+<h4>The row mask — one comparison, and the reason it exists</h4>
+<pre><span class="filetag">data.py</span><code>def target_mask(frame, window_days=WINDOW_DAYS):
+    """True for rows that may be *predicted*: day_index >= window_days - 1."""
+    return day_index(frame) >= (window_days - 1)</code></pre>
+<p>Trivial to read, and it is the single most consequential line in the stage. It is applied identically to Model A and Model B, and to training and evaluation alike. §3 of the companion document explains what breaks without it.</p>
+
+<h4>…and the check underneath it that nobody asked for</h4>
+<pre><span class="filetag">data.py</span><code>gaps = frame.groupby(USER_COLUMN, sort=False)[DAY_COLUMN].diff()
+irregular = gaps.notna() & (gaps != pd.Timedelta(days=1))
+if bool(irregular.any()):
+    raise DataError(
+        f"{int(irregular.sum())} row(s) break calendar-day density ... "
+        f"Model B's windows assume one row per calendar day per user.")</code></pre>
+<p>The day index is computed by counting rows within a person, which is only the same thing as counting <em>days</em> if the calendar is dense. Stage 2 guarantees it is. If that ever stopped being true, Model B would take “the 27 rows before this one” and call it a 28-day window when it might span forty days — and the model would train, converge and report a number.</p>
+<p>So the code refuses to proceed instead of assuming. It costs one groupby and it is checked on every run.</p>
+
+<h4>The clip, and where the count comes from</h4>
+<pre><span class="filetag">data.py</span><code>values = frame[list(FEATURE_NAMES)].to_numpy(dtype=np.float32, copy=True)
+touched = int((np.abs(values) > limit).any(axis=1).sum())
+np.clip(values, -limit, limit, out=values)</code></pre>
+<p>The <code>touched</code> count is not decoration — it is printed on every run (2,138 rows, 0.46%) and it is the diagnostic that says whether ±10 is a sane bound. If that number were 15% rather than 0.5%, the clip would be destroying signal rather than trimming a tail, and the report would show it.</p>
+
+<h4>A feature that never varies is left alone, not divided by a floor</h4>
+<pre><span class="filetag">data.py</span><code>mean = features.mean(axis=0, dtype=np.float64)
+std  = features.std(axis=0, dtype=np.float64)
+std  = np.where(std &lt; STD_FLOOR, 1.0, std)</code></pre>
+<p>A <code>np.maximum(std, 1e-6)</code> here would be the obvious choice and would be wrong. <code>large_attachment_count</code> is identically zero across all of r4.2, so its deviation is exactly 0; dividing its floating-point noise by 10<sup>−6</sup> turns a dead feature into inputs of order 10<sup>6</sup>. Dividing by 1 leaves it at zero forever, which is what a feature with no data should contribute.</p>
+<p>There is a test that constructs exactly this case and asserts the column comes out all zeros and all finite.</p>
+
+<h4>The class weight — computed, never written down</h4>
+<pre><span class="filetag">train.py</span><code>if pos_weight is None and config.use_pos_weight:
+    pos_weight = compute_pos_weight(y_train.cpu())
+...
+criterion = nn.BCEWithLogitsLoss(pos_weight=weight_tensor)</code></pre>
+<p>The caller passes it in from <code>PreparedData.pos_weight()</code>, which is defined on the <em>training</em> split and raises if there are no positives. Three seeds produced 229.7, 225.3 and 232.1 — three different training splits, three different weights.</p>
+<p>Hardcoding a value, or computing it from the whole table, would put the test set's class balance into the loss function. The test asserts it equals <code>n_neg / n_pos</code> of the training split, that it <em>changes</em> when the split changes, and that it is <em>not</em> the whole table's ratio.</p>
+
+<h4>Stopping on the right quantity, and keeping the right epoch</h4>
+<pre><span class="filetag">train.py</span><code>if record.val_auprc > best_auprc:
+    best_auprc = record.val_auprc
+    best_epoch = epoch
+    best_state = copy.deepcopy({k: v.detach().cpu().clone()
+                                for k, v in model.state_dict().items()})
+    best_probs = val_probs
+    epochs_without_improvement = 0
+else:
+    epochs_without_improvement += 1
+    if epochs_without_improvement >= config.patience:
+        break</code></pre>
+<p>Two decisions in one block. Early stopping watches <b>validation AUPRC, not validation loss</b> — loss is dominated by the 99.6% of rows nobody cares about, and can improve for several epochs while the ranking gets worse. And the checkpoint kept is the <b>best</b> epoch's weights, not the last, with <code>best_probs</code> saved alongside so the reported metrics describe the file that was actually written.</p>
+<p>Seed 42 makes the point: best at epoch 16, ran to 23. Without this, the saved model would be the epoch-23 one and the reported AUPRC would be the epoch-16 one.</p>
+
+<h4>The threshold is searched, never assumed</h4>
+<pre><span class="filetag">metrics.py</span><code>quantiles  = np.quantile(probs, np.linspace(0.0, 1.0, points))
+candidates = np.unique(np.concatenate([quantiles, probs[labels == 1]]))</code></pre>
+<p>Candidates are quantiles of the <em>observed</em> scores, plus every score a real positive received. A linear grid over [0, 1] would be the obvious choice and would waste almost all of its budget: a weighted model's outputs cluster, and the three chosen thresholds came out at 0.958, 0.974 and <b>0.9939</b> — a 512-point linear grid has five candidates above 0.99.</p>
+<p>The chosen value is then written <em>inside the checkpoint</em>. A model without its threshold is not a working system, and recomputing it on test data at report time would be leakage of the easiest possible kind to commit by accident.</p>
+
+<h4>Seeding happens before the model exists</h4>
+<pre><span class="filetag">runner.py</span><code># Seed BEFORE the model exists. `train_model` seeds too, but by then the
+# weights have already been drawn from whatever state the process was in.
+seed_everything(seed)
+model = model_factory()</code></pre>
+<p>This one was found by a test. Seeding only inside <code>train_model</code> looks correct — but the model is constructed by the caller, one line earlier, so its initial weights come from whatever the process happened to be doing. Two runs of “seed 42” would then differ, and “mean ± standard deviation across three seeds” would be measuring the process as much as the split.</p>
+<p>The determinism test mirrors the real call order precisely, so it would fail again if anyone reordered those two lines.</p>
+</div>
+
+<h2>5 — Two kinds of checking, and why both</h2>
+
+<p>Same split as Stages 1 to 3. Tests prove the code does what we wrote. Runtime guards prove that what we wrote is true of the real data, on every run.</p>
+
+<table>
+  <tr><th></th><th>stops the run</th><th>warns and continues</th></tr>
+  <tr><td><b>Contains</b></td><td>things that are impossible</td><td>things that are suspicious</td></tr>
+  <tr><td><b>Example</b></td><td>a user in both train and validation</td><td>fewer distinct predicted values than the floor</td></tr>
+  <tr><td><b>Why</b></td><td>the result would be meaningless</td><td>it might be a real property of a small run</td></tr>
+</table>
+
+<div class="card">
+<h4>Printed before a single gradient step</h4>
+<pre><span class="filetag">actual output, seed 42, full data</span><code>rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 280,809 rows in memory, 264,609 target rows, 1,147 positive (0.4335%)
+val:   200 users,  90,591 rows in memory,  85,191 target rows,   362 positive (0.4249%)
+pos_weight (train only) = 229.7  [263,462 negatives / 1,147 positives]
+random-baseline AUPRC on validation = 0.00425</code></pre>
+<p>Every line is a way the project could have failed quietly. Note <code>rows in memory</code> against <code>target rows</code> — the gap is the history Model B will read but never be asked about, which is the row-mask rule made visible.</p>
+
+<h4>Printed after epoch 1, while it is still cheap to stop</h4>
+<pre><span class="filetag">actual output</span><code>  guard | predicted prob min 0.045485 max 1.000000 mean 0.334230 std 0.204481
+  guard | 84,067 distinct predicted values, ok
+  guard | val AUPRC 0.0423 > random baseline 0.00425, ok</code></pre>
+
+<h4>The guard that would reject a good-looking result</h4>
+<pre><span class="filetag">run_model_a.py</span><code># A non-zero exit code on a suspicious run, so a scripted pipeline stops
+# instead of writing a leaked number into a results table.
+if summary["leakage_suspected_any_seed"]:
+    return 3</code></pre>
+<p>Validation AUPRC above 0.95 is treated as a bug. At 0.4% positives with window labels, near-perfect ranking means leakage — most likely a split applied by row instead of by person, or a scaler fitted on everything. The program refuses to write a result rather than celebrate one.</p>
+</div>
+
+<h3>5.1 — The collapse floor, and why it is not a constant</h3>
+
+<pre><span class="filetag">metrics.py</span><code>@property
+def collapse_floor(self) -> int:
+    return min(MIN_DISTINCT_PREDICTIONS, max(2, self.n_rows // 10))</code></pre>
+
+<div class="note"><b>This started as a plain constant of 1,000 and a test caught it.</b> No model can produce a thousand distinct scores for 372 rows, so on any small run the guard fired every single time. A guard that cries wolf is a guard that has been turned off by the time it matters — so the floor scales with the number of rows, and on the real validation split of 85,191 rows it resolves back to 1,000.</div>
+
+<h2>6 — The 28 tests</h2>
+
+<p>The rule for choosing them is inherited from Stages 1 to 4: <b>test the things that go wrong silently.</b> No crash, no missing value — just a number that is subtly wrong and survives into the results table. None of them read the real dataset; each builds its own synthetic people, so the suite runs in five seconds and stays honest.</p>
+
+<h4>The row mask — 5 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">first_27_days_are_never_prediction_targets</td><td><b>the decision the comparison rests on.</b> Asserts both sides of the boundary: day 27 is never a target, day 28 always is</td></tr>
+  <tr><td class="mono">row_mask_loses_no_positives</td><td>an attack day silently discarded by the warm-up rule</td></tr>
+  <tr><td class="mono">mask_applies_within_user_not_across_the_table</td><td>one shared warm-up instead of one per person — plausible, and it would silently drop 27 days of the whole table</td></tr>
+  <tr><td class="mono">non_dense_calendar_is_refused</td><td>a 28-row window spanning more than 28 days</td></tr>
+  <tr><td class="mono">history_rows_stay_available_to_model_b</td><td>the mask removing history rather than just retargeting. Asserts the last day of each window <em>is</em> the target row</td></tr>
+</table>
+
+<h4>The scaler — 4 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">standardiser_ignores_validation_rows</td><td>leakage. The validation people are built 50× larger and shifted by 1,000, so if a single one of their rows touched the fit, the statistics could not possibly still be near zero</td></tr>
+  <tr><td class="mono">standardiser_is_fitted_on_target_rows_only</td><td>a scale computed from 27,000 rows nobody ever scores</td></tr>
+  <tr><td class="mono">standardised_train_targets_have_zero_mean_unit_std</td><td>the transform being applied in the wrong direction</td></tr>
+  <tr><td class="mono">constant_feature_is_left_at_zero_not_divided_by_a_floor</td><td>the dead feature exploding to 10<sup>6</sup> instead of staying silent</td></tr>
+</table>
+
+<h4>Clipping — 2 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">clipping_bounds_extremes_and_leaves_ordinary_values_alone</td><td>the bound being wrong or applied to the wrong columns. Uses r4.2's real extremes: 716.26 → 10, −34.94 → −10, 0.4 untouched</td></tr>
+  <tr class="hi"><td class="mono">clipping_happens_before_standardising</td><td><b>the order.</b> Plants a 716 in the training data and asserts the scaled column still has unit spread — which is only true if the clip came first</td></tr>
+</table>
+
+<h4>The class weight — 3 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">pos_weight_is_train_only_and_moves_with_the_split</td><td>leakage through the loss function. Asserts it changes when the split changes, and is not the whole table's ratio</td></tr>
+  <tr><td class="mono">compute_pos_weight_matches_the_definition</td><td>an inverted ratio — which would train the model to ignore the positives harder</td></tr>
+  <tr><td class="mono">training_without_positives_is_refused</td><td>a division by zero dressed as a configuration</td></tr>
+</table>
+
+<h4>The model — 2 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">model_a_returns_raw_logits</td><td>a sigmoid hiding in <code>forward</code>, squashing the output twice. Feeds inputs 50× normal and asserts something lands outside [0, 1]</td></tr>
+  <tr><td class="mono">model_a_is_small_on_purpose</td><td>a future “improvement” quietly enlarging the control arm</td></tr>
+</table>
+
+<h4>Determinism and split integrity — 6 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">same_seed_twice_gives_identical_weights</td><td><b>this one found a real bug.</b> See below</td></tr>
+  <tr><td class="mono">different_seeds_give_different_weights</td><td>a seed that is not actually being used</td></tr>
+  <tr><td class="mono">no_user_appears_in_both_train_and_val_tensors</td><td>a person's Monday training a model tested on their Tuesday — which looks <em>excellent</em></td></tr>
+  <tr><td class="mono">overlapping_splits_are_refused</td><td>the guard not firing</td></tr>
+  <tr><td class="mono">stage_5_never_builds_the_test_split</td><td>test data reachable from this stage at all</td></tr>
+  <tr><td class="mono">real_splits_file_parses_if_present</td><td>Stage 4's file shape changing underneath</td></tr>
+</table>
+
+<h4>The collapse detector and metrics — 6 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr class="hi"><td class="mono">collapse_is_reported_through_a_real_training_run</td><td>the alarm being wired up but not connected. Feeds a deliberately degenerate model through the whole loop and asserts the flag is set and the warning logged</td></tr>
+  <tr><td class="mono">collapse_guard_fires_on_a_degenerate_model</td><td>the detector itself</td></tr>
+  <tr><td class="mono">collapse_guard_stays_quiet_on_a_healthy_spread</td><td>false alarms — the failure that gets a guard ignored</td></tr>
+  <tr><td class="mono">threshold_sweep_does_not_default_to_half</td><td>assuming 0.5. Builds scores where every positive sits at 0.02 and asserts the sweep finds it</td></tr>
+  <tr><td class="mono">precision_at_k_reads_the_top_of_the_ranking</td><td>P@k reading the wrong end of the sort</td></tr>
+  <tr><td class="mono">end_to_end_run_beats_the_random_baseline</td><td>the pieces working alone but not together</td></tr>
+</table>
+
+<div class="note bad"><b>Five failed on the first run. One was a real bug, one was a real design flaw, three were bad tests.</b><br>
+The <b>real bug</b>: <code>same_seed_twice_gives_identical_weights</code> failed because the model was constructed <em>before</em> anything was seeded, so its starting weights depended on whatever the process had already done. Reproducibility was an illusion, and “mean ± sd across three seeds” would have been partly measuring process state. Fixed by seeding in <code>runner.py</code> before the factory is called.<br>
+The <b>design flaw</b>: the collapse detector fired on every small run because its floor was a fixed 1,000 (§5.1).<br>
+The three bad tests were my fault — a comparison split that overlapped itself, and two fixtures constructed so that the thing being tested could not have differed.</div>
+
+<div class="say">
+  <span class="lbl">If asked “only twenty-eight tests?”</span>
+  <p>“Twenty-eight chosen by a rule rather than to hit a coverage number: every one targets a failure that gives no error message. The one I would point at builds a validation split fifty times larger and shifted by a thousand, and asserts the feature scaling does not move by a millionth — because if a single validation row had touched that fit, it could not possibly still be near zero. And five of the twenty-eight failed the first time I ran them. One of those was reproducibility being an illusion, which is not something I would have found by reading the code.”</p>
+</div>
+
+<h2>7 — How the finished run was checked</h2>
+
+<div class="callout">
+  <p><strong>The tests check the code. These check the run.</strong></p>
+</div>
+
+<p>Four properties of the real three-seed run, each measured rather than assumed:</p>
+
+<table>
+  <tr><th>Property</th><th>Expected</th><th>Measured</th></tr>
+  <tr><td>positives lost to the row mask</td><td class="mono">0</td><td class="mono">0 on all three seeds</td></tr>
+  <tr><td>class weight, from the training split</td><td class="mono">differs per seed</td><td class="mono">229.7 / 225.3 / 232.1</td></tr>
+  <tr><td>distinct predicted values (collapse)</td><td class="mono">tens of thousands</td><td class="mono">84,067 – 87,393 of 85–88k rows</td></tr>
+  <tr><td>AUPRC against the leakage line</td><td class="mono">well under 0.95</td><td class="mono">0.124 – 0.169</td></tr>
+</table>
+
+<p>The class weight is the interesting one. It came out around <b>230</b>, not the <b>244</b> the design brief predicted — because it is computed on the rows that are actually scored, after the warm-up mask, where the training positive rate is 0.43% rather than 0.41%. That is a small arithmetic detail with a useful consequence: <b>if any later stage prints 244, the mask is not being applied before the weight.</b></p>
+
+<h2>8 — The device, and why it is in the code at all</h2>
+
+<pre><span class="filetag">config.py</span><code>def resolve_device(preference: str = DEVICE_PREFERENCE) -> str:
+    """``"auto"`` prefers MPS and falls back to CPU; an explicit ``"mps"`` on a
+    machine without Metal is a mistake worth an exception rather than a silent
+    downgrade, because the whole point of asking for MPS is to test it."""</code></pre>
+
+<table>
+  <tr><th>Run</th><th class="mono">CPU</th><th class="mono">Apple GPU (MPS)</th></tr>
+  <tr><td>sample, 3 seeds</td><td class="num">3.18 s</td><td class="num">5.64 s</td></tr>
+  <tr class="hi"><td>full data</td><td colspan="2" class="num">0.77 s/epoch on MPS · whole 3-seed run ≈ 82 s</td></tr>
+</table>
+
+<div class="note"><b>The CPU won, and that is the honest thing to report.</b> At 641 parameters a batch is a few hundred thousand arithmetic operations — microseconds of work — while every GPU operation costs tens of microseconds simply to dispatch. GPUs win on large matrices, not on many tiny ones.<br><br>
+MPS is used anyway, and the reason is portability rather than speed: a stray <code>.numpy()</code>, an accidental 64-bit float, or an operation with no Metal implementation would all pass silently on CPU and fail the moment the code met a real accelerator. Running on Metal is what <em>proves</em> the pipeline is device-agnostic. The benchmark then reports honestly what that cost.</div>
+
+<p>Both models must use the same backend — floating-point results differ subtly between them, and a reader can fairly ask whether a two-model difference is architecture or arithmetic. The resolved device is printed in the log and stored inside every checkpoint.</p>
+
+<h2>9 — What is in a checkpoint, and why all of it</h2>
+
+<pre><span class="filetag">runner.py</span><code>{
+  "model_class", "state_dict",          the weights
+  "threshold", "threshold_selection",   chosen on validation, not assumed
+  "standardiser": {mean, std, feature_names},
+  "seed", "device", "pos_weight", "best_epoch", "best_val_auprc",
+  "val_random_baseline", "n_parameters", "training_config",
+  "input_kind", "window_days",          "point" for A, "window" for B
+}</code></pre>
+
+<div class="note good"><b>Weights, threshold and scaler travel together, deliberately.</b> A model whose decision threshold lives in a notebook and whose input scaling lives in a dataframe is not a system — it is a matrix. Stage 7 must apply <em>exactly</em> the transform these weights were trained under and <em>exactly</em> the threshold validation chose, and the only way to guarantee that is for the file to carry them. <code>feature_names</code> is stored too, so loading a checkpoint after someone reorders <code>config.FEATURE_NAMES</code> raises instead of silently scoring the wrong feature.</div>
+
+<h2>10 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Walk me through what happens when I run this.</div><div class="a">
+<p>It resolves the device once and prints it. Then, for each of three seeds: read the z-scored table, clip everything to ±10, mark which rows may be predicted, split the rows by person using Stage 4's file, fit a mean and deviation per feature on the training target rows only, apply that to every row, build tensors.</p>
+<p>Then it prints the guard block — row counts, positives lost to the mask, the class weight, the random baseline — builds the model, and trains. Each epoch reports five numbers plus a distinct-value count. It stops when validation AUPRC has not improved for seven epochs and keeps the best epoch's weights, sweeps a threshold on validation, and saves weights, threshold and scaler in one file. At the end, mean ± spread across the three seeds, a metrics file and a figure. About two minutes.</p></div></div>
+
+<div class="qa"><div class="q">What is the most dangerous line in this code?</div><div class="a">
+<p>The row mask, because it is one comparison and it decides whether the entire final comparison means anything. If Model B skipped those rows and Model A did not, Model B would gain about 6% of AUPRC purely because the rows it cannot see are the easiest negatives in the table. Nothing would flag it — you would just conclude that temporal context helps more than it does.</p>
+<p>Runner-up is the class weight. Get that wrong and the model learns to say “no” to everyone, which is 99.6% accurate, worthless, and produces a completely healthy-looking loss curve. That is why the per-epoch log has a distinct-value count in it.</p></div></div>
+
+<div class="qa"><div class="q">Why does the training loop take a “view” instead of a tensor?</div><div class="a">
+<p>Two reasons. The experimental one: it means the loop cannot know which model it is training, so Stage 6 passes a convolutional network and a 28-day window through the identical function. If Stage 6 had to edit the loop, the two models would not have been trained identically.</p>
+<p>The practical one: Model B's windows overlap heavily — every row appears in up to 28 of them. Materialising them all would be about 880 MB of mostly duplicated data. The view cuts each batch on demand from the same array Model A reads, with the same scaler already applied, so there is exactly one code path from the parquet file to both models' inputs.</p></div></div>
+
+<div class="qa"><div class="q">You stop on AUPRC rather than loss. Why?</div><div class="a">
+<p>Because validation loss is dominated by the 99.6% of rows I do not care about, and it can improve for several epochs while the ranking of the interesting rows gets worse. AUPRC is what I actually want maximised, so I select on it directly.</p>
+<p>It also changes which weights get saved. Seed 42's best epoch was 16 and it ran to 23 — keeping the last epoch would have saved a model that was measurably worse than the one whose number I report.</p></div></div>
+
+<div class="qa"><div class="q">Why not use 0.5 as the threshold, like everyone does?</div><div class="a">
+<p>Because the loss is weighted by a factor of about 230, so the outputs are deliberately not calibrated around 0.5 — the model is trained to over-predict the rare class. The three thresholds the sweep chose were 0.958, 0.974 and 0.994. A default of 0.5 would flag an enormous fraction of the data.</p>
+<p>The sweep uses quantiles of the observed scores rather than a linear grid, because a weighted model's outputs cluster and a linear grid over [0,1] puts almost all its candidates in empty space — with 512 linear points, only five of them are above 0.99. And the chosen value goes inside the checkpoint, because recomputing it on test data in Stage 7 would be leakage.</p></div></div>
+
+<div class="qa"><div class="q">Which test would you show me if I only had time for one?</div><div class="a">
+<p>The scaler leakage test. It builds a validation split whose feature values are fifty times larger and shifted by a thousand, runs the real pipeline, and asserts the fitted mean and deviation are unchanged to within a millionth — and adds a sanity floor that the mean must still be near zero, which could not possibly be true if a single validation row had touched the fit.</p>
+<p>I would show that one because leakage is the failure that makes results look <em>better</em>, which means nobody goes looking for it.</p></div></div>
+
+<div class="qa"><div class="q">How much of this does Stage 6 change?</div><div class="a">
+<p>One class in <code>models.py</code> and one entry-point file that passes a 28-day window view instead of a single-day one. The data pipeline, the training loop and the runner are untouched, and the window path already exists and is tested — there is a test asserting the last day of each window is the target row itself.</p>
+<p>The check I will run is the guard block: if Model B's preparation prints anything other than 464,687 rows, 27,000 masked, zero positives lost and 2,138 clipped, then the two models are not on the same data and the comparison is void.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Seven files, twenty-eight tests, two minutes to run. Most of it is not about Model A at all — it is about making sure that the model arriving in Stage 6 differs from this one in exactly one way. The hard parts are the four or five places where being wrong produces no error: a row mask applied to one model and not the other, a clip applied after the rescaling instead of before, a scaler that saw the validation set, a class weight taken from the whole table, and a seed set one line too late. That last one I did not spot by reading the code — a test did.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 5 code · <code>modeling/</code>.
+  Every code snippet is copied from the real files. Every number was measured from the run on 8 August 2026.
+  The <code>--no-pos-weight</code> ablation is the one measurement still outstanding.
+</footer>
+
+</div>
+</body>
+</html>

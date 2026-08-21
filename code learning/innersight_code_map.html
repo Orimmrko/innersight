@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — where everything lives</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · navigation</p>
+  <h1>Where everything lives</h1>
+  <p class="sub">Not a list of functions — the four rules that let you guess correctly. If someone asks “show me where you do X”, you should be able to name the file before you open anything.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The goal is not memorising 158 function names.</strong></p>
+  <p>It is being able to say, out loud and without scrolling: <em>“That's Stage 3, so it's in <code>baseline/</code>, and it's a transformation rather than a check, so it's in the top third of the file.”</em> Then open it and be right.</p>
+</div>
+
+<h2><span class="n">1</span>The four rules</h2>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b>One package per pipeline stage.</b>
+    <p>Six folders, one for each transformation of the data. The question “which folder?” is really the question “which stage of the pipeline changes this?”</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b>Inside a single-file stage, five zones in a fixed order.</b>
+    <p>Errors → the real work → verification → statistics and reports → the CLI. Every one of Stages 1–4 has exactly this shape, so knowing <em>what kind</em> of function you want tells you roughly how far down to scroll.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b>Private helpers sit directly below the function that calls them.</b>
+    <p><code>_calendar_index</code> is immediately under <code>calendar_fill</code>. <code>_window_mask</code> is immediately under <code>attach_labels</code>. Find the public function and its machinery is the next thing down — you never have to hunt for it.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b>Names are verb-first and say what they do, not how.</b>
+    <p><code>causal_z_scores</code>, <code>calendar_fill</code>, <code>compute_pos_weight</code>, <code>sweep_threshold</code>, <code>recall_by_position</code>. If you can phrase the thing you want as a verb phrase, you have most of the function name already.</p>
+  </div>
+</div>
+
+<h3>The five zones, using a real file</h3>
+
+<p><code>baseline/baseline.py</code> — Stage 3, 889 lines. Every single-file stage looks like this:</p>
+
+<div class="zones">
+<span class="c">line</span>
+ 122   <span class="z">ZONE 1 · errors</span>        BaselineError
+<span class="c">                                  the exception this stage raises</span>
+
+ 131   <span class="z">ZONE 2 · the work</span>      std_floors
+ 204                          causal_z_scores          <span class="c">← the thesis</span>
+ 298                          build_dataset
+<span class="c">                                  the actual transformation. Usually the shortest zone.</span>
+
+ 329   <span class="z">ZONE 3 · verify</span>        verify
+<span class="c">                                  assertions about the output. Raises if violated.</span>
+
+ 401   <span class="z">ZONE 4 · analysis</span>      collapse
+ 420                          validation_gate
+ 508                          benign_exceedance
+<span class="c">                                  measurements ABOUT the output, not part of producing it</span>
+
+ 564   <span class="z">ZONE 5 · report</span>        BaselineStats
+ 582                          compute_stats
+ 609                          format_report
+ 723                          format_user_report
+<span class="c">                                  everything printed to the terminal</span>
+
+ 803   <span class="z">ZONE 6 · CLI</span>           main
+<span class="c">                                  argument parsing, wiring, always last</span>
+</div>
+
+<div class="note good"><b>Why this matters tomorrow.</b> If you are asked <em>“where do you compute the z-scores?”</em> — that is Zone 2, near the top. If asked <em>“how do you know they're right?”</em> — Zone 3 or 4, the middle. If asked <em>“what does it print?”</em> — Zone 5, near the bottom. <b>You can navigate to the right third of a 900-line file from the shape of the question alone.</b></div>
+
+<h3>The names that repeat — say “convention”, not “coincidence”</h3>
+
+<p>Nine names appear once per package: <code>main</code>, <code>build_parser</code>, <code>format_report</code>, <code>verify</code>, <code>summarise</code>, <code>format_user_report</code>, <code>write</code>, <code>run</code>, <code>compute_stats</code>.</p>
+
+<p>That is deliberate parallel structure. The line to use:</p>
+
+<div class="callout"><p><strong>“Every stage exposes the same surface — a <code>verify</code>, a <code>format_report</code> and a <code>main</code>. Once you can read one stage you can read all seven.”</strong></p></div>
+
+<h2><span class="n">2</span>What kind of function lives in each package</h2>
+
+<div class="card">
+  <h3><span class="path">extraction/</span> <span class="stage">Stage 1</span></h3>
+  <p><b>Anything that touches a raw CSV.</b> This is the only package in the project that knows the raw logs exist. If a question involves the 16 GB, chunking, parsing dates, or the five source files, it is here and nowhere else.</p>
+  <p><b>Shape of the functions:</b> five <code>build_*_partial(chunk)</code> builders — one per log — then a fold (<code>aggregate_log</code>) and a join (<code>combine_daily_counts</code>).</p>
+  <p><b>The one to know:</b> <code>_compact_distinct</code> — why counting distinct PCs can't be done per chunk.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">labeling/</span> <span class="stage">Stage 2</span></h3>
+  <p><b>Anything involving the answer key, or the calendar.</b> The only package that opens <code>insiders.csv</code>. If the question contains the words “label”, “attack window”, “ground truth” or “missing days”, it is here.</p>
+  <p><b>The two to know:</b> <code>calendar_fill</code> (zero-fills gaps so 28 rows really are 28 days) and <code>attach_labels</code> (marks days inside an attack window).</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">baseline/</span> <span class="stage">Stage 3</span></h3>
+  <p><b>The thesis.</b> Everything about “unusual for <em>this person</em>” is here. If the question is about z-scores, personal history, the standard-deviation floor, or the 2σ gate, this is the package.</p>
+  <p><b>The one to know:</b> <code>causal_z_scores</code> — scores each day against that person's <em>prior</em> days only. Line 204.</p>
+  <p><b>Named oddly but correctly:</b> <code>collapse</code> reduces 18 z-scores to one number, and returns <em>both</em> the mean and the max because the conclusion flips depending on which you pick.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">splitting/</span> <span class="stage">Stage 4</span></h3>
+  <p><b>Who goes where.</b> Small and self-contained — it never touches the 18 features, only <code>user</code>, <code>user_scenario</code> and <code>label</code>. Anything about train/validation/test membership, stratification or seeds is here.</p>
+  <p><b>The one to know:</b> <code>split_users</code> — assigns <em>users</em>, never rows.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">modeling/</span> <span class="stage">Stages 5 + 6</span></h3>
+  <p><b>Both models, and everything they share.</b> The only multi-file package where the split is <em>by job</em> rather than by stage:</p>
+  <table>
+    <tr><td class="mono">data.py</td><td>getting numbers into tensors — clip, mask, split, standardise</td></tr>
+    <tr><td class="mono">models.py</td><td>the two architectures. Nothing else. 202 lines.</td></tr>
+    <tr><td class="mono">train.py</td><td>the training loop. <b>Knows nothing about which model it is training.</b></td></tr>
+    <tr><td class="mono">metrics.py</td><td>every number that scores a prediction</td></tr>
+    <tr><td class="mono">runner.py</td><td>orchestration — three seeds, checkpoints, curves</td></tr>
+  </table>
+  <p><b>The intuition:</b> ask <em>“is this about the data, the architecture, the loop, the score, or the orchestration?”</em> — that question maps one-to-one onto the five files.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">evaluation/</span> <span class="stage">Stage 7</span></h3>
+  <p><b>Reads checkpoints, never trains anything.</b> Also one file per job, and the file names are unusually literal:</p>
+  <table>
+    <tr><td class="mono">corpus.py</td><td>the rows being evaluated</td></tr>
+    <tr><td class="mono">checkpoints.py</td><td>loading saved models</td></tr>
+    <tr><td class="mono">scoring.py</td><td>checkpoint + rows → probabilities</td></tr>
+    <tr><td class="mono">guards.py</td><td><b>everything that could go wrong, as named checks</b></td></tr>
+    <tr><td class="mono">latency.py</td><td>when in an attack was the insider first caught</td></tr>
+    <tr><td class="mono">falsepositives.py</td><td>inspecting the top-scoring benign rows</td></tr>
+    <tr><td class="mono">report.py</td><td>writing the results document</td></tr>
+    <tr><td class="mono">figures.py</td><td>the plots</td></tr>
+  </table>
+</div>
+
+<h2><span class="n">3</span>The two files that aren't stages</h2>
+
+<div class="card">
+  <h3><span class="path">config.py</span></h3>
+  <p><b>Every constant in the project, and nothing else defines one.</b> If the question is <em>“where does the number 28 come from?”</em> or <em>“why 07:00 to 19:00?”</em> or <em>“which websites count as job sites?”</em> — the answer is always this file, and the reasoning is in a comment next to the value.</p>
+  <p><b>The line worth knowing:</b> <code>FEATURE_NAMES</code> — that tuple's <em>order</em> is the input-vector layout. Reordering it raises no error and silently makes every saved checkpoint score the wrong feature.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">evaluation/guards.py</span></h3>
+  <p><b>The single best file to open in a viva.</b> Eight functions, each named for the thing it refuses to allow:</p>
+  <pre><code>split_disjointness            no user in two splits
+standardiser_from_checkpoint  scaling wasn't refitted on test
+threshold_from_checkpoint     the cutoff wasn't re-picked on test
+identical_rows                both models scored exactly the same days
+finite_predictions            no NaN, no infinity
+beats_random                  better than the 0.004 baseline
+not_suspiciously_good         above ~0.95 means leakage, not success
+reproduces_training           re-scoring validation matches what training logged</code></pre>
+  <p>If asked anything about integrity, leakage or trustworthiness — <b>open this file and read the function names aloud.</b> It answers faster than any explanation you could give.</p>
+</div>
+
+<h2><span class="n">4</span>Finding anything in five seconds</h2>
+
+<p>Three questions, in order:</p>
+
+<div class="rule">
+  <div class="num">Q1</div>
+  <div class="body">
+    <b>Which stage changes this?</b>
+    <p>Raw files → <code>extraction</code>. Labels or the calendar → <code>labeling</code>. Anything “unusual for this person” → <code>baseline</code>. Who's in which group → <code>splitting</code>. Tensors, architectures, training, scores → <code>modeling</code>. Reading a trained model → <code>evaluation</code>. A constant → <code>config.py</code>.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">Q2</div>
+  <div class="body">
+    <b>Is it work, a check, or a printout?</b>
+    <p>Work sits near the top of the file, checks in the middle, printing near the bottom, the CLI last. In the multi-file packages the same question picks the file instead of the zone.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">Q3</div>
+  <div class="body">
+    <b>Say it as a verb phrase.</b>
+    <p>“fill the calendar” → <code>calendar_fill</code>. “compute the positive weight” → <code>compute_pos_weight</code>. “sweep the threshold” → <code>sweep_threshold</code>. “recall by position” → <code>recall_by_position</code>. The naming was chosen so this works.</p>
+  </div>
+</div>
+
+<h2><span class="n">5</span>Reference — the questions most likely to be asked</h2>
+
+<table>
+  <tr><th>If asked…</th><th>File</th><th class="mono">Line</th></tr>
+  <tr class="hi"><td><b>How do you handle class imbalance?</b></td><td class="mono">modeling/train.py :: compute_pos_weight</td><td class="mono">166</td></tr>
+  <tr class="hi"><td><b>How do you prevent leakage?</b></td><td class="mono">evaluation/guards.py</td><td class="mono">all</td></tr>
+  <tr class="hi"><td><b>Where's the core idea implemented?</b></td><td class="mono">baseline/baseline.py :: causal_z_scores</td><td class="mono">204</td></tr>
+  <tr><td>…the standard-deviation floor?</td><td class="mono">baseline/baseline.py :: std_floors</td><td class="mono">131</td></tr>
+  <tr><td>…the 2σ validation gate?</td><td class="mono">baseline/baseline.py :: validation_gate</td><td class="mono">420</td></tr>
+  <tr><td>…mean vs max collapse?</td><td class="mono">baseline/baseline.py :: collapse</td><td class="mono">401</td></tr>
+  <tr><td>…the calendar fill?</td><td class="mono">labeling/label.py :: calendar_fill</td><td class="mono">206</td></tr>
+  <tr><td>…where labels are attached?</td><td class="mono">labeling/label.py :: attach_labels</td><td class="mono">271</td></tr>
+  <tr><td>…the user split?</td><td class="mono">splitting/split.py :: split_users</td><td class="mono">203</td></tr>
+  <tr><td>…that no user is in two splits?</td><td class="mono">splitting/split.py :: check_splits</td><td class="mono">341</td></tr>
+  <tr><td>…the clipping at ±10?</td><td class="mono">modeling/data.py :: clip_z_scores</td><td class="mono">430</td></tr>
+  <tr><td>…the 28-day row mask?</td><td class="mono">modeling/data.py :: target_mask</td><td class="mono">465</td></tr>
+  <tr><td>…standardisation?</td><td class="mono">modeling/data.py :: Standardiser.fit / .apply</td><td class="mono">145 / 166</td></tr>
+  <tr><td>Show me the CNN.</td><td class="mono">modeling/models.py :: ModelB</td><td class="mono">86</td></tr>
+  <tr><td>Show me the MLP.</td><td class="mono">modeling/models.py :: ModelA</td><td class="mono">52</td></tr>
+  <tr><td>…the training loop?</td><td class="mono">modeling/train.py :: train_model</td><td class="mono">198</td></tr>
+  <tr><td>…where seeds are set?</td><td class="mono">modeling/train.py :: seed_everything</td><td class="mono">153</td></tr>
+  <tr><td>…AUPRC?</td><td class="mono">modeling/metrics.py :: auprc</td><td class="mono">211</td></tr>
+  <tr><td>…how the threshold is chosen?</td><td class="mono">modeling/metrics.py :: sweep_threshold</td><td class="mono">239</td></tr>
+  <tr><td>…per-scenario recall?</td><td class="mono">modeling/metrics.py :: per_scenario_recall</td><td class="mono">285</td></tr>
+  <tr><td>…proof the threshold wasn't re-picked on test?</td><td class="mono">evaluation/scoring.py :: score</td><td class="mono">85</td></tr>
+  <tr><td>…proof the standardiser came from the checkpoint?</td><td class="mono">evaluation/corpus.py :: Corpus.build</td><td class="mono">203</td></tr>
+  <tr><td>…detection latency?</td><td class="mono">evaluation/latency.py :: detections</td><td class="mono">182</td></tr>
+  <tr><td>…recall by position in the attack?</td><td class="mono">evaluation/latency.py :: recall_by_position</td><td class="mono">333</td></tr>
+  <tr><td>…how you read the 14.5 GB file?</td><td class="mono">extraction/extract.py :: _stream_log</td><td class="mono">521</td></tr>
+  <tr><td>…distinct counts across chunks?</td><td class="mono">extraction/extract.py :: _compact_distinct</td><td class="mono">680</td></tr>
+  <tr><td>…where the 18 features are defined?</td><td class="mono">config.py :: FEATURE_NAMES</td><td class="mono">74</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>If you draw a blank on the day.</strong></p>
+  <p>Say the rule instead of guessing: <em>“Each package is one stage of the pipeline, and inside each one the real work is at the top, the checks are in the middle and the reporting is at the bottom — so that'll be in <code>baseline/</code>, near the top.”</em></p>
+  <p>Then open it. Being able to state the organising principle is worth more than remembering a line number, and it works even for a function you have forgotten.</p>
+</div>
+
+<footer>
+  InnerSight · code map · line numbers measured from the repository, not estimated.
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+Checks A-F, run against the 30-user sample table this code produced.
+========================================================================
+
+Check A - counts, not z-scores
+  min value across all features : 0.0
+  any negative                  : False
+  all integer-valued (17 cols)  : True
+  PASS - raw counts.
+
+Check B - is it r4.2
+  10 users checked against LDAP/2009-12.csv : ['AAF0535', 'ACC0042', 'AJF0370', 'BAL0044', 'BIH0745', 'CBB0365', 'CSC0217', 'DMG0358', 'EIS0041', 'GTD0219']
+  all present                               : True
+  PASS.
+
+Check C - scale and shape
+  rows            : 8,655
+  distinct users  : 30   <-- SAMPLE, not the ~1,000 of the full release
+  distinct days   : 436
+  date range      : 2010-01-02 -> 2011-05-16
+  columns         : 20 = user + day + 18 features
+  NaNs            : 0
+  PASS on shape and range. Deliberately 30 users - this is the
+  development sample. The full pass is Michael's to run.
+
+Check D - r4.2 fingerprints
+  large_attachment_count total          : 0  (expect 0)
+  file_to_removable_count == file_count : True  (expect True)
+  unique_filenames == file_count        : True  (expect True)
+  PASS - all three, row by row, not just in total.
+
+Check E - the behavioural test
+  PASS - see kpc0073_check_e.txt.
+
+Check F - is http actually in there
+  http_request_count total : 967,805
+  job_search_visits total  : 14,977
+  cloud_upload_visits total: 462
+  PASS - all three populated.

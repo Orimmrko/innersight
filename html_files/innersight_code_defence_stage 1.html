@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — The Code, Explained (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:21px; margin:34px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:21px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · the code · defence preparation</p>
+  <h1>Walk me through your code</h1>
+  <p class="sub">The modules that ship in the final product, the design decisions inside them, and the specific lines you should be able to explain if someone points at them.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what does your code do?”</strong></p>
+  <p>“It streams five raw activity logs totalling 16 GB, reduces every chunk immediately to per-<code>(user, day)</code> partial counts, and folds those partials into one table of 18 numbers per person per day — so that memory stays bounded by <em>population × days</em> rather than by the size of the input.”</p>
+</div>
+
+<h2>1 — What is actually in the repository</h2>
+
+<table>
+  <tr><th>File</th><th class="num">Lines</th><th>Role</th><th>Defence-relevant?</th></tr>
+  <tr><td class="mono">config.py</td><td class="num">392</td><td>every constant in the project</td><td><b>yes</b></td></tr>
+  <tr><td class="mono">extraction/extract.py</td><td class="num">881</td><td>Stage 1 — the whole extraction</td><td><b>yes, primarily</b></td></tr>
+  <tr><td class="mono">extraction/test_extract.py</td><td class="num">127</td><td>9 tests</td><td><b>yes</b></td></tr>
+  <tr><td class="mono">verify_setup.py</td><td class="num">—</td><td>environment check, run once</td><td>no</td></tr>
+  <tr><td class="mono">extraction/salvage/</td><td class="num">—</td><td>provenance record, nothing imported</td><td>only if asked about reuse</td></tr>
+</table>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">1,400</div><div class="k">total lines</div></div>
+  <div class="stat"><div class="v">12</div><div class="k">public functions</div></div>
+  <div class="stat"><div class="v">9</div><div class="k">tests, all passing</div></div>
+  <div class="stat"><div class="v">0</div><div class="k">classes with state</div></div>
+</div>
+
+<p>There is no class hierarchy and no framework. The extraction is a set of <b>pure functions</b> plus one frozen dataclass. That is deliberate and is a defensible answer in itself: pure functions are testable without touching a filesystem, which is why the tests hand <code>aggregate_log</code> two two-row DataFrames while production hands it a generator over 28 million rows — <b>down exactly the same code path</b>.</p>
+
+<h2>2 — The shape of the program</h2>
+
+<pre><code>                    ┌─────────── one CSV, streamed in 50,000-row chunks
+                    │
+    _stream_log ────┤  validate header → project columns → parse dates
+                    │
+                    ▼
+    build_*_partial(chunk) ──► LogPartial(sums, distinct)     ← 5 of these, pure
+                    │
+                    ▼
+    aggregate_log(log, chunks) ──► fold partials, compact every 64 chunks
+                    │
+                    ▼                                 (× 5 logs)
+    combine_daily_counts({log: features}) ──► union keys, fill 0, order columns
+                    │
+                    ▼
+    daily_counts.parquet        330,452 rows × 20 columns</code></pre>
+
+<p>Four layers, each independently testable. The top layer touches files; nothing below it does.</p>
+
+<h2>3 — <code>config.py</code>: one place for every constant</h2>
+
+<p>No path, threshold, domain list or magic number appears anywhere else in the project. That is worth saying out loud, because it is what makes a claim like “we changed the upload-domain list and re-ran” a one-line change rather than an archaeology exercise.</p>
+
+<p>The most important thing in the file is not a path:</p>
+
+<pre><span class="filetag">config.py</span><code>FEATURE_NAMES: Final[tuple[str, ...]] = (
+    "logon_count",              # 0
+    "logoff_count",             # 1
+    ...
+    "cloud_upload_visits",      # 17
+)</code></pre>
+
+<div class="note bad"><b>Why this is the riskiest line in the project.</b> That tuple order is not documentation — it <em>is</em> the input-vector layout. It becomes the CNN's channel order and the column order of every saved checkpoint. Reordering it raises no error and breaks no test; it silently makes every stored artifact score the wrong feature. The module docstring says so, and a unit test asserts the output column order matches it.</div>
+
+<p>The file also encodes the dataset contract as frozen dataclasses:</p>
+
+<pre><span class="filetag">config.py</span><code>@dataclass(frozen=True, slots=True)
+class LogSpec:
+    filename: str
+    columns: tuple[str, ...]
+    expected_sample_rows: int</code></pre>
+
+<p>This is what lets the extractor validate a file's header against a declared contract before reading a single data row.</p>
+
+<h2>4 — <code>extract.py</code>: the design, decision by decision</h2>
+
+<h3>4.1 The constraint that dictates everything</h3>
+
+<p><code>http.csv</code> is 14.5 GB and 28.4 million rows. Nothing in this module ever holds a log in memory. The input is unbounded; the <em>running state</em> is bounded by population × days — roughly 500,000 rows for r4.2, which fits trivially.</p>
+
+<div class="say">
+  <span class="lbl">If asked “why is it structured this way?”</span>
+  <p>“Because the input size is unbounded but the output size is not. A person can generate a million web requests, but they still only generate one row per day. So every chunk is reduced to per-<code>(user, day)</code> partials the moment it is read, and the raw rows are discarded. Memory is a function of how many people and how many days, never of how big the file is.”</p>
+</div>
+
+<h3>4.2 The idea worth explaining first: sums vs distinct counts</h3>
+
+<p>This is the single most interesting piece of logic in the extraction, and it is where a naïve implementation is wrong <em>silently</em>.</p>
+
+<pre><span class="filetag">extract.py</span><code>@dataclass(frozen=True)
+class LogPartial:
+    sums: pd.DataFrame                    # additive — combining two is addition
+    distinct: dict[str, pd.DataFrame]     # unique (user, day, value) triples</code></pre>
+
+<p>Sixteen of the eighteen features are counts or sums, so partial results from two chunks simply add. <b>Two are not.</b> <code>unique_pcs_used</code> and <code>unique_filenames</code> are <em>distinct</em> counts:</p>
+
+<pre><code>chunk 1:  AAA0001, 2010-01-04, PC-1       distinct count = 1
+chunk 2:  AAA0001, 2010-01-04, PC-1       distinct count = 1
+                                          ─────────────────
+naïve sum                                 = 2      ✗ WRONG
+truth: PC-1 seen twice is ONE distinct PC = 1      ✓</code></pre>
+
+<p>So distinct features never count per chunk. They keep unique <code>(user, day, value)</code> triples alive until the very end and count once:</p>
+
+<pre><span class="filetag">extract.py</span><code>def _compact_distinct(parts: list[pd.DataFrame]) -> pd.DataFrame:
+    """Concatenate and deduplicate triple frames -- never count in between."""
+    return pd.concat(parts, ignore_index=True).drop_duplicates(ignore_index=True)</code></pre>
+
+<div class="note"><b>Why the memory cost is acceptable.</b> The triples are bounded by real behaviour — a person uses a handful of machines a day, not thousands. And conveniently the log that is genuinely enormous needs <em>no</em> distinct counts at all: <code>http.csv</code>'s three features are a row count and two URL tallies, so its memory cost is constant regardless of row count. The design and the data happen to agree.</div>
+
+<div class="note bad"><b>How this bug would have presented itself.</b> Not as a crash. Not as a NaN. As <code>unique_pcs_used</code> being slightly too large — and only in proportion to how many chunks a given user-day happened to straddle, which varies with chunk size. It is the exact class of defect that survives to the results table. That is why it is the first unit test.</div>
+
+<h3>4.3 The five builders are pure functions</h3>
+
+<pre><span class="filetag">extract.py</span><code>def build_logon_partial(chunk: pd.DataFrame) -> LogPartial:
+    keys = _key_frame(chunk)
+    when = chunk["date"].dt
+    is_logon = chunk["activity"] == LOGON_ACTIVITY
+
+    sums = _sum_by_key(keys, {
+        "logon_count":        _count(is_logon),
+        "logoff_count":       _count(chunk["activity"] == LOGOFF_ACTIVITY),
+        "after_hours_logons": _count(is_logon & _after_hours(chunk)),
+        "weekend_logons":     _count(is_logon & when.dayofweek.isin(WEEKEND_WEEKDAYS)),
+    })
+    return LogPartial(sums=sums,
+                      distinct={"unique_pcs_used": _distinct_by_key(keys, chunk["pc"])})</code></pre>
+
+<p>Note <code>is_logon &amp;</code> in both after-hours and weekend counts. <b>Logons only, never logoffs</b> — the logon at 02:00 is the anomaly, and counting its matching logoff would report the same event twice. There is a test for exactly that.</p>
+
+<p>By contrast <code>after_hours_usb</code> counts <em>any</em> device event outside business hours, connect or disconnect, because a drive plugged in at 18:55 and pulled at 19:30 is one after-hours episode either way. Different rule, stated reason.</p>
+
+<h3>4.4 A dispatch table, checked at import</h3>
+
+<pre><span class="filetag">extract.py</span><code>LOG_FEATURES = {
+    "logon":  ("logon_count", "logoff_count", "after_hours_logons",
+               "weekend_logons", "unique_pcs_used"),
+    "device": ("usb_connect_count", "usb_disconnect_count", "after_hours_usb"),
+    ...
+}
+
+def _check_feature_partition() -> None:
+    """Fail at import if LOG_FEATURES does not exactly partition FEATURE_NAMES."""
+</code></pre>
+
+<p>This runs at import time, not at call time. A feature owned by two logs would be silently overwritten during the join; a feature owned by none would be silently zero. Neither raises on its own — so the invariant is asserted where it cannot be skipped.</p>
+
+<h2>5 — The lines most likely to be questioned</h2>
+
+<div class="card">
+<h4>The empty-list guard</h4>
+<pre><span class="filetag">extract.py</span><code>def _alternation(domains, name):
+    if not domains:
+        raise ExtractionError(
+            f"config.{name} is empty. An empty URL list compiles to a pattern "
+            f"that matches every URL, so every http row would count as a hit.")
+    return "|".join(re.escape(domain.lower()) for domain in domains)</code></pre>
+<p>An empty regex alternation is <code>""</code>, which matches every string. If someone emptied <code>JOB_SEARCH_DOMAINS</code>, all 28 million http rows would count as job-site visits and the feature would look extremely informative. Explicitly refused.</p>
+</div>
+
+<div class="card">
+<h4>The lookalike-domain regex</h4>
+<pre><span class="filetag">extract.py</span><code>_INTERNAL_ADDRESS_PATTERN = rf"@{re.escape(INTERNAL_DOMAIN.lower())}(?![\w.-])"</code></pre>
+<p>The negative lookahead is doing real work. Without it, <code>@dtaa.com.evil.net</code> matches “internal” and an exfiltration address is counted as a colleague. There is a parametrised test for that exact string.</p>
+</div>
+
+<div class="card">
+<h4>Detecting external recipients by counting, not splitting</h4>
+<pre><span class="filetag">extract.py</span><code>return recipients.str.count("@") > recipients.str.count(_INTERNAL_ADDRESS_PATTERN)</code></pre>
+<p>Every email address contains exactly one <code>@</code>. So “more <code>@</code> signs than internal-domain matches” means at least one recipient is external — two vectorised regex counts instead of a per-row split, which matters across a 1.36 GB email log with 2.6 million rows.</p>
+<p><b>And it scans <code>to</code>, <code>cc</code> <em>and</em> <code>bcc</code>.</b> A mail addressed to a colleague and blind-copied to a personal account reads as entirely internal if you only look at <code>to</code> — which is precisely the exfiltration pattern scenario 2 is built around.</p>
+</div>
+
+<div class="card">
+<h4>Nullable booleans must not propagate</h4>
+<pre><span class="filetag">extract.py</span><code>def _count(mask: pd.Series) -> pd.Series:
+    return mask.astype("boolean").fillna(False).astype("int64")</code></pre>
+<p>Comparing against a column holding <code>NA</code> yields <code>NA</code>, not <code>False</code>. Here <b>NA must mean “did not happen”</b>, not “unknown” — a row with a missing activity value is not evidence of a logon. Going through the nullable <code>boolean</code> dtype first makes this correct for both plain numpy masks and nullable ones.</p>
+</div>
+
+<div class="card">
+<h4>Cast after filling, never before</h4>
+<pre><span class="filetag">extract.py</span><code>daily = pd.DataFrame({...}, index=key_index).fillna(0)
+
+# Cast last, after filling: an int64 column cannot hold the NaN that
+# reindexing a missing (user, day) introduces.
+for feature in FEATURE_NAMES:
+    daily[feature] = daily[feature].astype("float64" if feature in FLOAT_FEATURES
+                                           else "int64")</code></pre>
+<p>Reindexing onto the union key set introduces NaN wherever a log had no row. Casting to <code>int64</code> before filling would raise; casting after is correct. <code>total_email_size</code> stays <code>float64</code> deliberately — it is a byte total that overflows int32 and arrives from a nullable column.</p>
+</div>
+
+<div class="card">
+<h4>Explicit date format, inference only as fallback</h4>
+<pre><span class="filetag">extract.py</span><code>try:
+    chunk["date"] = pd.to_datetime(chunk["date"], format=DATE_FORMAT)
+except (ValueError, TypeError):
+    logger.warning(...)
+    chunk["date"] = pd.to_datetime(chunk["date"], format="mixed")</code></pre>
+<p>The ordering is the point. <code>format="mixed"</code> re-infers the layout of every single row — unmeasurable on a 100-row test fixture and costing <b>minutes</b> across 28 million rows. This is a large part of why the full pass takes 90 seconds.</p>
+</div>
+
+<div class="card">
+<h4>Validating the contract, then reading less than it</h4>
+<pre><span class="filetag">extract.py</span><code>header = list(pd.read_csv(path, nrows=0).columns)   # full contract checked
+...
+reader = pd.read_csv(path, usecols=wanted, ...)     # projection actually read</code></pre>
+<p>The header is validated against the complete <code>LogSpec</code> before a single data row is read — so the contract is enforced in full — but only the three to six columns the builder needs are ever materialised. <b>Never <code>content</code></b>, which is generated filler and most of the bytes on disk. This is the single largest performance decision in the module.</p>
+</div>
+
+<div class="card">
+<h4>Why <code>groupby</code> dropping NA keys is wanted</h4>
+<pre><span class="filetag">extract.py</span><code>return keys.assign(**columns).groupby(KEY_COLUMNS, sort=False).sum()</code></pre>
+<p>pandas drops NA group keys by default. That is the correct behaviour here: a row with no user, or an unparseable date, cannot be attributed to anyone's day. It is counted for <b>nobody</b> rather than silently assigned to a NaN key that would later join onto something.</p>
+</div>
+
+<div class="card">
+<h4>The compaction knob</h4>
+<pre><span class="filetag">extract.py</span><code>_COMPACT_EVERY: Final[int] = 64</code></pre>
+<p>Partial frames are folded together every 64 chunks. Without it, a 14.5 GB file leaves hundreds of thousands of small DataFrames pinned in memory until the end. <b>Purely a memory knob — the result is bit-identical either way</b>, which is why the tests can pass <code>compact_every=2</code> to exercise the folding path on three tiny chunks.</p>
+</div>
+
+<h2>6 — Two kinds of checking, and why both exist</h2>
+
+<p>This distinction is worth being able to articulate; it is a genuinely good answer to “how do you know it works?”</p>
+
+<table>
+  <tr><th></th><th>Unit tests</th><th>Runtime sanity checks</th></tr>
+  <tr><td><b>Question answered</b></td><td>does the code do what was written?</td><td>is what was written true of the world?</td></tr>
+  <tr><td><b>When</b></td><td><code>pytest</code>, on demand</td><td>printed on every single run</td></tr>
+  <tr><td><b>On failure</b></td><td>test fails loudly</td><td>prints a line — nothing raises</td></tr>
+  <tr><td><b>Catches</b></td><td>logic errors</td><td>wrong file, wrong release, silent data drift</td></tr>
+</table>
+
+<p>The checks deliberately do not raise. A surprising number is something to <em>look at</em>, not necessarily something wrong — and three of them exist specifically to confirm known r4.2 quirks are still present:</p>
+
+<pre><code>ok    no negative counts                 none
+ok    no NaNs anywhere                   none
+ok    no duplicate (user, day)           0 duplicates
+ok    logons approx logoffs, not equal   470,591 logons vs 384,268 logoffs
+ -    file_to_removable_count == file_count: True   (expected True on r4.2)
+ -    unique_filenames == file_count: True          (expected True on r4.2)
+ -    large_attachment_count total: 0               (expected 0 on r4.2)</code></pre>
+
+<div class="note good"><b>The cleverest of those is “logons ≈ logoffs, <em>not equal</em>.”</b> If they were exactly equal, something would be synthesising logoffs. If the ratio drifted far from 1, the activity filter would be broken. The dataset documentation states a small number of daily logons are intentionally not recorded to simulate dirty data — so a small mismatch is the <em>expected</em> state, and the check asserts the mismatch rather than the match.</div>
+
+<h3>The 9 tests, and why those 9</h3>
+
+<p>The test module's docstring names the criterion: cover the behaviours that are wrong <b>silently</b> — no exception, no NaN, just a number slightly too big — and would not be noticed until the results made no sense.</p>
+
+<table>
+  <tr><th>Test</th><th>Guards against</th></tr>
+  <tr><td class="mono">distinct_pcs_not_double_counted</td><td>the sums-vs-distinct bug from §4.2</td></tr>
+  <tr><td class="mono">after_hours_and_weekend_logons_only</td><td>counting a logoff as an after-hours logon</td></tr>
+  <tr><td class="mono">missing_log_days_become_zero_not_nan</td><td>union-key semantics; a NaN would poison Stage 3's z-scores</td></tr>
+  <tr><td class="mono">column_order_is_the_vector_layout</td><td>the silent checkpoint-invalidation risk from §3</td></tr>
+  <tr><td class="mono">external_recipients_span_to_cc_bcc</td><td>4 parametrised cases, incl. the lookalike domain</td></tr>
+  <tr><td class="mono">empty_input_correctly_shaped</td><td>an empty run returning a malformed frame</td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">If asked “only nine tests?”</span>
+  <p>“Nine tests chosen by a stated criterion, not nine tests for coverage. Each one targets a failure that produces no error message — a distinct count that is slightly too high, a NaN that becomes a z-score, a column order that invalidates a checkpoint. Testing that <code>logon_count</code> counts logons would raise coverage and catch nothing, because that failure is obvious the first time you look at the output.”</p>
+</div>
+
+<h2>7 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Walk me through what happens when I run your extraction.</div><div class="a">
+<p>Five logs are streamed independently. For each, the header is validated against a declared contract, then only the needed columns are read in 50,000-row chunks with an explicit date format. Each chunk goes to a pure builder function that returns per-<code>(user, day)</code> partials — additive sums in one bucket, unique triples for the two distinct counts in another. Those partials are folded as they arrive, compacted every 64 chunks to bound memory. Finally the five per-log tables are joined on the union of their keys, missing values filled with zero, columns ordered by <code>FEATURE_NAMES</code>, and written to parquet. Then a report prints the totals and sanity checks.</p></div></div>
+
+<div class="qa"><div class="q">Why not just load the CSVs with pandas and group by?</div><div class="a">
+<p><code>http.csv</code> alone is 14.5 GB — it does not fit in memory, and even if it did, the <code>content</code> column that makes up most of it feeds no feature. The streaming design means memory is bounded by population × days rather than by input size, so the same code runs on a 30-user sample and on the full release without modification.</p></div></div>
+
+<div class="qa"><div class="q">Which part of this was hardest to get right?</div><div class="a">
+<p>The two distinct counts. Every other feature is additive, so partial results just add — but <code>unique_pcs_used</code> and <code>unique_filenames</code> cannot be counted per chunk and then summed, because the same PC appearing in two chunks of one user-day is one PC, not two. They carry unique <code>(user, day, value)</code> triples to the end and count once. The failure mode is what makes it hard: no crash, no NaN, just a number slightly too large in proportion to how many chunks a user-day happened to straddle. It is the first unit test in the file.</p></div></div>
+
+<div class="qa"><div class="q">How would this behave on a different CERT release?</div><div class="a">
+<p>The header contract is declared in <code>config.LOG_SPECS</code> and validated before reading, so a schema change fails immediately with a message naming the missing columns rather than producing wrong numbers. One case is handled explicitly: <code>file.csv</code> gains a <code>to_removable_media</code> column on r5+, and the builder uses it if present and otherwise counts every row — which is correct, because r4.2's readme states every file event already is a copy to removable media.</p></div></div>
+
+<div class="qa"><div class="q">Is any of this code not yours?</div><div class="a">
+<p>The extraction was ported from an earlier, larger version of this project that was abandoned as over-scoped. The unmodified original is kept under <code>extraction/salvage/provenance/</code> so the reuse is visible rather than claimed, alongside the validation evidence — the six checks run against it, the run logs, and the measured domain-hit counts. Everything asserted about its correctness was re-verified against the data rather than trusted, including the behavioural test that reproduces a known insider's timeline event for event.</p></div></div>
+
+<div class="qa"><div class="q">Point at any line and ask “why is this here?”</div><div class="a">
+<p>Every non-obvious decision has a comment stating the reason, not the mechanism — 52 comment lines and a docstring on every public function across 881 lines. If a line looks arbitrary, the comment above it names the failure it prevents. Section 5 of this document collects the eight most likely candidates.</p></div></div>
+
+<div class="callout">
+  <p><strong>The closing line.</strong></p>
+  <p>“The code is 1,400 lines with no classes holding state and no framework — five pure functions that turn a chunk into partial counts, one fold, one join. Its shape is dictated entirely by one fact: the input is 16 GB and the output is 2.8 MB, so nothing is ever held that scales with the input. Every decision that isn't obvious has a comment naming the failure it prevents, and the nine tests were chosen to cover the failures that would otherwise be silent.”</p>
+</div>
+
+<footer>
+  InnerSight · code walkthrough · Stage 1 as shipped. Line counts and behaviour measured from the repository, not estimated.
+</footer>
+
+</div>
+</body>
+</html>

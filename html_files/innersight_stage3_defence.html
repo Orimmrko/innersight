@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 3 Explained (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 3 · defence preparation</p>
+  <h1>Turning “three USB sticks” into “unlike you”</h1>
+  <p class="sub">What Stage 3 does, why it is the stage the whole project rests on, what came out, and the answers to the questions you are likely to be asked. Written to be read out loud.</p>
+</header>
+
+<div class="callout">
+  <p><strong>Say this first, if you say nothing else.</strong></p>
+  <p>Every stage before this one is plumbing. Every stage after it is architecture. <strong>The idea being tested lives here, in one line of arithmetic.</strong></p>
+  <p>An insider does nothing forbidden, so there is no rule to write. The only question that works is “is this unlike <em>them</em>?” Stage 3 is where that question gets a number. And it works: <strong>66 of the 70 insiders score above two standard deviations from their own normal during their attack.</strong> The signal is there. Everything after this is about how well a model can use it.</p>
+</div>
+
+<div class="card">
+<h4>Words used in this document</h4>
+<table>
+  <tr><td><b>row</b></td><td>one person on one day, with 18 numbers describing what they did</td></tr>
+  <tr><td><b>z-score</b></td><td>how many standard deviations today is from that person's own normal</td></tr>
+  <tr><td><b>baseline</b></td><td>a person's own average and spread, worked out from their earlier days</td></tr>
+  <tr><td><b>the floor</b></td><td>a minimum value for the bottom of the division, so we never divide by zero</td></tr>
+  <tr><td><b>warm-up</b></td><td>a person's first 30 days, where we do not trust the baseline yet</td></tr>
+  <tr><td><b>the gate</b></td><td>the check we run <em>before</em> training anything: do insiders actually stand out?</td></tr>
+</table>
+</div>
+
+<h2>1 — What Stage 3 does</h2>
+
+<p>It reads the 464,687 labelled rows from Stage 2 and writes 464,687 rows back out. Same rows, same order, same columns, same labels. <b>Only the eighteen numbers change meaning.</b></p>
+
+<p>Where a row used to say “this person made 3 USB connections today”, it now says “3 USB connections is +31 standard deviations for this person” — or “−0.3, which is a slightly quiet day for that one.” The formula is one line:</p>
+
+<pre><code>z = (today's value − that person's average on days BEFORE today)
+    ÷ (that person's spread on those same days, with a floor under it)</code></pre>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">464,687</div><div class="k">rows in and out</div></div>
+  <div class="stat"><div class="v">1,000</div><div class="k">people, each scored alone</div></div>
+  <div class="stat"><div class="v">66 / 70</div><div class="k">insiders stand out</div></div>
+  <div class="stat"><div class="v">0</div><div class="k">missing values</div></div>
+  <div class="stat"><div class="v">~5 s</div><div class="k">to run</div></div>
+</div>
+
+<h2>2 — The one table that is the whole project</h2>
+
+<div class="callout">
+  <p><strong>Show this table and stop talking for a second.</strong></p>
+  <p>In our data, <b>exactly two USB connections in one day</b> happens on <b>13,125 days, to 204 different people</b>. Same raw number, 13,125 times. Here is what Stage 3 makes of it:</p>
+</div>
+
+<table>
+  <tr><th>Person</th><th>Their own history with USB sticks</th><th class="num">Raw count that day</th><th class="num">z-score</th></tr>
+  <tr><td class="mono">MOS0047</td><td>plugs one in on <b>176 of his 250 days</b>, about 3.5 a day</td><td class="num">2</td><td class="num"><b>−0.62</b></td></tr>
+  <tr class="hi"><td class="mono">BBS0039</td><td>plugged one in on <b>1 of his 222 days</b> — ever</td><td class="num">2</td><td class="num"><b>+20.92</b></td></tr>
+</table>
+
+<p>The same two USB connections. For one man it is a <em>below-average</em> day — he is quieter than usual. For the other it is the single most abnormal thing he has done in the entire dataset. <b>A rule that says “flag more than one USB connection” would either drown in MOS0047 or miss BBS0039. There is no threshold that catches both.</b></p>
+
+<p>The full spread of z-scores for that one raw value runs from <b>−0.62 to +20.92</b>. That range is the argument for the whole method.</p>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“Two USB connections in a day happens 13,125 times in our data, to 204 different people. For one of them it scores minus 0.6 — a quiet day. For another it scores plus 21, the most abnormal day of his career. Same number. That's why there's no rule to write, and that's what this stage computes.”</p>
+</div>
+
+<h2>3 — Rule one: score against the past, never including today</h2>
+
+<p>The average we compare today against is built <b>only from days strictly before today</b>. Today is never in it.</p>
+
+<p>This sounds like a technicality. It is the most important line in the stage, for two separate reasons.</p>
+
+<h4>A spike would partly cancel itself</h4>
+
+<p>If today's value is inside the average it is measured against, then a big day drags that average up — towards the very thing we are trying to notice. The bigger the anomaly, the more it hides itself. On a short history the error is close to a factor of two, and nothing would ever complain: the numbers stay finite, plausible, and quietly too small.</p>
+
+<h4>It cannot see the future, so it cannot cheat</h4>
+
+<p>This is the one to say to an examiner. A model is only interesting if it could have been run <em>on the day</em>. Because every z-score here is built from strictly earlier days, <b>the statistic is causal by construction</b> — there is no way for information from later in the dataset to reach an earlier row. We do not have to argue that we did not leak; the arithmetic makes it impossible.</p>
+
+<div class="note good"><b>Why that matters more than usual here.</b> Leakage is the standard criticism of anomaly-detection papers on this dataset. Scoring each day against a window that includes future days would inflate every result, and it is easy to do by accident with one careless line. Ours cannot, and that is checkable in four lines of code.</div>
+
+<h2>4 — Rule two: the floor, or why infinity becomes 20.9</h2>
+
+<p>Here is the problem. <code>BBS0039</code> had never plugged in a USB stick. Not once, in 221 days. So his average is 0 and his <em>spread is also exactly 0</em>.</p>
+
+<p>The day he plugs one in, the sum is <code>2 ÷ 0</code>. Infinity. And an infinity in the file breaks every model downstream.</p>
+
+<p>So we put a floor under the bottom of the division. Per feature:</p>
+
+<pre><code>floor = 0.1 × the typical person's own day-to-day variation in that feature</code></pre>
+
+<p>Now the answer is a big <em>finite</em> number — 20.9 — instead of infinity. And a big finite number is the one worth looking at, because you can rank it, threshold it, and feed it to a network.</p>
+
+<div class="note"><b>Why 0.1 and not something else.</b> It sets the ceiling. Multiplying the typical person's variation by 0.1 means the largest score a "never done it before, did it once" day can reach is about ten typical-people's-worth of variation. That is a deliberate ceiling, not an arbitrary constant — it is what stops one weird day from being worth a thousand ordinary ones in a gradient step.</div>
+
+<h3>4.1 — One place where we changed the plan, and the measurement that made us</h3>
+
+<p>The original plan said: take the typical variation across <em>all 1,000 people</em>. When we ran it, that gave a bad answer, and the reason is interesting enough to say out loud.</p>
+
+<p><b>Most employees never do the things an insider's signal is made of.</b></p>
+
+<table>
+  <tr><th>Feature</th><th class="num">People whose value never changes at all</th></tr>
+  <tr><td>after-hours USB use</td><td class="num">88.6%</td></tr>
+  <tr><td>weekend logins</td><td class="num">83.7%</td></tr>
+  <tr><td>after-hours logins</td><td class="num">81.0%</td></tr>
+  <tr class="hi"><td>files copied</td><td class="num">73.6%</td></tr>
+  <tr class="hi"><td>USB connections</td><td class="num">73.5%</td></tr>
+  <tr><td>upload-site visits</td><td class="num">66.1%</td></tr>
+</table>
+
+<p>If three quarters of people never touch a USB port, then the <em>typical</em> person's variation in USB use is <b>exactly zero</b> — and for eight of our eighteen features, the whole calculation collapsed. The floor fell back to a default of 1, which means “one USB connection equals one standard deviation”, on a count that is normally zero.</p>
+
+<p>The fix is to ask a better-posed question: not “how much does this vary for a typical person”, but <b>“how much does this vary for someone who actually does it?”</b> We measured both ways on the full dataset:</p>
+
+<table>
+  <tr><th></th><th class="num">Original plan</th><th class="num">What we shipped</th></tr>
+  <tr><td>Insiders standing out during their attack</td><td class="num">54 / 70</td><td class="num"><b>66 / 70</b></td></tr>
+  <tr><td>— scenario 1 (USB and leak site)</td><td class="num">22 / 30</td><td class="num"><b>30 / 30</b></td></tr>
+  <tr><td>— scenario 3 (keylogger)</td><td class="num">5 / 10</td><td class="num"><b>8 / 10</b></td></tr>
+  <tr class="hi"><td>KPC0073's first USB day</td><td class="num">z = 2.0</td><td class="num"><b>z = 20.9</b></td></tr>
+  <tr><td>Ordinary days already above 2σ</td><td class="num">11.6%</td><td class="num">13.4%</td></tr>
+</table>
+
+<div class="note good"><b>Why this is a better statistic and not just a looser one.</b> That is the question to pre-empt. If we had simply lowered a threshold, insiders and ordinary employees would both have got louder together. Instead insider separation improved about five-fold while the ordinary-day rate moved less than two points. The signal went up; the noise barely did.</div>
+
+<p>Both versions still run — <code>--floor-all-users</code> reproduces the original — so the comparison in that table is repeatable, not a claim.</p>
+
+<h3>4.2 — A small leak we did not fix, and say so</h3>
+
+<div class="note"><b>Declare this before you are asked.</b> The floor is one number per feature, worked out from all 1,000 people — including the people who will later be in the test group. Strictly, that is a leak. It is one number, taken as a median of a thousand values, so any single test person contributes about 0.1% of it. And computing it from the training group only would need Stage 4's split to already exist, which would turn the pipeline back to front. We report it as a known, bounded approximation rather than pretending it isn't there.</div>
+
+<h2>5 — Rule three: the first 30 days do not count</h2>
+
+<p>A z-score built from three days of history is fiction. So each person's first 30 days come out as exactly 0 across all 18 features — <b>invisible rather than wrong</b>.</p>
+
+<p>The obvious worry is that this throws away attack days. It does not, and we prove it rather than assume it:</p>
+
+<table>
+  <tr><th></th><th class="num">Value</th></tr>
+  <tr><td>Rows zeroed as warm-up</td><td class="num">30,000 (6.5% of the table)</td></tr>
+  <tr class="hi"><td><b>Attack days lost to the warm-up</b></td><td class="num"><b>0</b></td></tr>
+  <tr><td>Earliest attack day in the whole release</td><td class="num">10 June 2010</td></tr>
+  <tr><td>Data starts</td><td class="num">2 January 2010</td></tr>
+  <tr><td>History each insider has before their attack</td><td class="num">min 157, median 270, max 479 days</td></tr>
+</table>
+
+<p>The tightest case in the dataset still has <b>157 days</b> of history before the attack begins, against a 30-day warm-up. There is no near miss. The program asserts this on every run and stops if it is ever not zero — because those rows would be silently blanked, and nothing else would notice.</p>
+
+<h2>6 — The gate: proving the signal exists before training anything</h2>
+
+<div class="callout">
+  <p><strong>This is the most valuable thing Stage 3 produces, and it is not the file.</strong></p>
+  <p>Before writing a single line of model code, we asked: do insiders' scores actually separate from their own normal? Because if they don't, no network can invent that separation — and finding that out on the last day is the one failure with no recovery.</p>
+</div>
+
+<pre><code>scenario   insiders   stand out (peak)   stand out (average)   typical lift
+1              30           30                  12                  5.2×
+2              30           28                   0                  1.9×
+3              10            8                   6                  7.5×
+all            70           66                  18                  2.8×
+
+did not clear the bar:  CCL0068, XHW0498  (scenario 2)
+                        GTD0219, MPM0220  (scenario 3)</code></pre>
+
+<p><b>66 of 70.</b> Scenario 1 is perfect. “Lift” is the cleanest single number: it is how much louder the attack period is than that same person's own earlier days. Scenario 1 attacks are 5.2 times louder, scenario 3 attacks 7.5 times, scenario 2 only 1.9 times — the slow-drift attack is genuinely the hard one, exactly as we predicted before measuring.</p>
+
+<h2>7 — The honest caveat: it depends which summary you pick</h2>
+
+<p>Each day gives us 18 z-scores. To say “this day scored 4” you have to squash 18 numbers into 1, and there are two obvious ways. <b>They disagree, and the disagreement is a real finding, not a detail.</b></p>
+
+<table>
+  <tr><th>Way of squashing</th><th>Insiders who stand out</th><th>Ordinary days that also clear 2σ</th></tr>
+  <tr><td><b>peak</b> — the loudest of the 18</td><td class="num">66 of 70</td><td class="num"><b>13.4%</b></td></tr>
+  <tr><td><b>average</b> — the mean of the 18</td><td class="num">18 of 70</td><td class="num">0.11%</td></tr>
+</table>
+
+<div class="note bad"><b>Read the right-hand column before you celebrate the left.</b> Under “peak”, 66 of 70 insiders clear two standard deviations — but so do <b>one in seven of every ordinary employee's days</b>. The median ordinary day already peaks at 1.51σ. So “66 of 70” means the insiders are loud <em>and</em> the bar is cheap. Under “average” the bar is genuinely strict, and only 18 insiders clear it.</div>
+
+<p>Why the two disagree: an attack moves three or four features. The <b>average</b> divides that across fifteen other features that had no reason to move, and dilutes it away. The <b>peak</b> keeps it, but a peak over 18 noisy numbers is itself noisy — take the loudest of 18 things every day and something will look unusual most days.</p>
+
+<p>We report both, side by side, everywhere, and every threshold in the code names which one it applies to. <b>Neither is “the” answer, and choosing one quietly would let the write-up pick its own conclusion.</b></p>
+
+<div class="say">
+  <span class="lbl">If asked “so did it work or not?”</span>
+  <p>“Both numbers are in the report because the honest answer needs both. 66 of 70 insiders clear two sigma on their loudest feature — but so do 13% of ordinary days, so that bar is cheap. On the average across all 18 features only 18 of 70 clear it, and only 0.1% of ordinary days do. The number I'd actually defend is the lift: the attack period is 5 times louder than that same person's own earlier days for scenario 1, and about twice for scenario 2. That comparison is per-person, so it doesn't depend on which summary you pick.”</p>
+</div>
+
+<h2>8 — Two measurements that predict Model B's result</h2>
+
+<div class="callout">
+  <p><strong>These are the best pieces of evidence in the project so far, and they exist before any training.</strong></p>
+</div>
+
+<h3>8.1 — The baseline slowly swallows the attack</h3>
+
+<p>A scenario-2 attack lasts 45 to 59 days. But the baseline it is measured against is that person's own history — which, day by day, is <em>absorbing those attack days</em>. So the same behaviour scores less at the end of the attack than at the start.</p>
+
+<table>
+  <tr><th>Scenario</th><th class="num">Last third of the attack, as a share of the first third</th></tr>
+  <tr><td>1 — USB and leak site</td><td class="num">0.61</td></tr>
+  <tr class="hi"><td><b>2 — job hunt, then theft</b></td><td class="num"><b>0.40</b></td></tr>
+  <tr><td>3 — keylogger</td><td class="num">too short to measure (2-day attacks)</td></tr>
+</table>
+
+<p><b>A scenario-2 attack's final fortnight scores 60% quieter than its opening fortnight — for identical behaviour.</b> The person has not changed. Their baseline has.</p>
+
+<h3>8.2 — The loudest day is the first day</h3>
+
+<p>We asked where in each attack the single loudest day falls, as a fraction of the way through:</p>
+
+<table>
+  <tr><th>Scenario</th><th class="num">Where the loudest day sits</th></tr>
+  <tr><td>1</td><td class="num">0% — the first day</td></tr>
+  <tr><td>2</td><td class="num">3% — effectively the first day</td></tr>
+</table>
+
+<div class="note good"><b>Put these two together and you have the argument for Model B.</b> The signal is at the start of the attack and it fades. A model that sees only <em>today</em> is looking at a faded signal for most of the attack. A model that sees the last 28 days still contains the loud opening after the recent days have gone quiet. That is a concrete, measured prediction about what temporal context should buy — made in advance, from the data, not after seeing the result.</div>
+
+<div class="note"><b>And we considered the alternative.</b> A moving average with a two-week half-life is the more sophisticated choice, and it would have been far worse here — with 45-to-59-day attacks, a two-week memory would have absorbed the attack almost entirely. We used a plain expanding window because it absorbs more slowly, and then measured how much it still absorbs rather than claiming it doesn't.</div>
+
+<h2>9 — Weaknesses, said before anyone asks</h2>
+
+<ul>
+  <li><b>Four insiders do not stand out at all.</b> Two scenario-2 (the slowest drifters) and two scenario-3, whose entire attack is two days of logging onto someone else's machine. They score around 1.5σ — above their own normal, under the bar. That is the honest answer to “which insiders would this miss”.</li>
+  <li><b>The “peak” summary is a cheap bar.</b> One in seven ordinary employee-days clears two standard deviations on its loudest feature. Per-day thresholding on this signal is not a detector, and we are not claiming it is — which is exactly why there are models in Stages 5 to 7.</li>
+  <li><b>The floor is computed from everybody, including future test people.</b> One number per feature, ~0.1% influence each. Declared, bounded, not fixed.</li>
+  <li><b>6.5% of the table is deliberately blank.</b> The warm-up rows are all zeros. They are legitimate ordinary days and we keep them, but a fifteenth of the dataset carries no information by design.</li>
+  <li><b>The expanding baseline absorbs long attacks</b> — measured at 0.40 for scenario 2. A method that resisted this would detect late attack days better. We chose the slower-absorbing of the two obvious options and reported the residual effect.</li>
+  <li><b>A person who is abnormal from their very first week has no baseline to be abnormal against.</b> Nobody in r4.2 is, since every attack starts at least 157 days in, but the method genuinely cannot catch someone who arrives already compromised.</li>
+</ul>
+
+<h2>10 — The check to run in front of the examiner</h2>
+
+<pre><code>python -m baseline.baseline --user KPC0073</code></pre>
+
+<p><code>KPC0073</code> is a scenario-1 insider. In his entire 17-month history there are 16 device events, all between 6 and 15 July 2010, and <b>none before</b>. So for roughly 180 days his USB average is 0 and his USB spread is 0.</p>
+
+<pre><code>       day    label   raw USB   z USB    loudest feature that day    raw   peak z
+2010-02-16        0         0    0.00    job-search site visits       14    47.32
+2010-07-06        0         2   20.92    after-hours USB use           4   107.11
+2010-07-07        1         1    6.71    upload-site visits            1    21.82
+2010-07-09        1         3   18.24    USB connections               3    18.24
+2010-07-12        1         1    3.57    upload-site visits            1    13.67
+2010-07-15        1         1    3.47    upload-site visits            1     9.72</code></pre>
+
+<p><b>Two USB connections score +20.9. Four after-hours USB events score +107.</b> Large, finite, computed on real data. If that number were infinity, the floor would not be working. If it were small, the “don't include today” rule would be inverted. It is the thesis of the project in one row.</p>
+
+<p>Two more things in that table are worth a sentence each:</p>
+
+<div class="note bad"><b>6 July is labelled 0.</b> The answer key's window opens on the 7th. So the single loudest day of his career — four after-hours USB events, 107σ — is formally a <em>negative</em>, and any model that flags it will be marked wrong. That is the same answer-key narrowness Stage 2 documented, now visible as a score.</div>
+
+<div class="note"><b>16 February is an ordinary day at 47σ.</b> An ordinary employee, five months before anything happens, on a job-search browsing spike. Proof that one loud day is not a detection — and the clearest possible statement of why the interesting question is what a model makes of a <em>sequence</em> of these.</div>
+
+<h2>11 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Why not just use a threshold on the raw counts?</div><div class="a">
+<p>Because there is no threshold that works. Two USB connections in a day happens 13,125 times in our data, to 204 people. For one man it's a below-average day — he does it 176 days out of 250. For another it's the most abnormal day of his life; he'd done it once in 222 days. A rule set low enough to catch the second drowns in the first, and a rule set high enough to ignore the first misses the second entirely. The z-score is what makes those two days different numbers.</p></div></div>
+
+<div class="qa"><div class="q">Isn't a z-score a very simple method for a final-year project?</div><div class="a">
+<p>Deliberately, and the simplicity is doing work. The project's question is whether <em>temporal context</em> helps — one day versus 28 days — so both models have to see identical inputs with exactly one variable changed. If the feature construction were clever, any difference could be attributed to the cleverness instead. A simple, causal, per-person score keeps the comparison honest.</p>
+<p>It is also the part I can defend line by line. I can tell you what every number in the denominator is, and prove it never saw the future. That's worth more here than sophistication I'd have to take on trust.</p></div></div>
+
+<div class="qa"><div class="q">How do you know this isn't leaking information from the future?</div><div class="a">
+<p>Because of how the average is built, not because we checked afterwards. Every day is scored against days strictly earlier than itself, for that person only. There is no window that reaches forward, so future information has no route to an earlier row — it's causal by construction rather than by inspection.</p>
+<p>The one thing that <em>is</em> computed over the whole dataset is the floor: one number per feature, from a median over a thousand people. We declare it, we quantified it at roughly 0.1% influence per person, and the alternative would have required Stage 4's split to exist before Stage 3.</p></div></div>
+
+<div class="qa"><div class="q">You blank the first 30 days of everyone. Aren't you throwing away data?</div><div class="a">
+<p>We're keeping the rows and zeroing the values, so nothing is deleted — 30,000 rows, 6.5% of the table. And the thing you'd worry about, losing attack days, doesn't happen: zero attack days fall in a warm-up. The earliest attack in the whole release starts on 10 June against data beginning 2 January, and the tightest insider still has 157 days of history before their window. The program asserts that on every run.</p>
+<p>The alternative is worse. A z-score from three days of history is a confident-looking number built from nothing, and it would look exactly like a real detection.</p></div></div>
+
+<div class="qa"><div class="q">66 out of 70 sounds great. What's the catch?</div><div class="a">
+<p>The catch is in the same report. That 66 uses the loudest of a day's 18 features, and 13.4% of ordinary employees' days also clear the same bar — the median ordinary day peaks at 1.5 sigma. So it says insiders are loud, and it also says the bar is cheap. On the average across all 18 features only 18 of 70 insiders clear it, though there only 0.1% of ordinary days do.</p>
+<p>The number I'd defend is the lift, because it's per-person and doesn't depend on that choice: scenario 1 attacks are 5.2 times louder than that same person's earlier days, scenario 3 7.5 times, scenario 2 1.9 times. And that's precisely why the project doesn't stop here — a per-day score isn't a detector, which is what Stages 5 to 7 are for.</p></div></div>
+
+<div class="qa"><div class="q">Why didn't you use a moving average, which forgets old behaviour?</div><div class="a">
+<p>We considered it and rejected it on a measurement. A two-week half-life is the usual choice, but scenario-2 attacks run 45 to 59 days — so a two-week memory would have absorbed most of the attack into the baseline it's being compared against, and scenario 2 is 89% of all our attack days.</p>
+<p>The expanding window absorbs more slowly, but it still absorbs, and we measured that instead of hiding it: the last third of a scenario-2 attack scores 40% of what the first third did, for the same behaviour. That's a real limitation, and it's also the clearest argument we have that a 28-day context window should help.</p></div></div>
+
+<div class="qa"><div class="q">You changed the floor formula from your plan. Isn't that tuning to get a better result?</div><div class="a">
+<p>It would be if we'd tried variants until the number improved. What happened is that the original formula broke on a property of the dataset we hadn't checked: three quarters of employees never touch a USB port, so the “typical person's variation in USB use” is exactly zero, and the calculation collapsed for eight of eighteen features.</p>
+<p>The fix changes the question from “how much does this vary for a typical person” to “how much does it vary for someone who does it” — which is the quantity we wanted all along. And the way to tell it apart from tuning is the ordinary-day rate: it barely moved, 11.6% to 13.4%, while insider separation improved five-fold. Loosening a threshold raises both together. Both versions are still in the code, so the comparison is reproducible.</p></div></div>
+
+<div class="qa"><div class="q">How do you know the z-scores are actually correct?</div><div class="a">
+<p>Three ways. Sixteen automated tests, chosen to cover the failures that produce no error message — a spike measured against an average that includes itself, a zero-variance history, an off-by-one at the warm-up boundary, one person's history leaking into another's score.</p>
+<p>Then the finished file was recomputed by a separate, deliberately naive program — a plain loop written from the written specification rather than from the code — over 16 people including every one we hand-checked. The two agree to six parts in a hundred million.</p>
+<p>And there's the hand check: KPC0073's 6 July has to come out large and finite. If the floor weren't applied it would be infinity; if the “don't include today” rule were inverted it would be small.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Stage 3 takes the same 464,687 rows and changes what the numbers mean: from what a person did, to how unlike themselves it was. Two USB connections is a quiet day for one employee and a plus-21 for another. And before training anything, it proves the signal is there — 66 of 70 insiders score above two standard deviations from their own normal during their attack, with the loudest day at the very start and fading after. That last fact is the reason the next two stages are worth building.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 3 · CERT Insider Threat Test Dataset r4.2 (Carnegie Mellon University / ExactData).
+  Every number here was measured from <code>data/dataset.parquet</code> and <code>outputs/stage3_gate.csv</code> after the run on 8 August 2026. None is estimated.
+</footer>
+
+</div>
+</body>
+</html>

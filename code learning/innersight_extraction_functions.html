@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — every function in extraction/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 1 · function reference</p>
+  <h1>Every function in <code>extraction/</code></h1>
+  <p class="sub">All 31 functions in <code>extract.py</code>, all 7 in <code>test_extract.py</code>, in plain language and in file order. Read from the body, not the docstring.</p>
+</header>
+
+<div class="callout">
+  <p><strong>What this package is for.</strong></p>
+  <p>The CERT r4.2 release is five raw activity logs totalling about 16 GB, one row per event — a logon, a USB plug, a file copy, an email, a web request. <code>extraction/</code> reads all five once and boils them down to a single small table: one row per person per calendar day, carrying 18 numbers that describe what that person did that day. It is the only code in the project that ever opens the raw release; every later stage reads the small table it writes and nothing else.</p>
+</div>
+
+<div class="note"><b>How to read this.</b> Each function gets a signature and one or two lines saying what it actually does. <strong>⭐ marks the six functions where the real thinking is</strong> — the rest is plumbing, and honest plumbing at that. Where a docstring and the code disagree, the code is described and the disagreement is flagged in a <b>warts</b> box at the end of the chapter.</div>
+
+
+<h2><span class="n">1</span><code>extraction/__init__.py</code></h2>
+
+<p><b>23 lines, zero functions.</b> It is a docstring and one assignment. Worth reading once anyway, because it is where the three run commands are written down:</p>
+
+<pre><code>python -m extraction.extract                 # 30-user sample, ~7 s
+python -m extraction.extract --full          # full r4.2, ~1-3 h
+python -m extraction.extract --user KPC0073  # inspect one user's days</code></pre>
+
+<p>The only executable line is <code>__all__ = ["extract"]</code>. That names a <em>submodule</em>, not a function — so <code>from extraction import *</code> pulls in the <code>extract</code> module, while a plain <code>import extraction</code> does not. Nothing else in the project relies on either, so this is decoration rather than machinery.</p>
+
+<div class="note"><b>One thing to know.</b> Those commands must be run from the project root. <code>extract.py</code> does <code>from config import ...</code> — a top-level import, not a relative one — so running it from inside <code>extraction/</code> fails before it does anything.</div>
+
+
+<h2><span class="n">2</span><code>extraction/extract.py</code></h2>
+
+<p><b>881 lines, 31 functions</b> — 12 public, 19 private — plus two classes: <code>ExtractionError</code> (the one exception this stage raises) and <code>LogPartial</code> (a frozen pair holding what one chunk contributed: a table of things that can be added, and a set of things that can only be counted once at the end).</p>
+
+<h3>Scan table — all 31, in file order</h3>
+
+<table>
+<thead><tr><th class="mono">Function</th><th>One line</th></tr></thead>
+<tbody>
+<tr><td class="mono">_check_feature_partition</td><td>Import-time guard: each of the 18 features is produced by exactly one log.</td></tr>
+<tr><td class="mono">_alternation</td><td>Glues a domain list into one escaped, lowercased search pattern; refuses an empty list.</td></tr>
+<tr><td class="mono">build_logon_partial</td><td>Logon/logoff rows → five daily numbers; only logons count as after-hours or weekend.</td></tr>
+<tr><td class="mono">build_device_partial</td><td>USB plugs, unplugs, and any device event outside 7am–7pm.</td></tr>
+<tr><td class="mono">build_file_partial</td><td>File copies per day plus the filenames; no removable-media column means every row counts.</td></tr>
+<tr><td class="mono">build_email_partial</td><td>Messages sent, messages leaving the org, messages ≥1 MB, and total bytes.</td></tr>
+<tr><td class="mono">build_http_partial</td><td>Web requests, job-board hits, file-sharing hits, by substring match on the URL.</td></tr>
+<tr class="hi"><td class="mono">⭐ aggregate_log</td><td>Folds one log's entire chunk stream down to its per-person-per-day numbers.</td></tr>
+<tr class="hi"><td class="mono">⭐ combine_daily_counts</td><td>Joins the five per-log tables; union of keys, missing means zero, fixed column order.</td></tr>
+<tr><td class="mono">daily_counts</td><td>Fold every log, then join. The seam tests plug into.</td></tr>
+<tr><td class="mono">daily_counts_from_dir</td><td>Point at a release folder, get the finished table.</td></tr>
+<tr class="hi"><td class="mono">⭐ _stream_log</td><td>Yields validated, column-projected, date-parsed pieces of one CSV.</td></tr>
+<tr><td class="mono">_validated_header</td><td>Checks the header against the contract before reading a single data row.</td></tr>
+<tr><td class="mono">_parse_dates_in_place</td><td>Parses dates with the known format first, per-row guessing only as a fallback.</td></tr>
+<tr><td class="mono">_key_frame</td><td>The (person, calendar day) address for every row, clock time stripped.</td></tr>
+<tr><td class="mono">_after_hours</td><td>Marks rows before 7am or from 7pm onward.</td></tr>
+<tr><td class="mono">_ones</td><td>A column of 1s so "how many rows" sums like everything else.</td></tr>
+<tr><td class="mono">_count</td><td>True/false → 1/0, with "unknown" pinned to didn't-happen.</td></tr>
+<tr><td class="mono">_truthy</td><td>Decides what counts as true in a column that may be booleans or may be text.</td></tr>
+<tr class="hi"><td class="mono">⭐ _has_external_recipient</td><td>Any address in to/cc/bcc outside the org, found by counting @ signs.</td></tr>
+<tr><td class="mono">_sum_by_key</td><td>Adds per-row numbers into per-person-per-day totals; unattributable rows dropped.</td></tr>
+<tr><td class="mono">_distinct_by_key</td><td>Reduces a chunk to unique (person, day, thing) combinations — no counting.</td></tr>
+<tr><td class="mono">_compact_sums</td><td>Adds a stack of partial total-tables together.</td></tr>
+<tr class="hi"><td class="mono">⭐ _compact_distinct</td><td>Stacks and de-duplicates combination tables, and pointedly never counts.</td></tr>
+<tr><td class="mono">_empty_log_frame</td><td>A correctly shaped zero-row table for a log that turned out to be empty.</td></tr>
+<tr><td class="mono">_union_key_index</td><td>Every (person, day) appearing in any log, sorted and de-duplicated.</td></tr>
+<tr><td class="mono">format_report</td><td>The run summary: shape, date range, 18 totals, then the checks.</td></tr>
+<tr class="hi"><td class="mono">⭐ _check_lines</td><td>The sanity checks — the ones that catch a beautiful model trained on nonsense.</td></tr>
+<tr><td class="mono">_check</td><td>Formats one check as a line starting <code>ok</code> or <code>CHECK</code>.</td></tr>
+<tr><td class="mono">format_user_report</td><td>One person's most eventful days, ranked by signal then shown in date order.</td></tr>
+<tr><td class="mono">main</td><td>Parse arguments, build, write Parquet, print the report.</td></tr>
+</tbody>
+</table>
+
+
+<div class="card">
+<h3><span class="path">zone 1</span> the constants and the error class</h3>
+<p>Two module-level validators that run <em>before</em> the module finishes importing, so a misconfiguration is a startup crash rather than a wrong number three hours later.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def _check_feature_partition() -&gt; None</td><td>Checks that each of the 18 feature names is produced by exactly one of the five logs. Two logs claiming the same feature would silently overwrite each other in the join; a feature claimed by nobody would ship as a column of zeros.</td></tr>
+<tr><td class="mono">def _alternation(domains: Sequence[str], name: str) -&gt; str</td><td>Glues a list of domains into one <code>a\.com|b\.com</code> search string, lowercased, with dots escaped so <code>.</code> can't match any character. It refuses an empty list, because an empty pattern matches every string and would score every single web request as a job-site hit.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 2</span> the five per-log builders</h3>
+<p>One function per raw log. Each takes a chunk of rows and returns what that chunk contributes to the daily table — nothing more; they never see the file, the stream, or each other.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def build_logon_partial(chunk: pd.DataFrame) -&gt; LogPartial</td><td>Turns logon/logoff rows into five numbers: sessions started, sessions ended, late-night starts, weekend starts, and the machines used. Only starts count toward the late-night and weekend tallies — otherwise a single 2am session would be counted twice once its logoff landed.</td></tr>
+<tr><td class="mono">def build_device_partial(chunk: pd.DataFrame) -&gt; LogPartial</td><td>Counts USB plugs, USB unplugs, and <em>any</em> device event falling outside 7am–7pm. Unplugs count too, on the view that a drive inserted at 18:55 and pulled at 19:30 is one late-night episode either way.</td></tr>
+<tr><td class="mono">def build_file_partial(chunk: pd.DataFrame) -&gt; LogPartial</td><td>Counts file copies per day and keeps the filenames for the distinct tally. If the release ships no "was it copied to removable media" column, every row is treated as such a copy — which is why that number equals the plain file count exactly on r4.2.</td></tr>
+<tr><td class="mono">def build_email_partial(chunk: pd.DataFrame) -&gt; LogPartial</td><td>Counts messages sent, messages with at least one recipient outside the org, messages of 1 MB or more, and total bytes. r4.2 has no sent-vs-received column, so every row is taken as a message the named person sent.</td></tr>
+<tr><td class="mono">def build_http_partial(chunk: pd.DataFrame) -&gt; LogPartial</td><td>Counts web requests, plus how many URLs contain a job-board domain and how many contain a file-sharing domain. Matching is "does this text appear anywhere in the lowercased URL", which is what lets a path-shaped entry like <code>aol.com/jobs</code> work at all.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 3</span> the fold and the join</h3>
+<p>The arithmetic that turns a stream of chunk-sized contributions into one table. This is the zone that makes the memory story true.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr class="hi"><td class="mono">⭐ def aggregate_log(log: str, chunks: Iterable[pd.DataFrame], *, compact_every: int = 64) -&gt; pd.DataFrame</td><td>Feeds every chunk of one log through its builder and accumulates the results, so a 14.5 GB file is never held in memory — only the running totals, which are bounded by people × days. Every 64 chunks it squashes the accumulated pile back down to one table, purely so hundreds of thousands of tiny frames don't stay pinned until the end.</td></tr>
+<tr class="hi"><td class="mono">⭐ def combine_daily_counts(per_log: Mapping[str, pd.DataFrame]) -&gt; pd.DataFrame</td><td>Stitches the five per-log tables into the Stage 1 output, keeping every (person, day) that appears in <em>any</em> log and filling every gap with a real 0 rather than a blank. Columns come out in the fixed config order, because that ordering is the feature-vector layout every later stage assumes.</td></tr>
+<tr><td class="mono">def daily_counts(per_log_chunks: Mapping[str, Iterable[pd.DataFrame]], *, compact_every: int = 64) -&gt; pd.DataFrame</td><td>Two lines of wiring: fold each log, then join the results. This is the seam the tests plug into, since it accepts plain lists of two-row frames exactly as happily as generators over the real release.</td></tr>
+<tr><td class="mono">def daily_counts_from_dir(data_dir: Path | str, *, chunk_size: int = 50_000, compact_every: int = 64) -&gt; pd.DataFrame</td><td>The production entry point: point it at a release folder and it opens all five CSVs as streams and hands back the finished table. It fails immediately if the folder is missing, and fails as soon as reading starts if any one of the five files is.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 4</span> reading files</h3>
+<p>The only three functions in the project that know what a CSV is. Everything above them receives DataFrames and has no idea where they came from.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr class="hi"><td class="mono">⭐ def _stream_log(data_dir: Path, log: str, *, chunk_size: int) -&gt; Iterator[pd.DataFrame]</td><td>Hands out 50,000-row pieces of one CSV, loading only the columns that log's builder actually reads. That projection is the whole trick for http.csv — three columns out of six, and in particular never <code>content</code>, which is most of the 14.5 GB.</td></tr>
+<tr><td class="mono">def _validated_header(path: Path, log: str) -&gt; list[str]</td><td>Reads only the header row and confirms every column the project's contract promises is present, before any data is touched. Checking the <em>full</em> contract up front means a renamed column fails loudly, even though only a subset is loaded afterwards.</td></tr>
+<tr><td class="mono">def _parse_dates_in_place(chunk: pd.DataFrame, path: Path) -&gt; None</td><td>Converts the date text to real timestamps using CERT's known <code>MM/DD/YYYY HH:MM:SS</code> layout, falling back to guessing row by row only if that fails. The order is the point: per-row guessing is invisible on a 100-row fixture and costs minutes on a 28-million-row log.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 5</span> small shared helpers</h3>
+<p>Twelve short functions the builders and the fold are assembled from. Individually trivial; two of them encode decisions that would be wrong silently if made differently.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def _key_frame(chunk: pd.DataFrame) -&gt; pd.DataFrame</td><td>Builds the two-column (person, calendar day) address for every row, with the clock time flattened to midnight. Every grouping in the module is by that pair.</td></tr>
+<tr><td class="mono">def _after_hours(chunk: pd.DataFrame) -&gt; pd.Series</td><td>Marks rows timestamped before 7am or from 7pm onward. Those hours are one fixed org-wide definition of the working day, not a per-person schedule — personal normality is Stage 3's job, not this one's.</td></tr>
+<tr><td class="mono">def _ones(chunk: pd.DataFrame) -&gt; pd.Series</td><td>A column of 1s, one per row, so that "how many rows" can be summed by exactly the same machinery as every other feature.</td></tr>
+<tr><td class="mono">def _count(mask: pd.Series) -&gt; pd.Series</td><td>Turns a true/false column into 1s and 0s, treating "unknown" as "didn't happen". Comparing against a blank cell in pandas gives neither true nor false but a third, contagious state, and it has to be pinned to 0 before it reaches the totals.</td></tr>
+<tr><td class="mono">def _truthy(series: pd.Series) -&gt; pd.Series</td><td>Decides what counts as true in a column that might hold real booleans or might hold text, accepting <code>true / 1 / yes / y / t</code> in any casing and with stray spaces. Only <code>file.csv</code> needs it, and only on releases newer than r4.2.</td></tr>
+<tr class="hi"><td class="mono">⭐ def _has_external_recipient(chunk: pd.DataFrame) -&gt; pd.Series</td><td>Flags a message when any address across to/cc/bcc sits outside <code>dtaa.com</code>, worked out by comparing the number of <code>@</code> signs against the number of internal-domain matches rather than splitting addresses apart — one vectorised pass per column instead of per-row work on a 1.36 GB file. The internal pattern deliberately refuses to match a lookalike host such as <code>@dtaa.com.evil.net</code>.</td></tr>
+<tr><td class="mono">def _sum_by_key(keys: pd.DataFrame, columns: Mapping[str, pd.Series]) -&gt; pd.DataFrame</td><td>Adds a batch of per-row numbers up into per-person-per-day totals. Rows with no user or an unreadable date are dropped rather than pooled under a blank key, so they count for nobody instead of for a phantom person.</td></tr>
+<tr><td class="mono">def _distinct_by_key(keys: pd.DataFrame, values: pd.Series) -&gt; pd.DataFrame</td><td>Reduces a chunk to its unique (person, day, thing) combinations — the raw material a distinct count is taken from later, and never here.</td></tr>
+<tr><td class="mono">def _compact_sums(parts: list[pd.DataFrame]) -&gt; pd.DataFrame</td><td>Adds a stack of partial total-tables into one. Safe to do at any moment, which is exactly what separates additive features from the two distinct ones.</td></tr>
+<tr class="hi"><td class="mono">⭐ def _compact_distinct(parts: list[pd.DataFrame]) -&gt; pd.DataFrame</td><td>Merges accumulated combination tables by stacking and de-duplicating them, and pointedly never counts. PC-42 seen in two chunks of one person's day is one machine, not two — so counting can happen once, at the very end, and a per-chunk count would be wrong in silent proportion to how many chunks a person's day happened to straddle.</td></tr>
+<tr><td class="mono">def _empty_log_frame(log: str) -&gt; pd.DataFrame</td><td>A zero-row table with the right columns and the right index types, returned when a log turns out to contain nothing at all. Handing back the correct shape means the join downstream needs no special case for it.</td></tr>
+<tr><td class="mono">def _union_key_index(frames: Iterable[pd.DataFrame]) -&gt; pd.MultiIndex</td><td>Collects every (person, day) appearing in any of the per-log tables into one sorted, duplicate-free list. That list <em>is</em> the set of rows Stage 1 emits.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 6</span> the report</h3>
+<p>Everything printed to the terminal after a run. None of it raises — this zone's job is to make a wrong number visible, not to decide it is wrong.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def format_report(daily: pd.DataFrame, out: Path | None = None) -&gt; str</td><td>Builds the text summary of a completed run: rows, distinct people, distinct days, the date range, all 18 column totals, then the checks below. It returns the text rather than printing it, so a test can read it.</td></tr>
+<tr class="hi"><td class="mono">⭐ def _check_lines(daily: pd.DataFrame, totals: pd.Series) -&gt; list[str]</td><td>The actual sanity checks: no negative counts, no blanks, no repeated (person, day), the three URL-derived totals non-zero, and logon/logoff totals within 25% of each other <em>but not identical</em>. It then reports the three known r4.2 oddities as plain facts rather than failures, so nobody discovers them later in a feature-importance chart.</td></tr>
+<tr><td class="mono">def _check(label: str, passed: bool, detail: object) -&gt; str</td><td>Formats one check as a padded line beginning <code>ok</code> or <code>CHECK</code>, so the results line up in a column and a failure is visible by shape alone.</td></tr>
+<tr><td class="mono">def format_user_report(daily: pd.DataFrame, user: str, rows: int = 30) -&gt; str</td><td>Builds a table of one person's 30 most eventful days — ranked by USB, after-hours, weekend, file and upload activity, then displayed in date order — and says how many of their remaining days were completely quiet. Showing their <em>first</em> 30 days instead would be useless, because an attack is rarely in January.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="card">
+<h3><span class="path">zone 7</span> the CLI</h3>
+<p>Argument parsing and wiring. One function, always last in the file.</p>
+
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def main(argv: Sequence[str] | None = None) -&gt; int</td><td>Parses the command line, builds the table from either the 30-user sample or the full release, writes it to Parquet and prints the report. Sample and full runs default to <em>different</em> output files on purpose, so a seven-second test can't quietly overwrite the three-hour one.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="note"><b>Warts — where the docstrings and the code disagree.</b>
+<ul>
+<li><code>format_user_report</code>'s docstring says "<em>Print</em> one user's days". It doesn't print; it returns a string, and <code>main</code> prints it. Same for <code>format_report</code>.</li>
+<li>The module docstring says "18 <em>integer</em> counts". Seventeen are integers; <code>total_email_size</code> is deliberately a float, because a byte total overflows a 32-bit integer and arrives from a column that can be blank.</li>
+<li><code>build_http_partial</code> and <code>_has_external_recipient</code> both write <code>.astype("str").fillna("")</code>. By the time <code>fillna</code> runs, blanks have already become the literal text <code>"nan"</code>, so it never does anything. Harmless — <code>"nan"</code> contains no <code>@</code> and matches no domain — but it reads as protection that isn't there.</li>
+<li><code>_check_lines</code> labels one check "logons approx logoffs, <em>not equal</em>", and the code means it: <b>exactly</b> equal totals are reported as <code>CHECK</code>, not <code>ok</code>. That is intentional (perfectly paired totals would suggest generated rather than observed data) but it does mean a suspiciously tidy result reads as a failure.</li>
+<li><code>_alternation</code>'s docstring says "compile"; it builds a pattern string and never calls <code>re.compile</code>. pandas compiles it later.</li>
+<li>In <code>aggregate_log</code>, an empty chunk is skipped <em>before</em> the every-64 compaction check, so an empty chunk landing exactly on the 64th slot skips that one compaction. Purely a memory timing detail — the result is identical.</li>
+</ul>
+</div>
+
+
+<h2><span class="n">3</span><code>extraction/test_extract.py</code></h2>
+
+<p><b>127 lines, 7 functions</b> — 6 tests and 1 helper. Deliberately short, and deliberately not aiming at coverage: every one of these targets a bug that would produce <em>no error and no blank</em>, just a number slightly too large, and would go unnoticed until the final results made no sense.</p>
+
+<h3>Scan table — all 7, in file order</h3>
+
+<table>
+<thead><tr><th class="mono">Function</th><th>One line</th></tr></thead>
+<tbody>
+<tr><td class="mono">_logon_chunk</td><td>Builds a fake, date-parsed logon chunk from a list of tuples.</td></tr>
+<tr><td class="mono">test_distinct_pcs_are_not_double_counted_across_chunks</td><td>One machine seen in two chunks is one machine.</td></tr>
+<tr><td class="mono">test_after_hours_and_weekend_count_logons_only</td><td>A 2am logoff is not a late-night logon.</td></tr>
+<tr><td class="mono">test_missing_log_days_become_zero_not_nan</td><td>Absence from one log is a real zero, not a missing row.</td></tr>
+<tr><td class="mono">test_column_order_is_the_config_vector_layout</td><td>Locks the 20 output columns to the config order.</td></tr>
+<tr><td class="mono">test_external_recipients_span_to_cc_and_bcc</td><td>bcc counts; a lookalike domain is external.</td></tr>
+<tr><td class="mono">test_empty_input_gives_an_empty_but_correctly_shaped_table</td><td>Nothing in, correctly shaped nothing out.</td></tr>
+</tbody>
+</table>
+
+<div class="card">
+<h3>the helper</h3>
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def _logon_chunk(rows: list[tuple[str, str, str, str]]) -&gt; pd.DataFrame</td><td>Builds a date-parsed logon chunk from a list of (timestamp, person, machine, activity) tuples, so each test reads as a handful of events rather than as pandas setup.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<h3>the six tests</h3>
+<table>
+<thead><tr><th class="mono" style="width:44%">Signature</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="mono">def test_distinct_pcs_are_not_double_counted_across_chunks() -&gt; None</td><td>Puts the same machine in two different chunks of one person's day and forces a compaction between them; the answer must be 2 machines and 3 logons, not 3 and 3. This is the one bug in the module that is wrong by an amount that depends on chunk size.</td></tr>
+<tr><td class="mono">def test_after_hours_and_weekend_count_logons_only() -&gt; None</td><td>Asserts a 2am <em>logoff</em> does not register as a late-night logon, and that a logon on Saturday 2 January 2010 does register as a weekend one.</td></tr>
+<tr><td class="mono">def test_missing_log_days_become_zero_not_nan() -&gt; None</td><td>One person appears only in the logon log, another only in http; both must get a full row and the features they have no evidence for must read 0, never blank. A blank here would poison the z-scores in Stage 3.</td></tr>
+<tr><td class="mono">def test_column_order_is_the_config_vector_layout() -&gt; None</td><td>Pins the output to <code>user</code>, <code>day</code>, then the 18 features in config order. Reordering that tuple would silently change what every saved model checkpoint means.</td></tr>
+<tr><td class="mono">def test_external_recipients_span_to_cc_and_bcc() -&gt; None</td><td>Four cases: internal-only is 0; an outside address hidden in cc is 1; hidden in bcc is 1; and <code>a@dtaa.com.evil.net</code> counts as outside. The bcc case is the exfiltration pattern — a mail to a colleague, blind-copied to a personal account.</td></tr>
+<tr><td class="mono">def test_empty_input_gives_an_empty_but_correctly_shaped_table() -&gt; None</td><td>Joining no logs at all must still produce a table with the right 20 columns rather than an exception or an unusable empty frame.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note"><b>What is not tested.</b> Nothing here reads a file. <code>_stream_log</code>, <code>_validated_header</code> and <code>_parse_dates_in_place</code> have no unit test — the CSV-reading zone is covered by running the 30-user sample end to end in about seven seconds, and by the checks in <code>_check_lines</code>. That is a deliberate trade, and worth saying out loud before someone else points at it.</div>
+
+
+<h2><span class="n">4</span>The five functions to actually remember</h2>
+
+<div class="callout"><p><strong>Twenty-six of the thirty-one are plumbing you can re-derive from the name.</strong> These five are decisions, and each one is wrong in a way that produces plausible numbers rather than an error.</p></div>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b><code>aggregate_log</code> — why 16 GB fits on a laptop</b>
+    <p>Nothing is ever held whole. Each chunk is reduced to per-person-per-day contributions the moment it arrives, and only the running totals persist. The input is unbounded; the state is bounded by people × days, which is roughly 500,000 rows. If you are asked one question about this stage, it will be this one.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b><code>_compact_distinct</code> — why two features can't be added</b>
+    <p>Sixteen of the eighteen features combine by addition. Two — machines used and distinct filenames — do not: the same machine seen in two chunks of one person's day is one machine. So the unique combinations are carried around untouched and counted exactly once, at the end. Count them per chunk instead and the error is invisible, and grows with how many chunks a person's day happens to straddle.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b><code>combine_daily_counts</code> — three decisions in one join</b>
+    <p>The rows are the <em>union</em> of every log's (person, day), so a day that exists only in web traffic still produces a row. Missing is filled with a real 0, because "no USB events today" is an observation and not an absence of data. And the columns come out in one fixed order, because that order is the vector layout every later stage reads positionally.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b><code>_stream_log</code> — where the time actually goes</b>
+    <p>The header is checked in full against the contract before a single data row is read; then only the columns the builder needs are loaded. On http.csv that is three columns out of six and, crucially, never <code>content</code> — which is the majority of the 14.5 GB. The saving isn't from clever code, it's from not reading most of the file.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <b><code>_check_lines</code> — the checks that unit tests can't do</b>
+    <p>Tests prove the code does what was written. These prove what was written is true of the world. The one that matters most: if job-site visits total zero, URL matching never fired — and thirty of the insiders in this dataset are people whose entire signature is job hunting. Every downstream stage would still run perfectly happily on the result.</p>
+  </div>
+</div>
+
+<div class="note good"><b>The sixth star.</b> <code>_has_external_recipient</code> is starred above as the cleverest small thing in the file — comparing the count of <code>@</code> signs against the count of internal-domain matches, so no address is ever split — but it didn't make this list, because being clever is not the same as being load-bearing. If it were wrong, one feature out of eighteen would be wrong. If any of the five above were wrong, the whole table would be.</div>
+
+<footer>
+  <p>InnerSight · Stage 1 · <code>extraction/</code> — 31 functions in <code>extract.py</code>, 7 in <code>test_extract.py</code>, 0 in <code>__init__.py</code>. Written from the code, not the docstrings; the six places they disagree are listed in the warts box in chapter 2.</p>
+</footer>
+
+</div>
+</body>
+</html>

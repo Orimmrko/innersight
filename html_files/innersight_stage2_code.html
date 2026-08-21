@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 2 Code (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:21px; margin:34px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-6px}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 130px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:21px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 2 code · defence preparation</p>
+  <h1>Walk me through the code</h1>
+  <p class="sub">The two files in <code>labeling/</code>, what each part does and why it is written that way, the exact lines someone might point at, and why there are 16 tests and not 60.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence answer to “what does your code do?”</strong></p>
+  <p>“It gives each person a complete calendar, filling the days they generated nothing with zeros, then goes through the 70 attack periods from the answer key and marks the days inside them — turning a list of date ranges into a yes/no answer on every single row, without deleting a row or changing a number.”</p>
+</div>
+
+<h2>1 — What is in the folder</h2>
+
+<pre><code>labeling/
+├── __init__.py        what the stage is, and how to run it
+├── label.py           the program — about 700 lines including comments
+├── test_label.py      16 tests
+└── README.md          the stage written up, with the measured results</code></pre>
+
+<p>It is laid out the same way as <code>extraction/</code> (Stage 1): program, tests, README, run from the project folder. Everything it needs — file paths, column names, the release number — comes from <code>config.py</code>. Nothing is typed in twice.</p>
+
+<pre><span class="filetag">terminal</span><code>python -m labeling.label                  # the real table,  ~4 seconds
+python -m labeling.label --sample         # 30-person sample, ~1 second
+python -m labeling.label --user KPC0073   # print one person's days
+python -m pytest labeling/test_label.py   # run the 16 tests</code></pre>
+
+<div class="note"><b>Why <code>--sample</code> saves to a different filename.</b> Stage 1 got burned by this exactly once: the quick test run and the real run saved to the same file, so a 7-second test silently wiped out the 1,000-person table — and every later stage would have used the small one without complaining. Now they are two separate filenames and the flag picks which. Tiny guard, but the failure it prevents shows up only as results that look suspiciously good.</div>
+
+<h2>2 — How the program is put together</h2>
+
+<p>Three functions do the work. Each one takes data in and gives data back — no files, no hidden state — which is what makes each one testable on its own.</p>
+
+<pre><code>read the counts file ──┐
+                       ├─→ build_labelled_counts(daily, windows)
+read the answer key ───┘         │
+                                 ├─→ calendar_fill(daily)          add the missing days
+                                 └─→ attach_labels(filled, windows)   add the two columns
+                                             │
+                                             ├─→ verify(...)         stop if something is impossible
+                                             ├─→ format_report(...)  print the checks
+                                             └─→ save the file</code></pre>
+
+<p>Keeping <code>attach_labels</code> separate matters for one practical reason: it works on any table with a person column and a day column, filled or not. That is what lets a test run the <em>same</em> labelling on the filled and unfilled version of one input and prove the answer is different.</p>
+
+<h2>3 — Reading the answer key</h2>
+
+<div class="card">
+<h4>Read every column as text</h4>
+<pre><span class="filetag">label.py</span><code># Every column as text. `dataset` in particular must never be inferred as a
+# float -- "4.2" and 4.2 are different filter keys and only one of them is
+# right, and a numeric read also silently reformats "4.10" style ids.
+answers = pd.read_csv(path, dtype="str")
+
+windows = answers.loc[answers["dataset"].str.strip() == release].copy()</code></pre>
+<p>The answer key holds all ten CERT releases — 190 lines, of which 70 are ours. If pandas decides the release column is a number, comparing it to the text <code>"4.2"</code> matches nothing, and we save a table with zero bad days. That table would train, evaluate and report perfectly happily, scoring zero forever, and it would look like a modelling problem rather than a typing problem. <b>This is the single most dangerous line in the file.</b></p>
+
+<h4>Finding nothing is an error, not an empty answer</h4>
+<pre><span class="filetag">label.py</span><code>if windows.empty:
+    found = sorted(answers["dataset"].dropna().unique())
+    raise GroundTruthError(
+        f"no rows in {path} have dataset == {release!r}. Values present: "
+        f"{found}. Note this must be compared as a string.")</code></pre>
+<p>The error message lists the values it <em>did</em> find, because the realistic cause is either the typing problem above or a rebuilt answer file — and both are obvious from that list. An empty answer key must never be treated as a valid result.</p>
+
+<h4>Cut off the clock time immediately, not later</h4>
+<pre><span class="filetag">label.py</span><code>def _to_day(stamps: pd.Series) -> pd.Series:
+    return pd.to_datetime(
+        stamps.str.strip(), format=INSIDERS_DATE_FORMAT
+    ).dt.normalize()</code></pre>
+<p>Our rule is "day falls between the start day and the end day". Cutting the time off <em>here</em> makes that sentence literally true of the values we store. Doing it later, at comparison time, would make it true only as long as every future comparison remembers to do it — and if one forgot, the result would be a one-day error on a few insiders. No crash, no warning, and nothing in the totals would look wrong.</p>
+<p>The date format is written out rather than guessed. Inside release 4.2 all 70 attacks use <code>MM/DD/YYYY HH:MM:SS</code>, but other releases in the same file are not padded — <code>3/6/2010 1:41:56</code> appears under r2. Filtering to our release first is what makes one strict format safe.</p>
+</div>
+
+<h2>4 — Filling in the calendar</h2>
+
+<h3>4.1 The list of days is built with arithmetic, not a loop</h3>
+
+<pre><span class="filetag">label.py</span><code>span = daily.groupby(USER_COLUMN, sort=True)[DAY_COLUMN].agg(["min", "max"])
+lengths = ((span["max"] - span["min"]).dt.days + 1).to_numpy()
+
+starts = span["min"].to_numpy()
+# Offset of each row within its own user's run: a global arange minus the
+# arange value at which that user's run began.
+run_starts = np.repeat(np.cumsum(lengths) - lengths, lengths)
+offsets = np.arange(int(lengths.sum())) - run_starts</code></pre>
+
+<p>The obvious way is a loop that builds a date range for each person and glues 1,000 pieces together. This way is faster — but speed is not the reason, because at 1,000 people both finish instantly.</p>
+
+<p>The reason is that <b>there is no per-person step that could go wrong for one person and not the rest.</b> Everyone's dates come from the same two operations, so the code either works for everybody or fails visibly for everybody. A loop with a mistake in an edge case — say, a person with exactly one recorded day — would give a table that is correct for 999 people and quietly one row short for the thousandth. Nobody would notice.</p>
+
+<h3>4.2 Join, then fill, then fix the number types back</h3>
+
+<pre><span class="filetag">label.py</span><code>filled = complete.merge(daily, on=list(KEY_COLUMNS), how="left")
+
+# A left merge marks the inserted days as NaN. Every one of those is a real
+# zero -- a day this person was employed and generated no event.
+for name in features:
+    filled[name] = filled[name].fillna(0).astype(dtypes[name])</code></pre>
+
+<p>Two deliberate things here.</p>
+
+<p><b>We save the number types before the join and put them back after.</b> When you join like this, any column that gains a single missing value gets converted from whole numbers to decimals. A table of 464,687 rows where every count is quietly a decimal would flow all the way to the models without a single complaint. Seventeen features go back to whole numbers, and total email size goes back to a decimal because it always was one.</p>
+
+<p><b>We fill the gaps first and convert afterwards</b>, never the other way round — a whole-number column cannot hold the "missing" value the join creates, so converting first would fail outright.</p>
+
+<h2>5 — The lines someone might point at</h2>
+
+<div class="card">
+<h4>Why we loop over 70 attacks instead of 464,687 rows</h4>
+<pre><span class="filetag">label.py</span><code>rows_by_user = daily.groupby(USER_COLUMN).indices
+days = daily[DAY_COLUMN].to_numpy()
+
+for window in windows.itertuples(index=False):
+    positions = rows_by_user.get(getattr(window, USER_COLUMN))
+    if positions is None:
+        continue
+    window_days = days[positions]
+    in_window = (window_days >= ...start) & (window_days <= ...end)
+    inside[positions[in_window]] = True</code></pre>
+<p>Looping over rows in Python at this size would be indefensible. Looping over <em>attacks</em> is 70 turns, and each one only touches the ~460 rows belonging to one person, so the whole thing takes milliseconds.</p>
+<p>It also has a property the alternatives don't: because the loop only ever writes "yes", two overlapping attacks for the same person would combine correctly on their own. A join-based version would silently duplicate rows instead. No person in r4.2 has two attacks — but the code doesn't depend on that staying true.</p>
+
+<h4>Both ends of the attack count</h4>
+<pre><span class="filetag">label.py</span><code># Inclusive at both ends: a 65-minute window still owns its whole day.
+in_window = (window_days >= np.datetime64(start)) & (window_days <= np.datetime64(end))</code></pre>
+<p><code>&gt;=</code> and <code>&lt;=</code>, not <code>&gt;</code> and <code>&lt;</code>. BIH0745's whole attack is one afternoon; with an exclusive end he would have zero bad days, and the check "every insider has at least one bad day" would fire. Two tests pin this down — one for a multi-day attack's first and last day, one for an attack that starts and ends on the same date.</p>
+
+<h4>An attack naming someone who isn't in the table is skipped</h4>
+<pre><span class="filetag">label.py</span><code>positions = rows_by_user.get(getattr(window, USER_COLUMN))
+if positions is None:
+    continue</code></pre>
+<p>This is what makes <code>--sample</code> work. The 30-person sample contains 9 of the 70 insiders, so 61 attacks name people who simply are not there. Skipping them is right.</p>
+<p>The situation that <em>would</em> be a problem is different: an insider who <b>is</b> in the table but ends up with no bad days, meaning their attack fell outside their employment dates. That is caught separately by the report, because it is a data problem rather than a code problem.</p>
+
+<h4>Both new columns are stored as small integers</h4>
+<pre><span class="filetag">label.py</span><code>labelled[SCENARIO_COLUMN] = (
+    labelled[USER_COLUMN].map(scenario_by_user)
+    .fillna(BENIGN_SCENARIO).astype("int8"))
+labelled[LABEL_COLUMN] = _window_mask(labelled, windows).astype("int8")</code></pre>
+<p><code>int8</code> holds numbers from −128 to 127. Our values are 0–3 and 0–1, so it is honest about the range, and across 464,687 rows it is the difference between 7 MB and under 1 MB.</p>
+<p>The <code>.fillna(BENIGN_SCENARIO)</code> is doing the real work. Looking up a person in the answer key gives "not found" for 930 of the 1,000 employees, and we turn that into an explicit 0 — normal employee — rather than leaving it as a missing value that could spread through later calculations.</p>
+
+<h4>The column name is imported, never typed</h4>
+<pre><span class="filetag">config.py</span><code>LABEL_COLUMN: Final[str] = "label"
+SCENARIO_COLUMN: Final[str] = "user_scenario"</code></pre>
+<p>The answer key already has a column called <code>scenario</code>, meaning the same idea at a different level. Two columns with one name is how a join produces <code>scenario_x</code> and <code>scenario_y</code> and somebody picks the wrong one. Ours is <code>user_scenario</code>, the name lives in <code>config.py</code>, and Stages 3 to 7 import it from there.</p>
+
+<h4>The answer-key path is a function, not a fixed value</h4>
+<pre><span class="filetag">config.py</span><code>def insiders_csv_path() -> Path:
+    return resolve_answers() / INSIDERS_FILENAME</code></pre>
+<p>Every other path in <code>config.py</code> is a fixed value. This one can't be, because the answer key may live on an external drive. Working it out at startup would make <code>config.py</code> fail to load whenever the drive is unplugged — which would break every stage in the project, including the ones that never touch the answer key.</p>
+</div>
+
+<h2>6 — Two kinds of checking, and why both</h2>
+
+<p>Same split as Stage 1, for the same reason. Tests prove the code does what we wrote. Runtime checks prove that what we wrote is true of the real world.</p>
+
+<table>
+  <tr><th></th><th><code>verify()</code> — stops the program</th><th><code>format_report()</code> — just prints</th></tr>
+  <tr><td><b>Contains</b></td><td>things that are impossible</td><td>things that are surprising</td></tr>
+  <tr><td><b>If it fails</b></td><td>error, run stops</td><td>prints <code>CHECK</code> instead of <code>ok</code></td></tr>
+  <tr><td><b>Example</b></td><td>a bad day belonging to a normal employee</td><td>an insider with no bad days at all</td></tr>
+</table>
+
+<p>The difference is worth being able to explain. A bad day on someone the answer key never mentions <em>cannot</em> happen if the join worked — that is a broken program, so it stops. An insider with no bad days is a statement about the <em>data</em>: their attack fell outside their employment dates. That needs looking at, but it is not necessarily wrong, and stopping would be the code overruling the dataset.</p>
+
+<pre><span class="filetag">actual output from the real run</span><code>Sanity checks:
+  ok    70 users flagged as insiders             70 flagged
+  ok    every insider has >= 1 positive row      none missing
+  ok    no label=1 row belongs to a benign user  none
+  ok    user_scenario constant per user          0 user(s) vary
+  ok    no NaNs anywhere                         none
+  ok    no duplicate (user, day)                 0 duplicates
+  ok    row count did not decrease               330,452 -> 464,687
+  ok    labels are 0/1 only                      [0, 1]</code></pre>
+
+<div class="note good"><b>The check that would be easiest to leave out and hardest to miss:</b> "row count did not decrease". The fill is only supposed to <em>add</em> rows. But a join with a slightly wrong key column, or a duplicate in the input, quietly gives you a table that is smaller or bigger than it should be — and every number downstream would still look reasonable. Comparing the before and after count is one line and catches a whole family of join bugs.</div>
+
+<h2>7 — The 16 tests, and why those 16</h2>
+
+<p>The rule for choosing them is written at the top of the test file, and it is inherited from Stage 1: <b>test the things that go wrong silently.</b> No crash, no missing value — just a labels column that is slightly off, and a model that appears to train fine.</p>
+
+<h4>The labelling rule — 5 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">window_is_inclusive_at_both_ends</td><td>being off by one day at either end. Checks the day before, both edges, and the day after</td></tr>
+  <tr><td class="mono">window_shorter_than_a_day_still_labels_that_day</td><td>BIH0745's 65-minute attack producing zero bad days</td></tr>
+  <tr><td class="mono">insiders_ordinary_day_is_negative_but_carries_scenario</td><td>merging the two columns into one — the whole per-day vs per-person idea</td></tr>
+  <tr><td class="mono">benign_user_is_all_zeros_in_both_columns</td><td>a label leaking onto a normal employee. Also pins the number type</td></tr>
+  <tr><td class="mono">a_window_only_labels_its_own_user</td><td>comparing dates but forgetting the person. Two people, same day, only one marked</td></tr>
+</table>
+
+<h4>Reading the answer key — 4 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">release_filter_compares_dataset_as_a_string</td><td>the most dangerous bug in the file. The fake answer key in this test includes a <code>4.20</code> line, which a number-based read cannot tell apart from <code>4.2</code></td></tr>
+  <tr><td class="mono">timestamps_are_normalised_to_midnight</td><td>clock times surviving into the comparison</td></tr>
+  <tr><td class="mono">release_with_no_rows_is_an_error_not_empty</td><td>a silent zero-bad-days table — trains fine, scores zero forever</td></tr>
+  <tr><td class="mono">one_user_under_two_scenarios_is_rejected</td><td>an ambiguous answer being resolved by whichever line came first</td></tr>
+</table>
+
+<h4>The calendar fill — 5 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">fill_inserts_exactly_the_missing_calendar_days</td><td>the wrong number of days, or the wrong dates. Friday, Monday, Tuesday must become five rows with the weekend zeroed</td></tr>
+  <tr><td class="mono">fill_is_per_user_and_never_beyond_their_own_span</td><td>the global-range mistake. One person who left in January, one who started in May</td></tr>
+  <tr><td class="mono">fill_preserves_dtypes_and_existing_values</td><td>whole numbers turning into decimals (§4.2), and real rows being overwritten</td></tr>
+  <tr class="hi"><td class="mono">fill_makes_a_silent_day_labellable</td><td><b>the reason this stage exists.</b> Same input labelled twice — 2 bad days without the fill, 8 with it</td></tr>
+  <tr><td class="mono">duplicate_user_days_are_rejected_not_multiplied</td><td>a duplicated day quietly multiplying rows during the join</td></tr>
+</table>
+
+<h4>The safety checks themselves — 2 tests</h4>
+<table>
+  <tr><th>Test</th><th>Catches</th></tr>
+  <tr><td class="mono">verify_rejects_a_positive_day_on_a_benign_user</td><td>the guard not actually working — testing the alarm, not just the building</td></tr>
+  <tr><td class="mono">verify_accepts_a_correctly_labelled_table</td><td>a false alarm on good data. Also pins the final column order</td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">If asked “only sixteen tests?”</span>
+  <p>“Sixteen tests chosen by a rule, not sixteen tests to hit a coverage number. Every one targets a failure that gives no error message — a boundary off by one day, a filter that matches nothing, whole numbers turning into decimals, a duplicate that multiplies rows. Testing that a day inside an attack gets marked 1 would raise the coverage number and catch nothing, because that failure is obvious the first time you print the output. The one I'd point at is <code>fill_makes_a_silent_day_labellable</code> — it labels the same data twice, once filled and once not, and checks the answer is different. That's the entire reason for this stage, written as a test.”</p>
+</div>
+
+<h4>What the tests deliberately don't do</h4>
+<p>None of them read the real dataset. Every test builds its own three to seven rows, including a small fake answer key written to a temporary folder. That keeps the whole suite under a second — and, more importantly, keeps it honest. A test that read the real answer key and checked for 1,892 bad days would still pass if the rule were wrong in a way that happened to give the right total. The real table is checked separately, by going through all 70 attacks by hand.</p>
+
+<h2>8 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Walk me through what happens when I run this.</div><div class="a">
+<p>It reads the counts file, then reads the answer key as text and keeps only release 4.2 — that gives 70 attacks, and the clock times are cut off both ends. Then it works out each person's first and last day, builds the list of every day in between, and joins the counts onto it. Days that weren't there come back empty, get filled with zeros, and the number types are restored. Then it looks up each person in the answer key to fill in <code>user_scenario</code>, defaulting to 0, and goes through the 70 attacks marking the matching days. Four impossible-things checks run, the file is saved, and the report prints. About four seconds in total.</p></div></div>
+
+<div class="qa"><div class="q">Why is the fill here rather than in Stage 1 or Stage 3?</div><div class="a">
+<p>Not Stage 1, because that is the slow pass — 90 seconds over 16 GB — and nothing that might change belongs inside it. Not Stage 3, because by then the labelling would already have run on a table missing 528 of its 1,892 bad days, and those would be <em>absent</em> rather than wrongly marked, with nothing raising an error. It has to happen after extraction and before labelling, which leaves exactly one place.</p></div></div>
+
+<div class="qa"><div class="q">You loop in Python over the attacks. Isn't that slow?</div><div class="a">
+<p>It is 70 turns, and each one only touches one person's ~460 rows out of 464,687, so the whole step takes milliseconds. Looping over rows would be indefensible; looping over attacks is not. It also buys correctness — because the loop only ever writes "yes", two overlapping attacks on one person would combine correctly, whereas a join-based version would duplicate rows.</p></div></div>
+
+<div class="qa"><div class="q">What is the most dangerous line in this file?</div><div class="a">
+<p>Reading the answer key as text, and the comparison right after it. That file holds all ten CERT releases. If the release column gets read as a number, comparing it to <code>"4.2"</code> matches nothing and we save a table with zero bad days. Nothing downstream would object — the models train, the evaluation runs, and every score is zero, which looks like a modelling failure rather than a typing error. That is why finding nothing raises an error listing what it <em>did</em> find, and why one test deliberately includes a <code>4.20</code> line that a number-based read cannot tell apart from ours.</p></div></div>
+
+<div class="qa"><div class="q">Why do some checks stop the program and others only print a warning?</div><div class="a">
+<p>Because they are different kinds of claim. A bad day on someone the answer key never names cannot happen if the join is right, so that is a broken program and the run stops. An insider with no bad days is a statement about the data — their attack fell outside their employment dates — and that needs investigating rather than aborting. Stopping there would be the code overruling the dataset. The report marks it and carries on.</p></div></div>
+
+<div class="qa"><div class="q">How would you find out if this stage were subtly wrong?</div><div class="a">
+<p>The failure I worry about is being off by one day, because nothing visible changes — the row counts, the percentage of bad days and the per-scenario totals would all still look sensible. So there are three defences. Two tests pin both edges of the window explicitly. The report prints bad-day totals per attack type, which we compared against numbers worked out directly from the answer key. And there is a hand check written in the README: <code>--user KPC0073</code> must show 1 from 7 to 15 July and 0 on 6 July. That one-day gap only appears if the comparison includes both ends, works on dates rather than times, and is lined up correctly. Off by one in either direction and the gap moves.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Three functions, sixteen tests, four seconds. The code is small because the job is a lookup. The difficulty isn't the calculation — it's the three or four places where getting it wrong produces no error at all: text compared as a number, a boundary that excludes its own last day, whole numbers quietly turning into decimals, and a bad example that ends up missing rather than mislabelled.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 2 code · <code>labeling/label.py</code> and <code>labeling/test_label.py</code>.
+  Every code snippet is copied from the real file. Every number was measured from the run on 8 August 2026.
+</footer>
+
+
+</div>
+</body>
+</html>

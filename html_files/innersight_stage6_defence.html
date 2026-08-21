@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 6 (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 6 · defence preparation</p>
+  <h1>What a month of memory is worth</h1>
+  <p class="sub">Stage 6 is the payoff. Everything before it existed to make one comparison honest; this is the stage where the comparison is finally made. What was predicted in advance, what actually happened, where the prediction was wrong, and the one question about this result that has not been answered yet. Written to be read out loud.</p>
+</header>
+
+<div class="callout">
+  <p><strong>Say this first, if you say nothing else.</strong></p>
+  <p>“Two networks. Identical rows, identical scaling, identical loss, optimiser, learning rate, batch size, stopping rule, threshold procedure, seeds and hardware. One difference: Model A sees a single day, Model B sees the twenty-eight days ending on that day.”</p>
+  <p>“Model A scores 0.15. Model B scores 0.68. <b>Temporal context is worth four and a half times the average precision</b> — and on the slow, gradual attack that this dataset is mostly made of, it lifts detection from 23% of attack days to 72%.”</p>
+</div>
+
+<h4>Words used in this document</h4>
+<table>
+  <tr><td class="mono">AUPRC</td><td>Average precision. Roughly: as you walk down the ranked list of days, how much of what you pick up is real. The headline metric. Random guessing scores 0.0043 here.</td></tr>
+  <tr><td class="mono">P@50</td><td>Of the 50 highest-scoring days, the fraction that were real. What an analyst with a finite queue actually experiences.</td></tr>
+  <tr><td class="mono">scenario 2</td><td>The insider who spends weeks job-hunting and quietly taking files. 45–59 days long, and <b>88% of all the attack days in this dataset</b>. Whatever happens to scenario 2 happens to the headline number.</td></tr>
+  <tr><td class="mono">window</td><td>The 28 rows ending at the day being judged — that person's own previous month, and nothing else. It never reaches forward and never reaches into another person.</td></tr>
+  <tr><td class="mono">seed</td><td>One draw of the user split. Everything here is reported over three of them, because one is a lottery ticket.</td></tr>
+</table>
+
+<h2>1 — The experiment, in one screen</h2>
+
+<p>The thesis of this project is that an insider does nothing forbidden. They do normal things at abnormal times and in abnormal amounts, using credentials that are genuinely theirs. So the system never asks <em>“is this action bad?”</em> — it asks <em>“is this unlike <b>them</b>?”</em> Stage 3 already turned every raw count into a z-score against that person's own history.</p>
+
+<p>Stage 6 asks the follow-up question, which is the one the whole project exists to answer:</p>
+
+<div class="callout">
+  <p><strong>Is one day of a person's behaviour enough, or do you need to remember the month?</strong></p>
+  <p>Model A is handed eighteen numbers: today. Model B is handed eighteen numbers × twenty-eight days: today and the four weeks behind it. Both predict the same label, for the same rows, having been trained by the same code. <b>One variable changes.</b></p>
+</div>
+
+<div class="note good"><b>Why this is an experiment rather than a demo.</b> A demo builds the better model and reports that it is better. An experiment writes down what it expects <em>before</em> running, keeps every other variable fixed, and reports the misses as loudly as the hits. Section 2 is the prediction, written before any Stage 6 code existed. Section 5 is the scorecard, including the two places it was wrong.</div>
+
+<h2>2 — The prediction, registered in advance</h2>
+
+<p>This was written into the Stage 6 brief before a line of Model B existed, and copied into the code repository before the run, so that it could not be quietly adjusted afterwards.</p>
+
+<table>
+  <tr><th></th><th>Predicted, in advance</th><th>Reasoning at the time</th></tr>
+  <tr class="hi"><td><b>Scenario 2</b></td><td><b>B clearly beats A</b></td><td>A slow build-up is invisible in one day and obvious in twenty-eight.</td></tr>
+  <tr><td><b>Scenario 1</b></td><td>roughly a tie</td><td>A single day already screams; there is no trend to find.</td></tr>
+  <tr><td><b>Scenario 3</b></td><td>tie, or B slightly worse</td><td>Only twelve pooled attack days; too few to move.</td></tr>
+  <tr><td><b>Overall AUPRC</b></td><td>B ahead, <b>but modestly</b></td><td>Scenario 2 dominates the total, so the gain would be diluted.</td></tr>
+</table>
+
+<h4>And the mechanism it was based on — measured back in Stage 3, before any model existed</h4>
+
+<div class="note"><b>Scenario-2 attack days score only 0.40× as high in the last third of their window as in the first third.</b> The reason is the design of the system itself: each person's baseline is built from their own recent past, so a 45–59 day attack gradually gets absorbed <em>into</em> the baseline it is being measured against. By week six, the insider's new behaviour has become their new normal, and today looks unremarkable. Model A is being shown a day that has been partly normalised into invisibility. Model B still holds the loud early days inside its window.</div>
+
+<div class="say">
+  <span class="lbl">The line to use if asked why the prediction matters</span>
+  <p>“I wrote down four predictions before running anything, and two of them turned out to be wrong. If I had waited until after the run to decide what I expected, I could have described any outcome as a confirmation. The value of the result is that it was falsifiable — I specified in advance what would have counted as the thesis failing.”</p>
+</div>
+
+<h2>3 — Model B, and why it is deliberately small</h2>
+
+<pre><code>input                                              (18 features × 28 days)
+  Conv1d 18 → 32, kernel 3, dilation 1  + ReLU
+  Conv1d 32 → 32, kernel 3, dilation 2  + ReLU
+  average over the 28 days
+  Linear 32 → 1                                    4,897 parameters</code></pre>
+
+<p>A convolution slides a small pattern-detector along the time axis: <em>“did anything of this shape happen recently, and how strongly?”</em> Two stacked layers see five days at a time; widening the second layer's spacing to every other day extends that to <b>seven days</b> at exactly the same parameter count. The average at the end asks how elevated the whole month was, rather than how bad the single worst day was.</p>
+
+<div class="callout">
+  <p><strong>Averaging rather than taking the maximum is the single most consequential design choice here, and it is now measured rather than argued.</strong></p>
+  <p>The maximum would report the loudest day — which is essentially what Model A already sees. The average reports the <em>sustained level</em>, which is what a slow drift produces and what a one-day view structurally cannot see.</p>
+  <p>Section 9 describes what happened when the maximum was added anyway, afterwards, as a test. It cost 11% of the result.</p>
+</div>
+
+<div class="note"><b>The ratio to have ready.</b> 4,897 parameters against roughly 1,147 attack days in the training split is about <b>0.23 positives per parameter</b> — already thinner than Model A's 1.8. It is deliberately not deeper. A larger Model B could memorise those 1,147 rows individually, and a Model B that wins by memorising answers no question anybody asked.</div>
+
+<h2>4 — The result</h2>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">0.677</div><div class="k">Model B validation AUPRC (± 0.034)</div></div>
+  <div class="stat"><div class="v">0.151</div><div class="k">Model A, same rows (± 0.020)</div></div>
+  <div class="stat"><div class="v">4.5×</div><div class="k">the value of temporal context</div></div>
+  <div class="stat"><div class="v">158×</div><div class="k">better than guessing</div></div>
+</div>
+
+<table>
+  <tr><th>Seed</th><th class="mono">Model A</th><th class="mono">Model B</th><th class="mono">× random</th><th class="mono">AUROC</th><th class="mono">P@50</th><th class="mono">best epoch</th></tr>
+  <tr><td>42</td><td class="num">0.1237</td><td class="num">0.7127</td><td class="num">167.7×</td><td class="num">0.9934</td><td class="num">0.92</td><td class="num">32 of 39</td></tr>
+  <tr><td>123</td><td class="num">0.1687</td><td class="num">0.6306</td><td class="num">148.5×</td><td class="num">0.9936</td><td class="num">0.52</td><td class="num">19 of 26</td></tr>
+  <tr><td>456</td><td class="num">0.1615</td><td class="num">0.6868</td><td class="num">156.8×</td><td class="num">0.9916</td><td class="num">0.98</td><td class="num">18 of 25</td></tr>
+  <tr class="hi"><td><b>mean ± sd</b></td><td class="num"><b>0.1513 ± 0.0197</b></td><td class="num"><b>0.6767 ± 0.0342</b></td><td class="num"><b>158×</b></td><td class="num"><b>0.9929 ± 0.0009</b></td><td class="num"><b>0.807 ± 0.204</b></td><td></td></tr>
+</table>
+
+<div class="note good"><b>The separation is not marginal.</b> Model B's <em>worst</em> seed (0.6306) beats Model A's <em>best</em> seed (0.1687) by 3.7×. With three runs each, the two sets of numbers do not come close to overlapping — which is the strongest form this comparison could have taken at this sample size.</div>
+
+<h4>Per attack type, pooled across all three seeds, as counts</h4>
+
+<table>
+  <tr><th>Scenario</th><th>Character</th><th class="mono">Model A</th><th class="mono">Model B</th><th></th></tr>
+  <tr><td><b>1</b></td><td>USB + leak site — a sharp 1–12 day burst</td><td class="num">49 / 121<br>40.5%</td><td class="num">74 / 121<br>61.2%</td><td class="num">+20.7 pts</td></tr>
+  <tr class="hi"><td><b>2</b></td><td>job hunt + theft — a slow 45–59 day drift<br><em>88% of all positives</em></td><td class="num">225 / 990<br>22.7%</td><td class="num">712 / 990<br>71.9%</td><td class="num"><b>+49.2 pts<br>3.2×</b></td></tr>
+  <tr><td><b>3</b></td><td>sysadmin keylogger — a 2-day burst</td><td class="num">4 / 12<br>33.3%</td><td class="num">4 / 12<br>33.3%</td><td class="num">tied exactly</td></tr>
+  <tr><td colspan="2"><b>Total attack days caught</b></td><td class="num"><b>278 / 1,123</b></td><td class="num"><b>790 / 1,123</b></td><td></td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">The single most striking number in the run, worth quoting</span>
+  <p>“Model B's validation score <b>after one epoch of training was 0.254</b> — already one and a half times Model A's fully-converged 0.151. The gain is not in how long it trained or how many parameters it has. It is in what it is allowed to look at.”</p>
+</div>
+
+<h2>5 — The scorecard: where the prediction held, and where it missed</h2>
+
+<table>
+  <tr><th></th><th>Predicted</th><th>Measured</th><th>Verdict</th></tr>
+  <tr class="hi"><td><b>Scenario 2</b></td><td>B clearly beats A</td><td class="mono">22.7% → 71.9%</td><td><b>✔ held, emphatically</b></td></tr>
+  <tr><td><b>Scenario 1</b></td><td>roughly a tie</td><td class="mono">40.5% → 61.2%</td><td><b>✘ missed</b></td></tr>
+  <tr><td><b>Scenario 3</b></td><td>tie</td><td class="mono">4/12 → 4/12</td><td>✔ held, tied exactly</td></tr>
+  <tr><td><b>Overall AUPRC</b></td><td>ahead, but <em>modestly</em></td><td class="mono">0.151 → 0.677</td><td>⚠ direction right, magnitude wrong ~4×</td></tr>
+</table>
+
+<h3>5.1 — The scenario-1 miss, which is the more interesting of the two</h3>
+
+<p>The prediction was that a sharp burst already screams on a single day, so history would add nothing. History added twenty points.</p>
+
+<div class="callout">
+  <p><strong>The explanation, and it is a genuine finding rather than a save.</strong></p>
+  <p>Model A sees a large z-score. Model B sees a large z-score <em>sitting on twenty-seven days of flat, quiet baseline inside the same window</em>. A spike judged against its own immediate context is a stronger signal than the same spike judged alone.</p>
+  <p>So the corrected statement is not “temporal context helps slow attacks.” It is: <b>temporal context helps whenever the surrounding month carries information — which is both when the attack is a trend and when the attack is a spike against calm.</b> The prediction was too narrow.</p>
+</div>
+
+<h3>5.2 — The “modestly” miss, and what it cost</h3>
+
+<p>The prediction under-rated the gain by roughly a factor of four. Honestly read, this means the pre-registration mis-diagnosed how much of Model A's difficulty was <em>representational</em> — a matter of what it could see — rather than statistical.</p>
+
+<div class="note"><b>And one thing that was hoped for and did not happen.</b> The brief said explicitly that <em>“if B ties A overall but clearly wins scenario 2, that is a better result than a bare 'B is better' — it identifies which kind of attack needs history.”</em> That is not what occurred. Model B won across the board. The result is stronger, but less surgical, and it is worth saying so rather than claiming the cleaner story.</div>
+
+<h2>6 — Proving the two models are on identical data</h2>
+
+<p>Every number above is meaningless unless the two models were measured on exactly the same rows. Two checks make that provable rather than assumed, and both are printed on every run.</p>
+
+<h4>The tripwire: the class weight</h4>
+
+<p>The loss function weights the rare class by <code>n_negatives / n_positives</code>, computed from the training split at training time. It is a fingerprint of exactly which rows were used:</p>
+
+<pre><code>                 required     Model A       Model B
+seed  42          229.7        229.7   ✔     229.7   ✔
+seed 123          225.3        225.3   ✔     225.3   ✔
+seed 456          232.1        232.1   ✔     232.1   ✔</code></pre>
+
+<div class="note"><b>Why this particular number is the tripwire.</b> Computed on the <em>whole</em> table it comes out around 244. Computed on the rows that are actually scored — after the 27-day warm-up mask — it comes out around 230. So if a run ever prints 244, the mask was not applied before the weight, the two models are not on the same rows, and the comparison is void. One number, and it catches the most likely way this stage could have broken silently.</div>
+
+<h4>And the rest of the pre-flight block, matching Model A's log line for line</h4>
+
+<pre><code>rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| > 10 before clipping: 2,138 (0.46%)
+train: 600 users, 264,609 target rows, 1,147 positive (0.4335%)
+val:   200 users,  85,191 target rows,   362 positive (0.4249%)
+ModelB: 4,897 trainable parameters</code></pre>
+
+<div class="note good"><b>The structural guarantee, not just the printed one.</b> Stage 5's brief demanded that Stage 6 add an architecture and change nothing else. It did: <code>data.py</code>, <code>train.py</code>, <code>runner.py</code> and <code>metrics.py</code> were byte-identical to their Stage 5 versions throughout the experiment, verified by file comparison rather than by memory. The training loop takes a model object and never inspects it — nothing in it knows whether it is training a small network on one day or a convolutional one on twenty-eight.</div>
+
+<h2>7 — Three things in the logs worth reporting</h2>
+
+<h3>7.1 — Validation loss went <em>up</em> while the model got better — and that vindicates a Stage 5 decision</h3>
+
+<p>Seed 42, across its run:</p>
+
+<table>
+  <tr><th></th><th class="mono">epoch 1</th><th class="mono">best epoch (32)</th><th class="mono">epoch 39</th></tr>
+  <tr><td>training loss</td><td class="num">0.390</td><td class="num">0.025</td><td class="num">0.015</td></tr>
+  <tr><td>validation <b>loss</b></td><td class="num">0.336</td><td class="num">0.511</td><td class="num">1.076</td></tr>
+  <tr class="hi"><td>validation <b>AUPRC</b></td><td class="num">0.254</td><td class="num"><b>0.713</b></td><td class="num">0.614</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>Stopping on validation loss would have thrown away two-thirds of this result.</strong></p>
+  <p>Loss is dominated by the 99.6% of days nobody cares about. It rises here because the model becomes more confident, and confident mistakes on ordinary days are punished heavily — while the <em>ranking</em>, which is the only thing that matters to an analyst, keeps improving.</p>
+  <p>Stage 5 chose to stop on validation AUPRC and never on loss. That was an argument at the time. It is now a measurement: loss-based stopping would have halted Model B around epoch 8, at roughly 0.43.</p>
+</div>
+
+<h3>7.2 — Model A's threshold instability disappears in Model B</h3>
+
+<p>Stage 5's most awkward finding was that Model A's scenario-2 recall read 40%, then 20%, then 9% across the three seeds — not because the model changed, but because the chosen cut-off hopped around on a flat, noisy surface.</p>
+
+<table>
+  <tr><th></th><th class="mono">Model A</th><th class="mono">Model B</th></tr>
+  <tr><td>chosen threshold, per seed</td><td class="num">0.958 / 0.974 / 0.994</td><td class="num">0.818 / 0.991 / 0.856</td></tr>
+  <tr><td>days flagged, per seed</td><td class="num">1,168 / 481 / <b>107</b></td><td class="num">444 / 389 / 398</td></tr>
+  <tr class="hi"><td>scenario-2 recall, per seed</td><td class="num">40.0% / 19.8% / <b>8.9%</b></td><td class="num">76.6% / 70.4% / 68.8%</td></tr>
+</table>
+
+<div class="note good"><b>This matters more to an analyst than the AUPRC does.</b> Model A produced three entirely different products from the same code — one raising two alerts a day, another raising one every five days. Model B's scores separate well enough that the best cut-off sits on a sharp peak instead of a flat one, so the number of alerts is stable within ±7% and the three seeds agree on recall. <b>Model B is not just more accurate; it is more predictable to operate.</b></div>
+
+<h3>7.3 — One anomaly, flagged rather than buried</h3>
+
+<div class="note bad"><b>Seed 123 scored AUPRC 0.631 and P@50 0.520, but P@10 of just 0.100.</b> Nine of its ten highest-scoring days are labelled benign, yet they outscore almost every genuine attack day. P@10 is a ten-row statistic and enormously noisy, so this may be nothing — but that ranking shape is unusual and those nine days have not yet been looked at by hand. They are either a real failure mode, or behaviour the ground truth does not label. Either answer is worth having, and it is stated here rather than left for someone else to notice.</div>
+
+<h2>8 — The question this result has not yet answered</h2>
+
+<div class="callout">
+  <p><strong>The strongest challenge available, and it should be raised before anyone else raises it.</strong></p>
+  <p>Scenario-2 attacks run 45–59 days. So for most scenario-2 attack days, the twenty-seven days behind them are <em>also</em> attack days. Is Model B detecting the insider — or noticing that an attack it already missed is still going on?</p>
+</div>
+
+<p>Two things can be said with certainty, and one cannot.</p>
+
+<div class="note good"><b>What is certain: this is not leakage.</b> The window reaches strictly backwards, contains only that same person's rows, and the model never sees a label at any point. It is given the person's own recent behaviour — which is precisely what “temporal context” means. That the recent behaviour was also anomalous is the signal, not a cheat.</div>
+
+<div class="note bad"><b>What is not yet known: whether it detects the <em>onset</em>.</b> “Catches them on day one” and “catches them by day thirty” are different products, and only the first is worth selling. Nothing measured so far distinguishes them.</div>
+
+<h4>The check that would settle it, and it costs almost nothing</h4>
+
+<p><b>Plot recall against the day's position within its own attack window, on validation.</b> If the curve is flat, Model B detects onset. If it climbs from near-zero on day one to high by day thirty, it is a persistence detector — still useful, but the claim has to change. Stage 3 already measured that the underlying signal decays 0.40× across the window, so the shape of that curve is a real open question rather than a formality.</p>
+
+<div class="note"><b>The second open question: capacity versus context.</b> Model B has 7.6× Model A's parameters, so “B wins because it is bigger” is a live alternative explanation. The clean control is <b>Model B on a seven-day window</b> — identical architecture, identical parameter count, less context. If that lands between the two, context is the driver and capacity is not. It is about four minutes of compute and it has not been run.</div>
+
+<h2>9 — The improvement that was tried afterwards, and lost</h2>
+
+<p>After the result was recorded, three changes were made to Model B and measured: dropout, a decaying learning rate, and adding the <em>maximum</em> day alongside the average at the pooling step. All three were justified in advance. All were written to separate output files so the reported result could not be overwritten.</p>
+
+<table>
+  <tr><th></th><th class="mono">Model B</th><th class="mono">Model B + tuning</th></tr>
+  <tr class="hi"><td><b>AUPRC</b></td><td class="num"><b>0.6767 ± 0.0342</b></td><td class="num">0.6022 ± 0.0766</td></tr>
+  <tr><td>scenario 1</td><td class="num">74 / 121 &nbsp; 61.2%</td><td class="num"><b>82 / 121 &nbsp; 67.8%</b></td></tr>
+  <tr><td>scenario 2</td><td class="num"><b>712 / 990 &nbsp; 71.9%</b></td><td class="num">603 / 990 &nbsp; 60.9%</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>The max-pooling change did exactly what was predicted — and that is precisely why it lost.</strong></p>
+  <p>Scenario 1 rose 6.6 points, as expected. Scenario 2 fell 11.0 points. Scenario 2 is 88% of all positives, so it decides the headline number and the change is a net loss.</p>
+  <p>The mechanism: a maximum channel offers the model a shortcut — <em>find the single worst day</em> — and that shortcut is exactly the wrong strategy for an attack whose individual days are unremarkable. Offered a cheaper route to a lower training loss, the model took it, at the cost of the thing it had been good at.</p>
+</div>
+
+<div class="note good"><b>This is worth more to the write-up than the 11% it cost.</b> It converts Model B's pooling choice from a design assertion into a measured one, and it says something general: <b>the pooling operator selects which attack profile the model can detect.</b> Sustained pooling for drift, peak pooling for bursts — and in a 4,900-parameter model you cannot have both for free. The code was reverted; the measurement was kept.</div>
+
+<p>Two smaller lessons from the same run, both worth owning: the learning-rate decay was scheduled across the fifty-epoch budget but the runs stopped at epochs 25, 17 and 27 — so the rate never fell below about two-thirds of its start and <b>the change was effectively a no-op</b>. And dropout made the overfitting <em>worse</em> (validation loss peaked at 2.37 rather than 1.08), because the memorisation is happening in the convolutional filters, not in the summary vector where the dropout was applied. The diagnosis was right; the lever was wrong.</p>
+
+<h2>10 — Weaknesses, said before anyone asks</h2>
+
+<div class="card">
+<h4>Validation is being used three times</h4>
+<p>It selects the stopping epoch, it selects the threshold, and then it is reported. Model B's per-epoch AUPRC also swings widely — seed 42 bounced between 0.46 and 0.71 on consecutive epochs — so taking the maximum over thirty-nine of those is optimistic on top of that. Every number in this document is a <em>selection</em> number. The test split, still sealed, is where the unbiased one comes from.</p>
+
+<h4>Onset versus persistence is unresolved</h4>
+<p>Section 8. It is the single most valuable piece of analysis still outstanding, and it is cheap.</p>
+
+<h4>The capacity confound is untested</h4>
+<p>Section 8. Model B is 7.6× larger. A seven-day-window control would separate capacity from context and has not been run.</p>
+
+<h4>Scenario 3 cannot support a conclusion either way</h4>
+<p>Twelve pooled attack days, four per split — arithmetic, not luck, because all ten of those insiders have exactly two attack days each. Both models caught four. That is a tie on a sample far too small to mean anything, and the tie should not be reported as evidence that context does not help short attacks.</p>
+
+<h4>The labels are windows, not events</h4>
+<p>Every day inside an attack window is labelled positive, including days on which the insider did nothing unusual. Some of what either model “misses” carries no signal to find. This inflates the apparent miss rate for both, and cannot be fixed without re-labelling by hand.</p>
+
+<h4>The class-weighting ablation is still unrun</h4>
+<p>Neither model has been trained with the weighting disabled. Until that table exists, the claim that class weighting matters at 0.4% positives is an argument rather than a measurement, and should be phrased that way.</p>
+</div>
+
+<h2>11 — The check to run in front of the examiner</h2>
+
+<pre><code>python -m pytest modeling/ -q          →  47 passed in ~4s
+python -m modeling.run_model_b         →  3 seeds, full data, ~13 minutes</code></pre>
+
+<p>The first thing it prints is the tripwire from §6, and the last thing it prints is the result. In between, three guards would stop a bad run rather than let it write a results file:</p>
+
+<ul>
+  <li><b>The class-weight tripwire</b> — 229.7 / 225.3 / 232.1, or the run is not on Model A's rows.</li>
+  <li><b>The collapse detector</b> — counts <em>distinct</em> predicted values every epoch. Model B produced 51,331 distinct scores across 85,191 validation days at its best epoch. A model that had learned “nobody is an insider” would show single digits, while its loss curve looked perfectly healthy.</li>
+  <li><b>The fairness watch</b> — warns if a seed's best epoch is its last, meaning the training budget cut off a still-improving run. That would bias the comparison <em>against</em> Model B, in the direction of the hypothesis being tested, which is the one bias worth being loud about. It did not fire: all three seeds stopped on patience, none reached the epoch cap.</li>
+</ul>
+
+<div class="note good"><b>And one guard that would refuse a good-looking result.</b> If validation AUPRC ever came back above 0.95, the program exits with an error code instead of writing a results file. At 0.4% positives with labels this coarse, near-perfect ranking means leakage rather than success. Model B scored 0.68 — high, and comfortably below the line at which the program stops believing itself.</div>
+
+<h4>Timing, since it is the honest half of the “we used the GPU” claim</h4>
+
+<table>
+  <tr><th></th><th class="mono">per epoch</th><th class="mono">epochs</th><th class="mono">total</th></tr>
+  <tr><td>Model A</td><td class="num">0.77 s</td><td class="num">106</td><td class="num">82 s</td></tr>
+  <tr class="hi"><td>Model B</td><td class="num">8.43 s</td><td class="num">90</td><td class="num">12 min 42 s</td></tr>
+</table>
+
+<p>Model B is about eleven times heavier per epoch — roughly 69 million multiply-accumulate operations per batch against a few hundred thousand. Both models were benchmarked on CPU and on the Mac's GPU; at Model A's 641 parameters the GPU is actually <em>slower</em>, because launching each operation costs more than the arithmetic saves. Model B is the first stage of this project where the accelerator earns its place. Both models used the same device regardless, because mixing backends would put a second variable into a two-model comparison.</p>
+
+<h2>12 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Model B is more than seven times larger than Model A. Isn't it just winning because it is bigger?</div><div class="a">
+<p>That is the right question and I have not fully closed it. Two things point away from capacity. First, Model B's score after a <em>single</em> epoch was already 1.7 times Model A's fully-converged score — a bigger model would need training time to exploit its capacity, and this gain arrives immediately. Second, the gain is concentrated exactly where the pre-registered prediction said context would matter: the slow-drift attack went from 23% to 72%.</p>
+<p>But the clean control is one I have specified and not yet run: the same architecture with the same parameter count on a seven-day window instead of twenty-eight. If that lands between the two models, context is the driver. It is four minutes of compute and it is the first thing I would do next.</p></div></div>
+
+<div class="qa"><div class="q">Scenario-2 attacks last two months. Isn't Model B just seeing the rest of the attack?</div><div class="a">
+<p>Partly, and that distinction is the most important open question about this result — I would rather raise it myself than have it raised for me.</p>
+<p>What it is <em>not</em> is leakage. The window reaches strictly backwards, contains only that same person's rows, and no label is ever visible to the model. Being shown a person's own recent behaviour is what temporal context means; that the behaviour was also anomalous is the signal.</p>
+<p>What is genuinely unresolved is whether it catches the onset or merely notices an attack in progress. Those are different products and only the first is worth selling. The measurement that settles it is recall plotted against position within the attack window, and it costs almost nothing to produce.</p></div></div>
+
+<div class="qa"><div class="q">An AUPRC of 0.68 is a very large jump. How do you know something isn't leaking?</div><div class="a">
+<p>Four checks, and all of them are printed on every run rather than asserted. The class weight comes out at 229.7, 225.3 and 232.1 — a fingerprint of exactly which rows were used, which matches Model A seed for seed; if the row mask were skipped it would print 244. The row counts, the 27,000 masked warm-up rows, the zero positives lost and the 2,138 clipped rows all match Model A's log line for line. The split is by person, so nobody appears in both train and validation, and there is a test that refuses an overlapping split. And there is a guard that treats any AUPRC above 0.95 as a bug and exits with an error code rather than writing a results file.</p>
+<p>Beyond that: the four shared files were byte-identical to their Stage 5 versions throughout, verified by file comparison. The only thing that changed is which rows the model is allowed to look at.</p></div></div>
+
+<div class="qa"><div class="q">You predicted scenario 1 would be a tie and it wasn't. Doesn't that undermine the whole thing?</div><div class="a">
+<p>It corrects it, and I would rather report the miss than quietly widen the prediction afterwards. The reasoning was that a sharp burst already screams on a single day, so history adds nothing. It added twenty points.</p>
+<p>The explanation is that Model A sees a large number, while Model B sees a large number sitting on twenty-seven days of flat, quiet baseline. Context is not only useful for finding trends — it is useful for judging a spike against its own surroundings. So the honest revised claim is broader than the one I registered, not narrower.</p>
+<p>I would also note what did <em>not</em> happen. The brief hoped for a result where Model B tied overall but won scenario 2, because that would have identified which attack type needs history. Model B won everywhere. The result is stronger and less surgical, and I say so.</p></div></div>
+
+<div class="qa"><div class="q">Your validation loss goes up during training. Isn't the model overfitting?</div><div class="a">
+<p>It is, and it does not matter for the thing being measured — which is itself worth explaining. Validation loss is dominated by the 99.6% of days nobody cares about, and it rises because the model becomes confident, so its confident errors on ordinary days are punished heavily. Meanwhile the ranking — the only property an analyst uses — keeps improving: AUPRC 0.25 to 0.71 over the same epochs.</p>
+<p>This is exactly why the stopping rule was written to watch AUPRC and never loss. Stopping on loss would have halted this model around epoch 8 at roughly 0.43 and discarded two-thirds of the result. That was an argument when it was written in Stage 5; this run turned it into a measurement.</p>
+<p>I did try to attack the overfitting directly, with dropout. It made the validation loss worse, because the memorisation is in the convolutional filters rather than in the layer I regularised.</p></div></div>
+
+<div class="qa"><div class="q">You tried to improve the model and it got worse. Why is that in the report?</div><div class="a">
+<p>Because the way it got worse is a result. Adding a max-pooling channel raised scenario-1 recall by 6.6 points and cost 11.0 points of scenario 2 — and scenario 2 is 88% of the positives, so it is a net loss of about 11% of the headline number.</p>
+<p>That trade is the measured argument for Model B's averaging. It says the pooling operator decides which attack profile the model can detect: sustained pooling for a drift, peak pooling for a burst, and at 4,900 parameters you cannot have both. Without that run, the choice of averaging would be a design assertion. With it, it is a measurement — and it cost thirteen minutes.</p></div></div>
+
+<div class="qa"><div class="q">Why report a per-scenario recall pooled across seeds instead of a mean and a standard deviation?</div><div class="a">
+<p>Because Stage 5 measured that recall-at-a-threshold is not stable enough to average. Model A's scenario-2 recall read 40%, 20% and 9% across the three seeds while its AUPRC barely moved — the ranking was stable and the <em>cut-off</em> was jumping around a flat, noisy surface. A single seed's per-scenario recall is a statement about that lottery rather than about the model.</p>
+<p>So the rule carried into Stage 6 is: AUPRC may be quoted as mean ± standard deviation; recall-at-threshold is pooled across all three seeds and reported as counts. Scenario 3 shows why the counts matter — every validation split contains exactly four scenario-3 attack days, so a recall there has five possible values, and “2 of 4” is honest where “50%” is a percentage doing an impression of a measurement.</p></div></div>
+
+<div class="qa"><div class="q">What would have made you conclude the thesis was wrong?</div><div class="a">
+<p>I wrote that down before running. If Model B had improved scenario 1 and left scenario 2 where it was, the 28-day window would have been adding capacity rather than context, and the honest conclusion would have been that the thesis was not supported. Scenario 2 is the attack type that is defined by playing out over weeks — it is the one the hypothesis is actually about.</p>
+<p>What happened is that scenario 2 more than tripled, which is the specific outcome the prediction called for. Two of my four predictions were still wrong, and both are reported.</p></div></div>
+
+<div class="qa"><div class="q">What is the one thing you would do next?</div><div class="a">
+<p>Plot recall against position within the attack window. Everything in this document says Model B is much better at finding scenario-2 attack days, and nothing in it says whether it finds them on day one or day thirty. That single curve turns “we detect insiders” into either “we detect them early” or “we detect them eventually”, and those are very different claims.</p>
+<p>After that, the seven-day-window control to rule out capacity, and then the class-weighting ablation so that claim stops being an argument.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Every stage before this one existed to make a single comparison honest — one row set for both models, one scaler fitted on training people only, one training loop that does not know which model it is running. Stage 6 spends that carefully-built fairness on one question, and the answer is that a month of a person's own history is worth four and a half times the average precision of a single day, and lifts detection of the slow, patient insider from roughly one attack day in five to nearly three in four. I predicted that in advance, I was wrong about two of the four things I predicted, and I have said which. What I cannot yet tell you is whether it catches them in the first week or the fifth — and that is the measurement I would run next.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 6 · <code>modeling/models.py</code> and <code>modeling/run_model_b.py</code> — Model B, the 28-day CNN.
+  Every number in this document was measured from the three-seed run on 8 August 2026, on validation data. The test split has not been opened.
+  Outstanding: the onset-versus-persistence analysis, the seven-day capacity control, and the <code>--no-pos-weight</code> ablation for both models.
+</footer>
+
+
+</div>
+</body>
+</html>

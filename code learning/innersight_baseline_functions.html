@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — every function in baseline/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style></head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 3 · function reference</p>
+  <h1>Every function in <code>baseline/</code></h1>
+  <p class="sub">All 36 functions across the package, in plain language, in the order the files put them.</p>
+</header>
+
+<p class="big">This package is Stage 3: it takes the table of raw daily counts and turns every number
+into a statement about the person who produced it. "Three USB connections" becomes "+20 for this
+accountant" or "−0.7 for that field engineer", by measuring each day against the same person's own
+earlier days and nothing else. It also runs the go/no-go check the whole project rests on — before
+any model exists, do the known insiders' attack windows actually score above their own ordinary
+days?</p>
+
+<div class="callout">
+  <p><strong>Three files, 36 functions.</strong> <code>__init__.py</code> has none — it is a
+  docstring and an <code>__all__</code>. <code>baseline.py</code> has 18 functions and 2 classes.
+  <code>test_baseline.py</code> has 18: two fixture builders and sixteen tests.</p>
+</div>
+
+<h2><span class="n">1</span>baseline/__init__.py</h2>
+
+<p>Twenty-two lines, no code to speak of. It states what the stage does, which file it reads and
+which it writes, and the three commands that run it. The only executable line is
+<code>__all__ = ["baseline"]</code>, which names the one submodule.</p>
+
+<p><b>Functions: 0.</b> Nothing to describe — but it is worth reading once, because it is the
+shortest correct summary of the stage that exists anywhere in the repo.</p>
+
+<h2><span class="n">2</span>baseline/baseline.py</h2>
+
+<p>889 lines. The arithmetic that the whole thesis is a test of takes up about ten of them; the rest
+is making sure that arithmetic is the one that actually ran, and showing a human enough to believe
+it. The file is laid out in seven zones:</p>
+
+<div class="zones">
+<span class="z">zone 1</span>  the constants and the error class      <span class="c">DDOF, MIN_PRIOR_DAYS, BaselineError</span>
+<span class="z">zone 2</span>  the standard-deviation floor           <span class="c">std_floors</span>
+<span class="z">zone 3</span>  the z-scores                           <span class="c">causal_z_scores, _warmup_mask, _require_features, build_dataset</span>
+<span class="z">zone 4</span>  invariants                             <span class="c">verify</span>
+<span class="z">zone 5</span>  the validation gate                    <span class="c">collapse, validation_gate, _gate_row, benign_exceedance, _late_ratio</span>
+<span class="z">zone 6</span>  the report                             <span class="c">BaselineStats, compute_stats, format_report, _floor_lines, ...</span>
+<span class="z">zone 7</span>  the CLI                                <span class="c">main</span>
+</div>
+
+<h3>Scan table — all 18 functions</h3>
+
+<table>
+<tr><th>zone</th><th>function</th><th>one line</th></tr>
+<tr class="hi"><td class="mono">2</td><td class="mono">std_floors ⭐</td><td>Picks the smallest denominator each feature is allowed to divide by.</td></tr>
+<tr class="hi"><td class="mono">3</td><td class="mono">causal_z_scores ⭐</td><td>Measures every day against the same person's strictly earlier days.</td></tr>
+<tr><td class="mono">3</td><td class="mono">_warmup_mask</td><td>Flags each person's opening rows so they can be blanked.</td></tr>
+<tr><td class="mono">3</td><td class="mono">_require_features</td><td>Stops early if any of the 18 count columns is missing.</td></tr>
+<tr><td class="mono">3</td><td class="mono">build_dataset</td><td>The stage in one call: floors, then scores, then the same table back.</td></tr>
+<tr class="hi"><td class="mono">4</td><td class="mono">verify ⭐</td><td>Halts the run on anything that could not be true of a correct table.</td></tr>
+<tr class="hi"><td class="mono">5</td><td class="mono">collapse ⭐</td><td>Squashes a day's 18 numbers into two rival summaries.</td></tr>
+<tr class="hi"><td class="mono">5</td><td class="mono">validation_gate ⭐</td><td>Per insider: is the attack window louder than their own quiet days?</td></tr>
+<tr><td class="mono">5</td><td class="mono">_gate_row</td><td>Builds one insider's line of that comparison.</td></tr>
+<tr><td class="mono">5</td><td class="mono">benign_exceedance</td><td>How often an ordinary day already clears the same bar.</td></tr>
+<tr class="hi"><td class="mono">5</td><td class="mono">_late_ratio ⭐</td><td>Measures how far an attack fades into the baseline that watches it.</td></tr>
+<tr><td class="mono">6</td><td class="mono">compute_stats</td><td>One pass over the scored values to fill the summary record.</td></tr>
+<tr><td class="mono">6</td><td class="mono">format_report</td><td>Assembles the run's whole diagnostic block as one string.</td></tr>
+<tr><td class="mono">6</td><td class="mono">_floor_lines</td><td>One aligned text line per feature showing its denominator.</td></tr>
+<tr><td class="mono">6</td><td class="mono">_gate_summary_lines</td><td>The per-scenario tally, plus who fell short.</td></tr>
+<tr><td class="mono">6</td><td class="mono">_gate_table_lines</td><td>The full per-insider table as indented text.</td></tr>
+<tr><td class="mono">6</td><td class="mono">format_user_report</td><td>One person's loudest days, raw counts beside scores.</td></tr>
+<tr><td class="mono">7</td><td class="mono">main</td><td>Read, score, check, write, print.</td></tr>
+</table>
+
+<h3>Zone 1 — the constants and the error class</h3>
+
+<p>Nothing runs here. These are the numbers the rest of the file divides by and the one exception
+type it raises, each parked next to a comment explaining why it is that value.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">class BaselineError(AssertionError)</td>
+  <td>The single exception the stage raises, for things a correct table cannot contain — a NaN, a
+      vanished row, an attack day hidden inside a blanked opening. It inherits from
+      <code>AssertionError</code> so it reads as "this was supposed to be impossible", not "bad
+      input".</td>
+</tr>
+</table>
+
+<div class="note"><b>Not functions, but read them anyway.</b> <code>DDOF = 1</code> fixes the
+spread convention everywhere in the file, because the floor is calibrated from per-person spreads
+and then compared against per-day spreads — they must be computed the same way.
+<code>MIN_PRIOR_DAYS = 2</code> is a hard floor under the warm-up: with fewer than two earlier days
+the formula still returns a number, and the number is "this person exists".
+<code>MIN_DECAY_WINDOW_DAYS = 6</code> is the shortest window on which "is it fading?" is a real
+question.</div>
+
+<h3>Zone 2 — the standard-deviation floor</h3>
+
+<p>One function, and it is where the stage's single biggest measured decision lives.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def std_floors(counts: pd.DataFrame, features: Sequence[str] = FEATURE_NAMES, multiplier: float = STD_FLOOR_MULTIPLIER, fallback: float = STD_FLOOR_FALLBACK, active_only: bool = STD_FLOOR_ACTIVE_USERS_ONLY) -> pd.Series ⭐</td>
+  <td>Works out one lower bound per feature for the division that comes next: take each person's
+      own day-to-day spread in that feature, take the middle person's, keep a tenth of it. With
+      <code>active_only</code> on it ignores everyone whose spread is exactly zero — otherwise the
+      middle person is a non-user for 8 of the 18 features and the bound collapses to a flat 1.0.</td>
+</tr>
+</table>
+
+<h3>Zone 3 — the z-scores</h3>
+
+<p>The arithmetic itself, plus the two small guards it leans on and the one call that wires the
+whole stage together.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def causal_z_scores(counts: pd.DataFrame, floors: pd.Series, features: Sequence[str] = FEATURE_NAMES, min_history: int = MIN_HISTORY_DAYS) -> tuple[pd.DataFrame, np.ndarray] ⭐</td>
+  <td>For each person and feature, subtracts the average of all their <em>earlier</em> days and
+      divides by the spread of those same days — today's value never enters the numbers it is being
+      compared against. It sorts by date to compute, restores the caller's row order afterwards,
+      and blanks each person's first 30 days to exactly zero.</td>
+</tr>
+<tr>
+  <td class="mono">def _warmup_mask(users: pd.Series, min_history: int) -> np.ndarray</td>
+  <td>Marks each person's earliest N rows by counting position within that person's own block of
+      rows, so those rows can be zeroed rather than trusted.</td>
+</tr>
+<tr>
+  <td class="mono">def _require_features(counts: pd.DataFrame, columns: Sequence[str]) -> None</td>
+  <td>Fails immediately, naming the absent columns, if the incoming table is missing any of the 18
+      counts — instead of letting pandas fail three steps later with something unreadable.</td>
+</tr>
+<tr>
+  <td class="mono">def build_dataset(labelled: pd.DataFrame, features: Sequence[str] = FEATURE_NAMES, min_history: int = MIN_HISTORY_DAYS, active_only: bool = STD_FLOOR_ACTIVE_USERS_ONLY) -> tuple[pd.DataFrame, pd.Series, np.ndarray]</td>
+  <td>The whole stage in four lines: compute the bounds, score everything, hand back a copy of the
+      input with only the 18 values replaced. It re-selects the original column list at the end
+      because that order becomes the neural network's channel order two stages later.</td>
+</tr>
+</table>
+
+<div class="note"><b>Docstring vs body.</b> <code>causal_z_scores</code>' docstring says the
+denominator is the per-feature bound from <code>std_floors</code>. The body actually takes whichever
+is larger of that bound and the global <code>config.STD_FLOOR</code> constant — so a very small
+per-feature bound can be overridden by a project-wide one that the docstring never mentions.</div>
+
+<h3>Zone 4 — invariants</h3>
+
+<p>One function, run on every execution, whose only job is to stop the pipeline before a wrong
+number can travel any further.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def verify(dataset: pd.DataFrame, labelled: pd.DataFrame, warmup: np.ndarray, features: Sequence[str] = FEATURE_NAMES) -> None ⭐</td>
+  <td>Raises if rows or columns changed, if any value is NaN or infinite, if a label column moved,
+      if a blanked row is not zero, or if an attack day landed inside a blanked opening. Its last
+      check — "is anything negative?" — is the one that catches raw counts being written out
+      unscored, a bug that otherwise produces a perfectly shaped file.</td>
+</tr>
+</table>
+
+<h3>Zone 5 — the validation gate</h3>
+
+<p>The measurement the stage exists to produce: whether the separation the models are supposed to
+find is present in the data at all, and what a "pass" is actually worth.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def collapse(dataset: pd.DataFrame, features: Sequence[str] = FEATURE_NAMES) -> pd.DataFrame ⭐</td>
+  <td>Reduces each day's 18 numbers to two: the largest one ignoring sign, and the average of all
+      18. Both are kept because they disagree about who looks suspicious, and quietly picking one
+      would be picking the conclusion.</td>
+</tr>
+<tr class="hi">
+  <td class="mono">def validation_gate(dataset: pd.DataFrame, warmup: np.ndarray, features: Sequence[str] = FEATURE_NAMES, threshold: float = VALIDATION_Z_THRESHOLD) -> pd.DataFrame ⭐</td>
+  <td>For each known insider, compares how loud their attack window is against how loud they were
+      in the ordinary days before it, and returns one row per person. Run before any model exists,
+      because no architecture can invent a separation the data does not contain.</td>
+</tr>
+<tr>
+  <td class="mono">def _gate_row(mine: pd.DataFrame, threshold: float) -> dict[str, object] | None</td>
+  <td>Builds one insider's line — window length, before-and-during averages, their ratio, pass or
+      fail under both summaries — or returns nothing at all if that person has no flagged days. The
+      "before" days deliberately skip the blanked opening, whose structural zeros would flatter
+      every ratio in the table.</td>
+</tr>
+<tr>
+  <td class="mono">def benign_exceedance(dataset: pd.DataFrame, warmup: np.ndarray, features: Sequence[str] = FEATURE_NAMES, threshold: float = VALIDATION_Z_THRESHOLD) -> dict[str, float]</td>
+  <td>Measures how often an ordinary employee's day already clears the same bar, which is what tells
+      you whether "the insider passed" means anything. Counts scored days only — blanked rows are
+      zero by construction and would make the number look better.</td>
+</tr>
+<tr class="hi">
+  <td class="mono">def _late_ratio(window: pd.DataFrame) -> float ⭐</td>
+  <td>Divides the average loudness of the window's last third by its first third; below 1 means the
+      attack is being slowly absorbed into the baseline that is watching it. Returns "not
+      applicable" under 6 days, where the number would be day two over day one wearing a suit.</td>
+</tr>
+</table>
+
+<div class="note"><b>Docstring vs body, twice.</b> <code>_gate_row</code> decides pass or fail on
+the window's <em>average</em>, not its peak — the peak is reported in its own column and never
+tested against the bar, so "insider clears 2σ" means their whole window averaged above it. And
+<code>benign_exceedance</code>' docstring still cites "54 of 70 insiders pass", a number from before
+the active-users correction in <code>std_floors</code>; the shipped run is 66 of 70.</div>
+
+<h3>Zone 6 — the report</h3>
+
+<p>Everything that turns the run into something a person can read in a terminal. No decisions are
+made here; if a number in this zone is surprising, the answer is upstream.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">class BaselineStats</td>
+  <td>A frozen record holding the thirteen numbers the printed summary needs, so they are gathered
+      in one pass instead of recomputed inline five times.</td>
+</tr>
+<tr>
+  <td class="mono">def compute_stats(dataset: pd.DataFrame, labelled: pd.DataFrame, warmup: np.ndarray, features: Sequence[str] = FEATURE_NAMES) -> BaselineStats</td>
+  <td>Walks the scored values once and fills that record: rows in and out, people, blanked rows,
+      flagged days, the smallest and largest and average score, and the NaN and infinity tallies.</td>
+</tr>
+<tr>
+  <td class="mono">def format_report(dataset: pd.DataFrame, labelled: pd.DataFrame, warmup: np.ndarray, floors: pd.Series, gate: pd.DataFrame, out: Path | None = None, features: Sequence[str] = FEATURE_NAMES, active_only: bool = STD_FLOOR_ACTIVE_USERS_ONLY) -> str</td>
+  <td>Assembles the entire diagnostic block as one string: the counts, the denominator per feature,
+      the insider comparison, the ordinary-day rate that makes it interpretable, and the per-person
+      table.</td>
+</tr>
+<tr>
+  <td class="mono">def _floor_lines(floors: pd.Series, features: Sequence[str] = FEATURE_NAMES) -> list[str]</td>
+  <td>One aligned line per feature — its position, its name, and the number that ended up under the
+      division — so an implausible denominator is visible at a glance.</td>
+</tr>
+<tr>
+  <td class="mono">def _gate_summary_lines(gate: pd.DataFrame) -> list[str]</td>
+  <td>The tally per attack scenario: how many insiders cleared the bar under each of the two rival
+      summaries, the median ratios, and then the names of everyone who fell short.</td>
+</tr>
+<tr>
+  <td class="mono">def _gate_table_lines(gate: pd.DataFrame) -> list[str]</td>
+  <td>The full per-insider table as indented text, sorted by scenario and then loudest first, with
+      every number to two decimal places.</td>
+</tr>
+<tr>
+  <td class="mono">def format_user_report(dataset: pd.DataFrame, labelled: pd.DataFrame, user: str, rows: int = 20) -> str</td>
+  <td>Prints one person's most extreme days with raw counts and scores side by side, so "2 USB
+      connections" and "+20" appear in the same row. Flagged days are forced into the selection even
+      when they are quiet, and each row names the feature that produced its peak.</td>
+</tr>
+</table>
+
+<h3>Zone 7 — the CLI</h3>
+
+<p>One function, the only thing in the file that touches the disk.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def main(argv: Sequence[str] | None = None) -> int</td>
+  <td>Reads the labelled counts, scores them, runs the invariant checks, writes the parquet and
+      prints the report. Its flags choose the 30-person sample or the full table — never the same
+      output path, since a dev run once overwrote the real one — plus an optional single-person
+      view, a CSV of the insider comparison, and the weaker denominator variant for the write-up.</td>
+</tr>
+</table>
+
+<h2><span class="n">3</span>baseline/test_baseline.py</h2>
+
+<p>402 lines, 18 functions: two fixture builders and sixteen tests. The tests are chosen on one
+criterion — cover the failures that are <em>silent</em>. A crash is cheap. A baseline that quietly
+includes today in the average it is measured against costs a week and looks like a modelling
+problem.</p>
+
+<h3>Scan table — all 18 functions</h3>
+
+<table>
+<tr><th>function</th><th>one line</th></tr>
+<tr><td class="mono">make_user</td><td>Builds a fake person's run of consecutive days with every column present.</td></tr>
+<tr><td class="mono">flat_floors</td><td>Hands back one fixed denominator, so a test never depends on a population.</td></tr>
+<tr class="hi"><td class="mono">test_spike_is_scored_against_the_pre_spike_mean ⭐</td><td>Today must not be inside the average today is measured against.</td></tr>
+<tr><td class="mono">test_first_day_of_a_user_has_no_history_and_scores_zero</td><td>With nothing earlier, the answer is 0 — never NaN.</td></tr>
+<tr><td class="mono">test_constant_history_gives_a_finite_score_when_it_changes</td><td>180 identical days then a change gives a big number, not a division by zero.</td></tr>
+<tr><td class="mono">test_a_feature_constant_for_everybody_stays_at_zero</td><td>A column nobody ever moves stays flat instead of exploding.</td></tr>
+<tr><td class="mono">test_the_floor_binds_only_when_it_exceeds_the_prior_std</td><td>Someone with real variation is judged by their own spread.</td></tr>
+<tr><td class="mono">test_warmup_rows_are_exactly_zero_and_the_next_row_is_not</td><td>Exactly 30 blanked rows, and row 31 is not one.</td></tr>
+<tr class="hi"><td class="mono">test_a_positive_day_inside_the_warmup_is_a_hard_failure ⭐</td><td>An attack hidden in a blanked opening must stop the run.</td></tr>
+<tr><td class="mono">test_users_are_scored_only_against_themselves</td><td>A heavy user's routine must not make a light user's spike vanish.</td></tr>
+<tr class="hi"><td class="mono">test_row_order_survives_an_unsorted_input ⭐</td><td>The internal sort must not leak into the order handed back.</td></tr>
+<tr><td class="mono">test_shape_column_order_and_labels_survive_unchanged</td><td>Same rows, same layout, same labels — only the meaning changes.</td></tr>
+<tr><td class="mono">test_verify_rejects_a_table_that_was_never_z_scored</td><td>Raw counts written through must be caught, not trained on.</td></tr>
+<tr class="hi"><td class="mono">test_values_around_1e8_produce_no_nan ⭐</td><td>Email-sized numbers must not turn into NaN.</td></tr>
+<tr><td class="mono">test_active_only_ignores_users_who_never_exercise_the_feature</td><td>The denominator must come from people who do the thing.</td></tr>
+<tr><td class="mono">test_the_gate_measures_the_window_against_the_days_before_it</td><td>A loud fortnight must show a real rise over an ordinary life.</td></tr>
+<tr><td class="mono">test_collapse_reports_both_max_and_mean</td><td>One loud feature out of 18 lands very differently under each summary.</td></tr>
+<tr><td class="mono">test_an_empty_input_does_not_crash</td><td>An empty table comes back empty.</td></tr>
+</table>
+
+<h3>Zone A — the fixture builders</h3>
+
+<p>Two helpers that exist so each test can say only the thing it is about.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def make_user(user: str, values: dict[str, list[float]], days: int, start: str = "2010-01-01", scenario: int = 0, positives: tuple[int, ...] = ()) -> pd.DataFrame</td>
+  <td>Builds one synthetic person's block of back-to-back days with all 18 columns present and
+      sitting at zero, then overwrites only the columns the test names. Keeps each test readable:
+      the one column that moves is the one under test.</td>
+</tr>
+<tr>
+  <td class="mono">def flat_floors(value: float = 1.0) -> pd.Series</td>
+  <td>Gives every feature the same denominator, so a test's expected number is arithmetic the reader
+      can do in their head rather than something derived from whoever is in the fixture.</td>
+</tr>
+</table>
+
+<h3>Zone B — score against the past, never including today</h3>
+
+<p>The property the stage would be worthless without, and its boundary case.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def test_spike_is_scored_against_the_pre_spike_mean() -> None ⭐</td>
+  <td>Sixty flat days then a jump to 100: the answer must equal the one you get from the earlier days
+      alone, and must explicitly <em>not</em> equal the one you get if today is allowed in. That
+      leak is a 1.6% error here and a factor of two on a short history — invisible either way.</td>
+</tr>
+<tr>
+  <td class="mono">def test_first_day_of_a_user_has_no_history_and_scores_zero() -> None</td>
+  <td>With no earlier days there is nothing to be unlike, so the answer must be 0. NaN would be
+      defensible mathematically and would end up inside a model's loss function.</td>
+</tr>
+</table>
+
+<h3>Zone C — zero-variance history</h3>
+
+<p>The three tests that pin down what happens when someone has simply never done the thing before.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def test_constant_history_gives_a_finite_score_when_it_changes() -> None</td>
+  <td>180 identical days then a change: the answer must be large <em>and</em> finite, because a large
+      finite number is the thing worth looking at and infinity is not.</td>
+</tr>
+<tr>
+  <td class="mono">def test_a_feature_constant_for_everybody_stays_at_zero() -> None</td>
+  <td>A column that never moves for anybody in the dataset gets the fallback denominator of 1.0, so
+      it sits at zero instead of dividing by nothing the first time it twitches.</td>
+</tr>
+<tr>
+  <td class="mono">def test_the_floor_binds_only_when_it_exceeds_the_prior_std() -> None</td>
+  <td>Someone with genuine day-to-day variation is measured by their own spread; the lower bound only
+      takes over when it is the larger of the two.</td>
+</tr>
+</table>
+
+<h3>Zone D — warm-up</h3>
+
+<p>Two tests on the opening rows: they must be blank, and nothing important may be inside them.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def test_warmup_rows_are_exactly_zero_and_the_next_row_is_not() -> None</td>
+  <td>Exactly 30 rows blanked, all of them zero, and the 31st not zero. The boundary is off-by-one
+      bait and this is the only thing standing on it.</td>
+</tr>
+<tr class="hi">
+  <td class="mono">def test_a_positive_day_inside_the_warmup_is_a_hard_failure() -> None ⭐</td>
+  <td>An attack day inside a person's blanked opening would be emitted as an all-zero row that
+      nothing downstream could ever detect, so the run has to stop rather than continue quietly.</td>
+</tr>
+</table>
+
+<h3>Zone E — no cross-user leakage</h3>
+
+<p>Two tests that the grouping by person is real, and that grouping did not cost the row order.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def test_users_are_scored_only_against_themselves() -> None</td>
+  <td>A heavy user at 1000 a day and a light user at 1 a day, interleaved in one table: the heavy
+      user's routine must stay flat and the light user's jump from 1 to 3 must stay loud. Pooled,
+      both would be measured against ~500 and the real signal would disappear.</td>
+</tr>
+<tr class="hi">
+  <td class="mono">def test_row_order_survives_an_unsorted_input() -> None ⭐</td>
+  <td>Shuffles the input and checks each person-and-day gets the same number as before. Two things
+      must hold at once — the maths needs date order, the next stage needs the row order it handed
+      in — and a version that honoured only one would fail silently.</td>
+</tr>
+</table>
+
+<h3>Zone F — the output contract</h3>
+
+<p>What the next stage is entitled to assume about the file that comes out.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def test_shape_column_order_and_labels_survive_unchanged() -> None</td>
+  <td>Same rows, same order, same column layout, values as float32, both label columns untouched.
+      Reordering columns here raises nothing and invalidates every saved model later.</td>
+</tr>
+<tr>
+  <td class="mono">def test_verify_rejects_a_table_that_was_never_z_scored() -> None</td>
+  <td>Feeds the raw counts back in as if they had been scored. Nothing else in the pipeline would
+      object — the file has the right shape and trains about as well as noise.</td>
+</tr>
+</table>
+
+<h3>Zone G — numerical stability</h3>
+
+<p>One test, guarding one specific rewrite someone will eventually be tempted to make.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr class="hi">
+  <td class="mono">def test_values_around_1e8_produce_no_nan() -> None ⭐</td>
+  <td>Email-volume-sized numbers, where the textbook shortcut for spread subtracts two huge
+      quantities and can land just below zero, which becomes NaN under a square root. This is the
+      test that fails if anybody swaps the running averages for cumulative sums to go faster.</td>
+</tr>
+</table>
+
+<h3>Zone H — the floor, and the gate</h3>
+
+<p>The last four: one on the measured correction in <code>std_floors</code>, three on the gate.</p>
+
+<table>
+<tr><th>signature</th><th>what it does</th></tr>
+<tr>
+  <td class="mono">def test_active_only_ignores_users_who_never_exercise_the_feature() -> None</td>
+  <td>Eight people who never touch the feature plus one who does: the denominator must come from the
+      one who does, rather than collapsing to the flat fallback and flattening the signal.</td>
+</tr>
+<tr>
+  <td class="mono">def test_the_gate_measures_the_window_against_the_days_before_it() -> None</td>
+  <td>An ordinary life with a little noise, then a loud fortnight: the comparison must show a real
+      rise, and benign people must not appear in the table at all. The noise matters — against a
+      perfectly flat history the ratio would be infinite and the test would pass for the wrong
+      reason.</td>
+</tr>
+<tr>
+  <td class="mono">def test_collapse_reports_both_max_and_mean() -> None</td>
+  <td>One loud feature out of eighteen scores 36 under the largest-of summary and 36/18 under the
+      average. That gap is the disagreement the two summaries exist to expose.</td>
+</tr>
+<tr>
+  <td class="mono">def test_an_empty_input_does_not_crash() -> None</td>
+  <td>A table with no rows comes back with no rows, instead of raising — the case you hit by pointing
+      <code>--counts</code> at something you filtered too hard.</td>
+</tr>
+</table>
+
+<div class="note"><b>One gap worth knowing.</b> The empty-input test only exercises
+<code>causal_z_scores</code>. <code>verify</code> on an empty table would raise "still raw counts",
+because its last check asks whether any value is negative and no values means no negative ones.</div>
+
+<h2><span class="n">4</span>The five functions to actually remember</h2>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <p><b>causal_z_scores</b></p>
+    <p>This is the thesis. Everything before it is bookkeeping and everything after it is
+    architecture; the claim being tested is one line of arithmetic inside this function, and the
+    word that carries it is <em>strictly earlier</em>.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <p><b>std_floors</b></p>
+    <p>The denominator decides everything. Change how this number is computed and the insider
+    detection rate moves from 54 of 70 to 66 of 70 without a single line of the maths changing —
+    which is also why it is the function most likely to be "fixed" back into a worse result.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <p><b>validation_gate</b></p>
+    <p>The go/no-go. It answers, before any model exists, whether the separation the models are
+    meant to find is in the data at all — and finding that out on the last day is the one failure
+    with no recovery.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <p><b>collapse</b></p>
+    <p>Two ways to squash eighteen numbers into one, and they disagree about who looks suspicious.
+    That disagreement is a real finding about the problem rather than a detail, and this function is
+    where the file refuses to resolve it quietly.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <p><b>verify</b></p>
+    <p>The reason you can believe the other four. Its cheapest check — "is anything negative?" —
+    catches the failure that would otherwise be undetectable: raw counts written straight through,
+    in a file of exactly the right shape.</p>
+  </div>
+</div>
+
+<div class="note good"><b>Count check.</b> 18 functions described for <code>baseline.py</code>
+(plus the 2 classes, listed but not counted), 18 for <code>test_baseline.py</code>, 0 for
+<code>__init__.py</code> — 36 in total, matching the files.</div>
+
+<footer>
+InnerSight · Stage 3 · <code>baseline/</code> function reference · generated from the source at
+<code>baseline/baseline.py</code> (889 lines) and <code>baseline/test_baseline.py</code> (402 lines).
+</footer>
+
+</div>
+</body>
+</html>

@@ -109,21 +109,39 @@ def check_torch() -> None:
     except ImportError as exc:
         fail(f"torch does not import: {exc}")
         return
+    # Stage 5 replaced the hardcoded config.DEVICE with resolve_device(), which
+    # prefers MPS and falls back to CPU. The matmul is run on whichever device
+    # the project will actually train on, so this check fails HERE -- in one
+    # second, with a clear message -- rather than forty minutes into a run.
     try:
-        a = torch.tensor([[1.0, 2.0], [3.0, 4.0]], device=config.DEVICE)
-        b = torch.tensor([[5.0, 6.0], [7.0, 8.0]], device=config.DEVICE)
+        device = config.resolve_device()
+    except Exception as exc:  # noqa: BLE001
+        fail(f"config.resolve_device() raised {type(exc).__name__}: {exc}")
+        return
+    try:
+        a = torch.tensor([[1.0, 2.0], [3.0, 4.0]], device=device)
+        b = torch.tensor([[5.0, 6.0], [7.0, 8.0]], device=device)
         product = a @ b
-        expected = torch.tensor([[19.0, 22.0], [43.0, 50.0]], device=config.DEVICE)
+        expected = torch.tensor([[19.0, 22.0], [43.0, 50.0]], device=device)
         if not torch.allclose(product, expected):
-            fail(f"matmul on device {config.DEVICE!r} gave {product.tolist()}, "
+            fail(f"matmul on device {device!r} gave {product.tolist()}, "
                  f"expected {expected.tolist()}")
             return
-        ok(f"tensor matmul on device {config.DEVICE!r} -> {product.tolist()}")
-        if torch.backends.mps.is_available():
-            detail("MPS is available but unused on purpose: both models are tiny "
-                   "and CPU wins at this size.")
+        ok(f"tensor matmul on device {device!r} -> {product.tolist()}")
+        if device == "mps":
+            detail("MPS is in use. This is a portability decision, not a speed "
+                   "claim -- at ~640 and ~5,000 parameters CPU is comparable or "
+                   "faster, because kernel-launch overhead dominates. Running "
+                   "on Metal is what proves the pipeline is device-agnostic. "
+                   "Both models must use the SAME device (Stages 5, 6 and 7).")
+        elif torch.backends.mps.is_available():
+            detail("MPS is available but resolve_device() returned cpu.")
+        else:
+            detail("No Metal on this machine; everything runs on CPU. Fine -- "
+                   "just record it, and use the same device for Stages 6 and 7.")
     except Exception as exc:  # noqa: BLE001 - report anything torch throws
-        fail(f"torch tensor operation raised {type(exc).__name__}: {exc}")
+        fail(f"torch tensor operation on device {device!r} raised "
+             f"{type(exc).__name__}: {exc}")
 
 
 def check_project_directories() -> None:
@@ -318,7 +336,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"    - {message.splitlines()[0]}")
         return 1
     print(f"  {_paint('ALL CHECKS PASSED', _GREEN)} - Stage 0 is ready; "
-          f"Stage 1 can be written into extract.py")
+          f"Stage 1 lives in extraction/extract.py")
     return 0
 
 

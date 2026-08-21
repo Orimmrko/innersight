@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — every function in modeling/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+
+  .st{color:var(--accent); font-weight:700}
+  .scan td:first-child{white-space:nowrap}
+  .zonehead{margin:30px 0 4px; font-family:var(--mono); font-size:12.5px;
+            letter-spacing:.1em; text-transform:uppercase; color:var(--accent); font-weight:700}
+  .zonesub{margin:0 0 10px; color:var(--muted); font-size:15px; max-width:78ch}
+  .fn{margin:0 0 2px}
+  .fn code{background:none; padding:0; font-size:13px; color:var(--ink)}
+  .fntable td:first-child{width:44%}
+  .toc{columns:2; column-gap:32px; font-size:15px}
+  .toc a{color:var(--ink)}
+  .count{font-family:var(--mono); font-size:11px; color:var(--muted);
+         border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stages 5 + 6 · function reference</p>
+  <h1>Every function in <code style="font-size:.72em">modeling/</code></h1>
+  <p class="sub">141 functions and methods across ten files, in the order they appear, each in one or two plain sentences.</p>
+</header>
+
+<p class="big"><code>modeling/</code> is where the project stops describing behaviour and starts predicting it. It holds two neural networks — one that sees a single day, one that sees the twenty-eight days ending on that day — and every piece of machinery they share: getting rows into tensors, the training loop, the scoring, and the orchestration across three random seeds. The entire package is built around one constraint: <b>the two models must differ in exactly one respect, temporal context</b>, so almost everything here is deliberately blind to which model it is serving.</p>
+
+<div class="callout">
+  <p><strong>How to read the ★.</strong> Most of these functions are plumbing — moving tensors, flattening records into JSON, formatting log lines. A small number are where the real thinking is, and those are starred. There are <b>26 stars across 141 functions</b>; if you only ever understand those, you can defend the package.</p>
+</div>
+
+<h2><span class="n">·</span>The ten files</h2>
+<table class="scan">
+<tr><th>file</th><th>lines</th><th class='mono'>fns</th><th>what it is</th></tr>
+<tr><td class="mono"><a href="#__init__-py">modeling/__init__.py</a></td><td class="mono">49</td><td class="mono">0</td><td>the experiment stated in one docstring</td></tr>
+<tr><td class="mono"><a href="#data-py">modeling/data.py</a></td><td class="mono">647</td><td class="mono">33</td><td>parquet in, tensors out — clip, mask, split, rescale</td></tr>
+<tr><td class="mono"><a href="#metrics-py">modeling/metrics.py</a></td><td class="mono">419</td><td class="mono">20</td><td>every number allowed to score a prediction</td></tr>
+<tr><td class="mono"><a href="#models-py">modeling/models.py</a></td><td class="mono">202</td><td class="mono">5</td><td>the two architectures, and nothing else</td></tr>
+<tr><td class="mono"><a href="#train-py">modeling/train.py</a></td><td class="mono">390</td><td class="mono">13</td><td>the loop that doesn't know which model it trains</td></tr>
+<tr><td class="mono"><a href="#runner-py">modeling/runner.py</a></td><td class="mono">406</td><td class="mono">6</td><td>three seeds, checkpoints, summaries, curves</td></tr>
+<tr><td class="mono"><a href="#run_model_a-py">modeling/run_model_a.py</a></td><td class="mono">140</td><td class="mono">2</td><td>command line for the one-day control model</td></tr>
+<tr><td class="mono"><a href="#run_model_b-py">modeling/run_model_b.py</a></td><td class="mono">197</td><td class="mono">3</td><td>command line for the twenty-eight-day model</td></tr>
+<tr><td class="mono"><a href="#test_modeling-py">modeling/test_modeling.py</a></td><td class="mono">574</td><td class="mono">33</td><td>the Stage 5 silent-failure suite</td></tr>
+<tr><td class="mono"><a href="#test_model_b-py">modeling/test_model_b.py</a></td><td class="mono">507</td><td class="mono">26</td><td>the Stage 6 suite — mostly “which axis?”</td></tr>
+</table>
+<div class="note"><b>Reading order.</b> <code>data.py</code> → <code>models.py</code> → <code>train.py</code> → <code>runner.py</code>. The two <code>run_model_*.py</code> files are twenty lines of real content each, and the two test files are best read as a list of the things that could have gone wrong.</div>
+
+<h2 id="__init__-py"><span class="n">1</span><code>modeling/__init__.py</code> <span class="count">0 functions · 49 lines</span></h2>
+<p>A docstring and a list of module names — no functions at all. It exists to state the experiment in one place: Model A sees one day, Model B sees the twenty-eight days ending on that day, and <em>nothing else differs</em>. It also names the three rules that keep that true (one row set, clip before standardising, fit the scaling on training rows only) and points at the function that enforces each.</p>
+<div class="note"><b>Nothing to explain here.</b> <code>__all__</code> lists the five real modules — <code>data</code>, <code>metrics</code>, <code>models</code>, <code>runner</code>, <code>train</code>. The two <code>run_model_*.py</code> entry points are deliberately absent from it: they are scripts, not library surface.</div>
+
+<h2 id="data-py"><span class="n">2</span><code>modeling/data.py</code> <span class="count">33 functions · 647 lines</span></h2>
+<p>Getting numbers out of a parquet file and into tensors, in one fixed order, for both models at once. Almost every silent failure this project could have lives in the order of the four steps this file performs.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">Standardiser.__post_init__</td><td>Refuses to finish building the object unless both statistics arrays have exactly one entry per feature, contain no missing or infinite values, and have every spread strictly above zero.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> Standardiser.fit</td><td>Measures each feature's average and spread; a feature that never changes keeps a divisor of 1 rather than its true 0.</td></tr>
+<tr><td class="mono">Standardiser.apply</td><td>Subtracts the average and divides by the spread in double precision, then narrows to single — Apple's GPU backend rejects doubles, so the cast happens here rather than as a crash inside a graphics kernel.</td></tr>
+<tr><td class="mono">Standardiser.to_dict</td><td>Packs the two statistics arrays and the feature ordering they were measured under into plain lists, so all three can travel inside the saved model file.</td></tr>
+<tr><td class="mono">Standardiser.from_dict</td><td>Rebuilds those statistics from a saved file, and refuses if the project's feature ordering has changed since — the numbers would otherwise be applied to the wrong columns without a word.</td></tr>
+<tr><td class="mono">PointView.__len__</td><td>How many days the one-day model will be asked to judge.</td></tr>
+<tr><td class="mono">PointView.gather</td><td>Pulls out one batch of days by row number, moving the index onto whichever device the rows already live on.</td></tr>
+<tr><td class="mono">PointView.to</td><td>Copies the whole block of rows to the CPU or the GPU and returns a fresh wrapper around the copy.</td></tr>
+<tr><td class="mono">PointView.input_shape</td><td>Reports the shape of a single example. Never called anywhere in the project.</td></tr>
+<tr><td class="mono">WindowView.__len__</td><td>How many days the twenty-eight-day model will be asked to judge — one per stored position, not one per stored row.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> WindowView.gather</td><td>For each requested day, lifts that day and the twenty-seven before it out of the shared row block, then turns it inside out so features become channels and days the sequence.</td></tr>
+<tr><td class="mono">WindowView.to</td><td>Moves the row block and the list of positions to the same device together, so a batch is never assembled from tensors sitting in two places.</td></tr>
+<tr><td class="mono">WindowView.input_shape</td><td>Reports features-by-days as the expected shape. Also never called.</td></tr>
+<tr><td class="mono">SplitData.n_targets</td><td>How many days in this group are actually judged, as opposed to merely held in memory as history.</td></tr>
+<tr><td class="mono">SplitData.n_positives</td><td>How many of those judged days fall inside a real attack window.</td></tr>
+<tr><td class="mono">SplitData.n_negatives</td><td>The judged days that are ordinary — the other 99.6%.</td></tr>
+<tr><td class="mono">SplitData.positive_rate</td><td>The share of judged days that are attacks — which is exactly the score a coin-flip ranker earns on the headline metric, so no reported figure means anything without it beside it.</td></tr>
+<tr><td class="mono">SplitData.point_features</td><td>Lifts just the judged days out of the stored block, one row each: the one-day model's entire input.</td></tr>
+<tr><td class="mono">SplitData.window_features</td><td>Builds every window at once as one tensor — <b>dead code</b>, nothing calls it.</td></tr>
+<tr><td class="mono">SplitData.point_view</td><td>Wraps those single rows in the small object the training loop knows how to request batches from.</td></tr>
+<tr><td class="mono">SplitData.window_view</td><td>Hands back the lazy slicer — but first refuses if any judged day sits too close to the start of its own user's record for a full window to exist behind it.</td></tr>
+<tr><td class="mono">SplitData.describe</td><td>Writes the one-line census printed for each group before training: users, rows held, rows judged, attack days and their share.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> PreparedData.pos_weight</td><td>Ordinary days divided by attack days, <em>in the training users only</em> — the multiplier that stops the loss from being won by answering “benign” to everything.</td></tr>
+<tr><td class="mono">dataset_path</td><td>Chooses between the full table and the thirty-user smoke-test table.</td></tr>
+<tr><td class="mono">splits_path</td><td>The same choice, for the file that says which people are train, validation and test.</td></tr>
+<tr><td class="mono">load_dataset</td><td>Reads the table, checks every expected column is present, and sorts it so each person's days sit together in date order.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> clip_z_scores</td><td>Pins every value into ±10 and reports how many rows had to be touched.</td></tr>
+<tr><td class="mono">day_index</td><td>Numbers each person's days from zero, and refuses if anyone's dates skip a day — a gap would quietly make “twenty-eight rows” span more than twenty-eight days.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> target_mask</td><td>Marks which days may be judged: a person's twenty-eighth day onward, since that is the first day with a full history behind it.</td></tr>
+<tr><td class="mono">load_splits</td><td>Reads one seed's three user lists out of the file Stage 4 wrote, accepting either the nested or the flat layout, and refuses if that seed is missing.</td></tr>
+<tr><td class="mono">_build_split</td><td>Takes the rows belonging to one group of people, rescales them with the already-measured statistics, and packages them with the positions, labels and attack types of the judged days.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> prepare</td><td>Performs the whole sequence in the one order that is correct: clip, mark judgeable days, split by person, measure the scaling on training rows only, apply it everywhere.</td></tr>
+<tr><td class="mono">log_preparation</td><td>Prints the pre-flight census and turns three quiet disasters into loud errors: a group with only one class in it, a person on both sides of the split, or no attacks to weight against.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the error class</p>
+<p class="zonesub">One exception type, so a structural problem in the inputs stops the run instead of producing a plausible number. <code>DataError</code> has no methods, so it appears in no count below.</p>
+<p class="zonehead">zone 2 · the scaling</p>
+<p class="zonesub">A tiny frozen record holding one mean and one spread per feature, plus the four operations that create it, use it, and move it in and out of a checkpoint file.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __post_init__(self) -&gt; None:</code></td><td>Refuses to finish building the object unless both statistics arrays have exactly one entry per feature, contain no missing or infinite values, and have every spread strictly above zero.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>@classmethod def fit(cls, features: np.ndarray) -&gt; Standardiser:</code></td><td>Measures each feature's average and spread across the rows handed in. A feature that never changes gets a divisor of 1 rather than its true 0, so it stays flat at zero instead of having its rounding dust magnified into the millions.</td></tr>
+<tr><td class="mono"><code>def apply(self, features: np.ndarray) -&gt; np.ndarray:</code></td><td>Subtracts the average and divides by the spread in double precision, then narrows to single — Apple's GPU backend rejects doubles, so the cast happens here rather than as a crash inside a graphics kernel.</td></tr>
+<tr><td class="mono"><code>def to_dict(self) -&gt; dict[str, list[float]]:</code></td><td>Packs the two statistics arrays and the feature ordering they were measured under into plain lists, so all three can travel inside the saved model file.</td></tr>
+<tr><td class="mono"><code>@classmethod def from_dict(cls, payload: dict[str, Sequence[float]]) -&gt; Standardiser:</code></td><td>Rebuilds those statistics from a saved file, and refuses if the project's feature ordering has changed since — the numbers would otherwise be applied to the wrong columns without a word.</td></tr>
+</table>
+<p class="zonehead">zone 3 · the two ways of looking at rows</p>
+<p class="zonesub">Two small wrappers with the same three-method surface. The training loop can only ask them how many examples there are, hand me batch number N, and move to this device — which is precisely why the loop cannot tell which model it is training.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __len__(self) -&gt; int:</code></td><td>How many days the one-day model will be asked to judge.</td></tr>
+<tr><td class="mono"><code>def gather(self, index: torch.Tensor) -&gt; torch.Tensor:</code></td><td>Pulls out one batch of days by row number, moving the index onto whichever device the rows already live on.</td></tr>
+<tr><td class="mono"><code>def to(self, device: str | torch.device) -&gt; PointView:</code></td><td>Copies the whole block of rows to the CPU or the GPU and returns a fresh wrapper around the copy.</td></tr>
+<tr><td class="mono"><code>@property def input_shape(self) -&gt; tuple[int, ...]:</code></td><td>Reports the shape of a single example, meant for logging. Nothing in the project calls it.</td></tr>
+<tr><td class="mono"><code>def __len__(self) -&gt; int:</code></td><td>How many days the twenty-eight-day model will be asked to judge — one per stored position, not one per stored row.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def gather(self, index: torch.Tensor) -&gt; torch.Tensor:</code></td><td>For each requested day, lifts that day and the twenty-seven before it out of the shared row block, then turns it inside out so features become channels and days the sequence. Cut per batch: storing every window would cost roughly 880 MB.</td></tr>
+<tr><td class="mono"><code>def to(self, device: str | torch.device) -&gt; WindowView:</code></td><td>Moves the row block and the list of positions to the same device together, so a batch is never assembled from tensors sitting in two places.</td></tr>
+<tr><td class="mono"><code>@property def input_shape(self) -&gt; tuple[int, ...]:</code></td><td>Reports features-by-days as the expected shape of one example. Also never called.</td></tr>
+</table>
+<p class="zonehead">zone 4 · one split's worth of rows</p>
+<p class="zonesub">A frozen record holding <em>every</em> row of one group of users, plus a list of which of those rows are actually judged. Keeping the two apart is what lets the twenty-eight-day model read history it is never scored on.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>@property def n_targets(self) -&gt; int:</code></td><td>How many days in this group are actually judged, as opposed to merely held in memory as history.</td></tr>
+<tr><td class="mono"><code>@property def n_positives(self) -&gt; int:</code></td><td>How many of those judged days fall inside a real attack window.</td></tr>
+<tr><td class="mono"><code>@property def n_negatives(self) -&gt; int:</code></td><td>The judged days that are ordinary — the other 99.6%.</td></tr>
+<tr><td class="mono"><code>@property def positive_rate(self) -&gt; float:</code></td><td>The share of judged days that are attacks — which is exactly the score a coin-flip ranker earns on the headline metric, so no reported figure means anything without it beside it.</td></tr>
+<tr><td class="mono"><code>def point_features(self) -&gt; torch.Tensor:</code></td><td>Lifts just the judged days out of the stored block, one row each: the one-day model's entire input.</td></tr>
+<tr><td class="mono"><code>def window_features(self, days: int = WINDOW_DAYS) -&gt; torch.Tensor:</code></td><td>Builds every window at once as one large tensor, refusing if any of them would reach before the start of the array. <b>Dead code</b> — its docstring says Stage 6 calls it, and Stage 6 does not; nothing in the project does.</td></tr>
+<tr><td class="mono"><code>def point_view(self) -&gt; PointView:</code></td><td>Wraps those single rows in the small object the training loop knows how to request batches from.</td></tr>
+<tr><td class="mono"><code>def window_view(self, days: int = WINDOW_DAYS) -&gt; WindowView:</code></td><td>Hands back the lazy slicer — but first refuses if any judged day sits too close to the start of its own user's record for a full window to exist behind it.</td></tr>
+<tr><td class="mono"><code>def describe(self) -&gt; str:</code></td><td>Writes the one-line census printed for each group before training: users, rows held, rows judged, attack days and their share.</td></tr>
+</table>
+<p class="zonehead">zone 5 · what one seed's preparation produced</p>
+<p class="zonesub">A record of the finished train-and-validation pair, plus the counts needed to prove the preparation did what it claims, and the one derived number the loss function depends on.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def pos_weight(self) -&gt; float:</code></td><td>Ordinary days divided by attack days, <em>in the training users only</em> — the multiplier that stops the loss from being won by answering “benign” to everything. Refuses outright if training contains no attacks.</td></tr>
+</table>
+<p class="zonehead">zone 6 · the steps, each usable on its own</p>
+<p class="zonesub">The pipeline broken into pieces small enough to test individually, then one function that performs them in the single order that is correct.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def dataset_path(sample: bool) -&gt; Path:</code></td><td>Chooses between the full table and the thirty-user smoke-test table.</td></tr>
+<tr><td class="mono"><code>def splits_path(sample: bool) -&gt; Path:</code></td><td>The same choice, for the file that says which people are train, validation and test.</td></tr>
+<tr><td class="mono"><code>def load_dataset(path: Path) -&gt; pd.DataFrame:</code></td><td>Reads the table, checks every expected column is present, and sorts it so each person's days sit together in date order. Every position-based operation below silently assumes that ordering.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def clip_z_scores(frame: pd.DataFrame, limit: float = Z_CLIP) -&gt; tuple[pd.DataFrame, int]:</code></td><td>Pins every value into ±10 and reports how many rows had to be touched. A surviving value of 716 would inflate its feature's spread so far that every ordinary day gets squashed toward zero.</td></tr>
+<tr><td class="mono"><code>def day_index(frame: pd.DataFrame) -&gt; np.ndarray:</code></td><td>Numbers each person's days from zero, and refuses if anyone's dates skip a day — a gap would quietly make “twenty-eight rows” span more than twenty-eight days.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def target_mask(frame: pd.DataFrame, window_days: int = WINDOW_DAYS) -&gt; np.ndarray:</code></td><td>Marks which days may be judged: a person's twenty-eighth day onward, since that is the first day with a full history behind it. Applied to both models so neither is scored on rows the other never saw.</td></tr>
+<tr><td class="mono"><code>def load_splits(path: Path, seed: int) -&gt; dict[str, tuple[str, ...]]:</code></td><td>Reads one seed's three user lists out of the file Stage 4 wrote, accepting either the nested or the flat layout, and refuses if that seed is missing.</td></tr>
+<tr><td class="mono"><code>def _build_split(name, frame, is_target, users, standardiser) -&gt; SplitData:</code></td><td>Takes the rows belonging to one group of people, rescales them with the already-measured statistics, and packages them with the positions, labels and attack types of the judged days.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def prepare(seed, *, sample=False, frame=None, splits=None, window_days=WINDOW_DAYS) -&gt; PreparedData:</code></td><td>Performs the whole sequence in the one order that is correct: clip, mark judgeable days, split by person, measure the scaling on training rows only, apply it everywhere. It never builds the test group at all.</td></tr>
+<tr><td class="mono"><code>def log_preparation(data: PreparedData) -&gt; None:</code></td><td>Prints the pre-flight census and turns three quiet disasters into loud errors: a group with only one class in it, a person on both sides of the split, or no attacks to weight against.</td></tr>
+</table>
+
+<h2 id="metrics-py"><span class="n">3</span><code>modeling/metrics.py</code> <span class="count">20 functions · 419 lines</span></h2>
+<p>What “good” is allowed to mean when 99.6% of days are ordinary. The module is opinionated on purpose: it computes no accuracy, and it never lets a headline number appear without the coin-flip baseline beside it.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> probabilities</td><td>The single place raw scores become probabilities, which is what stops it happening twice.</td></tr>
+<tr><td class="mono">PredictionStats.of</td><td>Measures the spread of a batch of predictions, rounding to nine decimals before counting how many are different — without that, floating-point dust in the sixteenth decimal makes every row look unique.</td></tr>
+<tr><td class="mono">PredictionStats.collapse_floor</td><td>How many different scores a working model must produce <em>on this many rows</em>.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> PredictionStats.collapsed</td><td>True when the model has quietly given up and is scoring nearly every day the same — the failure mode that leaves the loss curve looking entirely healthy.</td></tr>
+<tr><td class="mono">PredictionStats.as_dict</td><td>Flattens those spread figures into plain keys for the results file.</td></tr>
+<tr><td class="mono">ThresholdChoice.as_dict</td><td>The same, for a chosen cutoff and the four validation numbers that argued for it.</td></tr>
+<tr><td class="mono">ScenarioRecall.recall</td><td>The hit rate for one attack type, or nothing at all when that type has no attack days in this group — rather than a misleading zero.</td></tr>
+<tr><td class="mono">ScenarioRecall.phrase</td><td>Writes the result as “2 of 4 attack days (50%)” — the count first, because a percentage computed on four rows has only five possible values.</td></tr>
+<tr><td class="mono">ScenarioRecall.as_dict</td><td>The same three figures as plain keys.</td></tr>
+<tr><td class="mono">Evaluation.lift</td><td>How many times better than guessing the headline figure is — the one number to quote when someone asks whether 0.15 is any good.</td></tr>
+<tr><td class="mono">Evaluation.suspiciously_good</td><td>Flags a headline score at or above 0.95, which on data this lopsided means something leaked rather than something worked.</td></tr>
+<tr><td class="mono">Evaluation.as_dict</td><td>Turns the entire result — headline, baseline, lift, queue precision, spread, cutoff and per-attack-type recall — into one JSON-safe block.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> auprc</td><td>How well the ranking pushes real attack days above ordinary ones — the headline figure.</td></tr>
+<tr><td class="mono">auroc</td><td>The figure the insider-threat literature quotes, computed only so results are comparable with other papers; returns nothing when it is undefined.</td></tr>
+<tr><td class="mono">precision_at_k</td><td>Of the k highest-scoring days, the share that were real — what an analyst with a fixed-length queue actually experiences.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> sweep_threshold</td><td>Searches the observed scores for the cutoff with the best hit-versus-false-alarm balance.</td></tr>
+<tr><td class="mono">per_scenario_recall</td><td>The hit rate for each of the three attack types separately, because one type supplies about 88% of all attack days and would otherwise drown out the other two in any average.</td></tr>
+<tr><td class="mono">evaluate</td><td>Assembles the complete picture for one set of predictions.</td></tr>
+<tr><td class="mono">log_evaluation</td><td>Prints the result block and raises its voice on three specific conditions: collapsed predictions, no better than guessing, and too good to be true.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> aggregate</td><td>Average and spread over the three runs, with a single run's spread defined as zero.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the one conversion</p>
+<p class="zonesub">Raw model output becomes a probability in exactly one place in the codebase, and this is it.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def probabilities(logits: torch.Tensor) -&gt; np.ndarray:</code></td><td>Squashes a model's raw scores into the 0-to-1 range, on the CPU, in double precision. Being the only place this happens is what stops it from being applied twice — once here and once inside the loss.</td></tr>
+</table>
+<p class="zonehead">zone 2 · four records that hold a result</p>
+<p class="zonesub">Small frozen containers. Each carries the numbers it was built from, knows how to phrase itself, and can flatten into plain keys for the JSON results file.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>@classmethod def of(cls, probs: np.ndarray) -&gt; PredictionStats:</code></td><td>Measures the spread of a batch of predictions, rounding to nine decimals before counting how many are different — without that, floating-point dust in the sixteenth decimal makes every row look unique.</td></tr>
+<tr><td class="mono"><code>@property def collapse_floor(self) -&gt; int:</code></td><td>How many different scores a working model must produce <em>on this many rows</em>. Scaled down for small runs, because a fixed bar of 1,000 would fire on every smoke test until nobody read the warning any more.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>@property def collapsed(self) -&gt; bool:</code></td><td>True when the model has quietly given up and is scoring nearly every day the same — the failure mode that leaves the loss curve looking entirely healthy.</td></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, float | int]:</code></td><td>Flattens those spread figures into plain keys for the results file.</td></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, float | int]:</code></td><td>The same, for a chosen cutoff and the four validation numbers that argued for it.</td></tr>
+<tr><td class="mono"><code>@property def recall(self) -&gt; float | None:</code></td><td>The hit rate for one attack type, or nothing at all when that type has no attack days in this group — rather than a misleading zero.</td></tr>
+<tr><td class="mono"><code>def phrase(self) -&gt; str:</code></td><td>Writes the result as “2 of 4 attack days (50%)” — the count first, because a percentage computed on four rows has only five possible values.</td></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, Any]:</code></td><td>The same three figures as plain keys.</td></tr>
+<tr><td class="mono"><code>@property def lift(self) -&gt; float:</code></td><td>How many times better than guessing the headline figure is — the one number to quote when someone asks whether 0.15 is any good.</td></tr>
+<tr><td class="mono"><code>@property def suspiciously_good(self) -&gt; bool:</code></td><td>Flags a headline score at or above 0.95, which on data this lopsided means something leaked rather than something worked.</td></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, Any]:</code></td><td>Turns the entire result — headline, baseline, lift, queue precision, spread, cutoff and per-attack-type recall — into one JSON-safe block.</td></tr>
+</table>
+<p class="zonehead">zone 3 · the scores themselves</p>
+<p class="zonesub">Five functions that each turn labels and predictions into one number. Nothing here knows about models, seeds or files.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def auprc(labels: np.ndarray, probs: np.ndarray) -&gt; float:</code></td><td>How well the ranking pushes real attack days above ordinary ones — the headline figure. Falls back to the base rate when a group happens to contain only one class.</td></tr>
+<tr><td class="mono"><code>def auroc(labels: np.ndarray, probs: np.ndarray) -&gt; float | None:</code></td><td>The figure the insider-threat literature quotes, computed only so results are comparable with other papers; returns nothing when it is undefined.</td></tr>
+<tr><td class="mono"><code>def precision_at_k(labels: np.ndarray, probs: np.ndarray, k: int) -&gt; float:</code></td><td>Of the k highest-scoring days, the share that were real — what an analyst with a fixed-length queue actually experiences. Ties are left in their original order rather than reshuffled favourably.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def sweep_threshold(labels, probs, points=THRESHOLD_SWEEP_POINTS) -&gt; ThresholdChoice:</code></td><td>Searches the observed scores for the cutoff with the best hit-versus-false-alarm balance. Candidates come from the distribution of the scores, not an even grid, because weighted training leaves the outputs bunched together.</td></tr>
+<tr><td class="mono"><code>def per_scenario_recall(labels, scenarios, probs, threshold) -&gt; tuple[ScenarioRecall, ...]:</code></td><td>The hit rate for each of the three attack types separately, because one type supplies about 88% of all attack days and would otherwise drown out the other two in any average.</td></tr>
+</table>
+<p class="zonehead">zone 4 · assembling and printing one result</p>
+<p class="zonesub">Two functions that turn the pieces above into the block a reader of the run log sees.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def evaluate(labels, probs, scenarios=None, *, choose_threshold=True, threshold=None) -&gt; Evaluation:</code></td><td>Assembles the complete picture for one set of predictions. It can either pick a fresh cutoff or apply one chosen earlier — which is how Stage 7 avoids re-choosing on test data.</td></tr>
+<tr><td class="mono"><code>def log_evaluation(evaluation: Evaluation, label: str = "validation") -&gt; None:</code></td><td>Prints the result block and raises its voice on three specific conditions: collapsed predictions, no better than guessing, and too good to be true.</td></tr>
+</table>
+<p class="zonehead">zone 5 · across seeds</p>
+<p class="zonesub">One function, because one run's number is a draw from a lottery, not a result.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def aggregate(values: list[float]) -&gt; dict[str, float]:</code></td><td>Average and spread over the three runs, with a single run's spread defined as zero. Everything headline in this project is reported this way because the split alone swings some counts by 75%.</td></tr>
+</table>
+
+<h2 id="models-py"><span class="n">4</span><code>modeling/models.py</code> <span class="count">5 functions · 202 lines</span></h2>
+<p>The two architectures and nothing else — the only file Stage 6 was permitted to touch. Both networks are deliberately tiny, and both return an unsquashed score rather than a probability.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">ModelA.__init__</td><td>Assembles 18 → 32 → 1 with a rectifier; the configurable dropout is zero, so no dropout layer is added at all.</td></tr>
+<tr><td class="mono">ModelA.forward</td><td>Turns one day's eighteen numbers into a single unsquashed score, rejecting anything not shaped as a batch of eighteen.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> ModelB.__init__</td><td>Builds two filter layers that slide along the time axis, the second one skipping every other day so seven days come within reach at no extra parameter cost.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> ModelB.forward</td><td>Slides the filters along the twenty-eight days, averages over time, and emits one unsquashed score.</td></tr>
+<tr><td class="mono">count_parameters</td><td>Adds up the trainable numbers in a network.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · Model A, the control</p>
+<p class="zonesub">One day in, one score out: eighteen numbers into a thirty-two-unit layer and back down to one. Its whole argument is that it has no way to know what yesterday looked like.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __init__(self, n_features=N_FEATURES, hidden=MODEL_A_HIDDEN, dropout=DROPOUT) -&gt; None:</code></td><td>Assembles a linear layer, a rectifier and a second linear layer down to a single output. The dropout rate is configurable but set to zero in <code>config.py</code>, so in practice no dropout layer is added at all.</td></tr>
+<tr><td class="mono"><code>def forward(self, x: torch.Tensor) -&gt; torch.Tensor:</code></td><td>Turns one day's eighteen numbers into a single unsquashed score, rejecting anything not shaped as a batch of eighteen. No probability conversion here, on purpose.</td></tr>
+</table>
+<p class="zonehead">zone 2 · Model B, the experiment</p>
+<p class="zonesub">Twenty-eight days in, one score out. Identical to Model A in every respect except that each input carries the twenty-seven days of history before the day being judged.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def __init__(self, n_features=N_FEATURES, days=WINDOW_DAYS, channels=MODEL_B_CHANNELS, kernel_size=MODEL_B_KERNEL, dilation=MODEL_B_DILATION, dropout=DROPOUT) -&gt; None:</code></td><td>Builds two filter layers that slide along the time axis, the second one skipping every other day so seven days come within reach at no extra parameter cost. Refuses an even filter width, or a reach longer than the window itself.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def forward(self, x: torch.Tensor) -&gt; torch.Tensor:</code></td><td>Slides the filters along the twenty-eight days, averages over time, and emits one unsquashed score. The shape check is the real content: a batch fed the wrong way round would convolve across features and never complain.</td></tr>
+</table>
+<p class="zonehead">zone 3 · shared</p>
+<p class="zonesub">One helper both architectures are measured with.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def count_parameters(model: nn.Module) -&gt; int:</code></td><td>Adds up the trainable numbers in a network. Printed in every run log as the cheapest possible check that the model being trained is the model described in the report.</td></tr>
+</table>
+
+<h2 id="train-py"><span class="n">5</span><code>modeling/train.py</code> <span class="count">13 functions · 390 lines</span></h2>
+<p>The training loop, which does not know which model it is training — that is the load-bearing property of the whole comparison. Nothing in this file inspects the type of the model or the shape of its input.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">InputView.__len__</td><td>Required of any input source: how many examples there are.</td></tr>
+<tr><td class="mono">InputView.gather</td><td>Required: hand back the examples at these row numbers.</td></tr>
+<tr><td class="mono">InputView.to</td><td>Required: relocate to a device and return something with the same three methods.</td></tr>
+<tr><td class="mono">TrainingConfig.as_dict</td><td>Dumps every setting into plain keys, so a run's configuration travels inside the saved model file rather than in someone's memory.</td></tr>
+<tr><td class="mono">EpochRecord.as_dict</td><td>One epoch's eight numbers as plain keys, for the history block in the results file.</td></tr>
+<tr><td class="mono">EpochRecord.line</td><td>Formats those numbers into the fixed-width line printed after every epoch, with the two collapse-warning columns sitting right next to the losses.</td></tr>
+<tr><td class="mono">TrainingResult.seconds_per_epoch</td><td>Total elapsed time divided by the number of epochs that actually ran.</td></tr>
+<tr><td class="mono">TrainingResult.history_as_dicts</td><td>The whole per-epoch history as a list of plain records, ready for JSON.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> seed_everything</td><td>Fixes Python's, NumPy's and PyTorch's random sources at once.</td></tr>
+<tr><td class="mono">compute_pos_weight</td><td>Ordinary examples divided by attack examples, from whatever labels it is handed; making sure those are the <em>training</em> labels is the caller's responsibility, and nothing would complain if they weren't.</td></tr>
+<tr><td class="mono">predict</td><td>Scores every example of an input source in order, in batches, with gradient tracking off, and returns unsquashed scores on the CPU.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> train_model</td><td>Weighted loss, Adam, a full validation pass every epoch, and a stop after seven epochs without improvement.</td></tr>
+<tr><td class="mono">_log_first_epoch_guards</td><td>After the very first epoch — while a restart is still cheap — prints whether the predictions have any spread at all and whether they already beat guessing.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the contract, and the error</p>
+<p class="zonesub">Three method stubs describing everything the loop is allowed to know about its input source. Any object with these three works, which is how a flat table and a lazy window-slicer become interchangeable. <code>TrainingError</code> sits here too and has no methods.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __len__(self) -&gt; int: ...</code></td><td>Required of any input source: how many examples there are.</td></tr>
+<tr><td class="mono"><code>def gather(self, index: torch.Tensor) -&gt; torch.Tensor: ...</code></td><td>Required: hand back the examples at these row numbers.</td></tr>
+<tr><td class="mono"><code>def to(self, device: str | torch.device) -&gt; InputView: ...</code></td><td>Required: relocate to a device and return something with the same three methods.</td></tr>
+</table>
+<p class="zonehead">zone 2 · the records</p>
+<p class="zonesub">Three frozen containers — every knob, one epoch's numbers, and one run's outcome — plus the five small methods that format or flatten them.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, Any]:</code></td><td>Dumps every setting into plain keys, so a run's configuration travels inside the saved model file rather than in someone's memory.</td></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, Any]:</code></td><td>One epoch's eight numbers as plain keys, for the history block in the results file.</td></tr>
+<tr><td class="mono"><code>def line(self) -&gt; str:</code></td><td>Formats those numbers into the fixed-width line printed after every epoch, with the two collapse-warning columns sitting right next to the losses.</td></tr>
+<tr><td class="mono"><code>@property def seconds_per_epoch(self) -&gt; float:</code></td><td>Total elapsed time divided by the number of epochs that actually ran.</td></tr>
+<tr><td class="mono"><code>def history_as_dicts(self) -&gt; list[dict[str, Any]]:</code></td><td>The whole per-epoch history as a list of plain records, ready for JSON.</td></tr>
+</table>
+<p class="zonehead">zone 3 · the small pieces</p>
+<p class="zonesub">Three standalone functions the loop uses, each testable without training anything.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def seed_everything(seed: int) -&gt; None:</code></td><td>Fixes Python's, NumPy's and PyTorch's random sources at once. Called before the network is even constructed — weights drawn afterwards would come from whatever state the process happened to be in.</td></tr>
+<tr><td class="mono"><code>def compute_pos_weight(labels: torch.Tensor) -&gt; float:</code></td><td>Ordinary examples divided by attack examples, from whatever labels it is handed; making sure those are the <em>training</em> labels is the caller's responsibility, and nothing would complain if they weren't.</td></tr>
+<tr><td class="mono"><code>@torch.no_grad() def predict(model, view, batch_size, device) -&gt; torch.Tensor:</code></td><td>Scores every example of an input source in order, in batches, with gradient tracking off, and returns unsquashed scores on the CPU.</td></tr>
+</table>
+<p class="zonehead">zone 4 · the loop</p>
+<p class="zonesub">The function everything else in the package exists to serve, and the one-off guard it prints after the first epoch.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def train_model(model, train_view, train_labels, val_view, val_labels, config, *, val_scenarios=None, pos_weight=None) -&gt; TrainingResult:</code></td><td>Weighted loss, Adam, a full validation pass every epoch, and a stop after seven epochs without improvement. It keeps the best-<em>ranking</em> epoch rather than the last, because validation loss is dominated by the rows nobody cares about.</td></tr>
+<tr><td class="mono"><code>def _log_first_epoch_guards(stats, record, baseline) -&gt; None:</code></td><td>After the very first epoch — while a restart is still cheap — prints whether the predictions have any spread at all and whether they already beat guessing.</td></tr>
+</table>
+
+<h2 id="runner-py"><span class="n">6</span><code>modeling/runner.py</code> <span class="count">6 functions · 406 lines</span></h2>
+<p>Everything around the training loop that both models share: three seeds, one device, checkpoints that carry their own cutoff and scaling, average-and-spread reporting, and the curves. This file exists so Stage 6 could add an architecture and copy nothing.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">SeedRun.as_dict</td><td>Flattens one seed's entire run — timings, row and attack counts, whether the collapse warning fired, the validation result, the per-epoch history — into the JSON block the results file is assembled from.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> save_checkpoint</td><td>Writes the weights, the cutoff validation chose, and the input scaling into a single file.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> run_experiment</td><td>For each seed: prepare the data, fix the randomness <em>before</em> the network exists, train, save; then aggregate and write the metrics and curves.</td></tr>
+<tr><td class="mono">summarise</td><td>Collects the per-seed results into averages and spreads.</td></tr>
+<tr><td class="mono">log_summary</td><td>Prints the end-of-run block that goes straight into the report, and warns if any seed collapsed or scored implausibly well.</td></tr>
+<tr><td class="mono">plot_curves</td><td>Draws losses and ranking quality per epoch, one colour per seed, with the coin-flip baseline dotted on the same axes.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · one seed's record</p>
+<p class="zonesub">A container holding one run whole, so the report can be rebuilt without retraining.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def as_dict(self) -&gt; dict[str, Any]:</code></td><td>Flattens one seed's entire run — timings, row and attack counts, whether the collapse warning fired, the validation result, the per-epoch history — into the JSON block the results file is assembled from.</td></tr>
+</table>
+<p class="zonehead">zone 2 · persistence</p>
+<p class="zonesub">One function, and the argument for why all three things belong in the same file.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def save_checkpoint(path, model, run, data, config, input_kind) -&gt; None:</code></td><td>Writes the weights, the cutoff validation chose, and the input scaling into a single file. A model whose cutoff lives in a notebook and whose scaling lives in a dataframe is not a system; it is a matrix.</td></tr>
+</table>
+<p class="zonehead">zone 3 · the loop over seeds</p>
+<p class="zonesub">The generic experiment. It takes the architecture and the input view as arguments, which is the whole reason Stage 6 needed no edits anywhere else.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def run_experiment(*, model_name, model_factory, view_selector, input_kind, seeds=SEEDS, sample=False, device="cpu", use_pos_weight=True, tag="", max_epochs=None) -&gt; dict[str, Any]:</code></td><td>For each seed: prepare the data, fix the randomness <em>before</em> the network exists, train, save; then aggregate and write the metrics and curves. Variant runs get tagged filenames so a smoke test cannot overwrite a real result.</td></tr>
+</table>
+<p class="zonehead">zone 4 · reporting</p>
+<p class="zonesub">Three functions that turn a list of finished runs into a JSON file, a block of log output, and a figure.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def summarise(runs, *, model_name, sample, tag, device, use_pos_weight) -&gt; dict[str, Any]:</code></td><td>Collects the per-seed results into averages and spreads. Per-attack-type hits are also pooled as raw counts, because averaging three percentages computed on two-to-four rows each is not a number to quote.</td></tr>
+<tr><td class="mono"><code>def log_summary(summary: dict[str, Any]) -&gt; None:</code></td><td>Prints the end-of-run block that goes straight into the report, and warns if any seed collapsed or scored implausibly well.</td></tr>
+<tr><td class="mono"><code>def plot_curves(runs: Sequence[SeedRun], path: Path, model_name: str) -&gt; bool:</code></td><td>Draws losses and ranking quality per epoch, one colour per seed, with the coin-flip baseline dotted on the same axes. Returns false rather than raising if the plotting library is missing.</td></tr>
+</table>
+
+<h2 id="run_model_a-py"><span class="n">7</span><code>modeling/run_model_a.py</code> <span class="count">2 functions · 140 lines</span></h2>
+<p>The command-line entry point for the control model. Everything substantive lives in the shared modules; this file is wiring, argument parsing, and a non-zero exit code when a result looks too good to be true.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">build_parser</td><td>Defines five switches — smoke-test data, which backend, the plain-loss ablation, which seeds, an epoch override — and one quiet flag.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> main</td><td>Resolves the backend, logs the setup, then hands the one-day architecture and the one-day input view to the shared experiment.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the command line</p>
+<p class="zonesub">One function defining the switches, with the warnings written into the help text where someone running <code>--help</code> will actually see them.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def build_parser() -&gt; argparse.ArgumentParser:</code></td><td>Defines five switches — smoke-test data, which backend, the plain-loss ablation, which seeds, an epoch override — and one quiet flag. The help text carries the warning that both models must use the same backend.</td></tr>
+</table>
+<p class="zonehead">zone 2 · the wiring</p>
+<p class="zonesub">One function, and the two expressions in it that are the entire difference between this file and its Model B twin.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def main(argv: list[str] | None = None) -&gt; int:</code></td><td>Resolves the backend, logs the setup, then hands the one-day architecture and the one-day input view to the shared experiment. Exits with code 3 if any seed scored high enough to suspect a leak.</td></tr>
+</table>
+
+<h2 id="run_model_b-py"><span class="n">8</span><code>modeling/run_model_b.py</code> <span class="count">3 functions · 197 lines</span></h2>
+<p>The same entry point for the experimental model. It differs from <code>run_model_a.py</code> in exactly two expressions plus one extra warning function — which is itself the evidence that Stage 6 changed nothing shared.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">build_parser</td><td>Identical switches to Model A's, differing only in wording — notably the warning that raising the epoch cap for this model alone would turn the training budget into a second variable.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> main</td><td>Identical to Model A's wiring apart from the architecture and the twenty-eight-day view.</td></tr>
+<tr><td class="mono">_log_patience_watch</td><td>Warns when a seed's best epoch was its last, meaning training was cut off while still improving.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the command line</p>
+<p class="zonesub">The same switches as Model A's, with one piece of help text that exists to stop a specific mistake.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def build_parser() -&gt; argparse.ArgumentParser:</code></td><td>Identical switches to Model A's, differing only in wording — notably the warning that raising the epoch cap for this model alone would turn the training budget into a second variable.</td></tr>
+</table>
+<p class="zonehead">zone 2 · the wiring and its tripwire</p>
+<p class="zonesub">One function to launch the run, and one to complain afterwards if the run was cut short in the direction that would flatter the hypothesis.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def main(argv: list[str] | None = None) -&gt; int:</code></td><td>Identical to Model A's wiring apart from the architecture and the twenty-eight-day view. It also prints the three class-weight values a reader should check before believing any result.</td></tr>
+<tr><td class="mono"><code>def _log_patience_watch(summary: dict[str, Any]) -&gt; None:</code></td><td>Warns when a seed's best epoch was its last, meaning training was cut off while still improving. That bias runs against the very hypothesis being tested, so it is the one worth being loud about.</td></tr>
+</table>
+
+<h2 id="test_modeling-py"><span class="n">9</span><code>modeling/test_modeling.py</code> <span class="count">33 functions · 574 lines</span></h2>
+<p>Tests for the Stage 5 machinery, chosen by one criterion: cover the failures that are <em>silent</em>. A test that a function returns a float is not worth its line; a test that the scaling never saw a validation row is the difference between a result and an artefact.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">make_frame</td><td>Builds a gap-free fake table with the same shape as the real one, with attack days visibly raised so a model has something real to find.</td></tr>
+<tr><td class="mono">make_splits</td><td>Puts the last few fake people in validation and the rest in training, with an empty test list that is present precisely so a test can prove it is never read.</td></tr>
+<tr><td class="mono">test_first_27_days_are_never_prediction_targets</td><td>No day inside a person's first twenty-seven may be judged, the twenty-eighth must be, and the total has to match the arithmetic.</td></tr>
+<tr><td class="mono">test_row_mask_loses_no_positives</td><td>The warm-up period must throw away no attack days at all; on the real data the earliest attack opens about 160 days into every record.</td></tr>
+<tr><td class="mono">test_mask_applies_within_user_not_across_the_table</td><td>Every person gets their own warm-up, rather than one warm-up shared by the whole table — which is what a naive row count would produce.</td></tr>
+<tr><td class="mono">test_non_dense_calendar_is_refused</td><td>Deletes one row to create a date gap and demands an error, because a gap would silently stretch twenty-eight rows across more than twenty-eight days.</td></tr>
+<tr><td class="mono">test_history_rows_stay_available_to_model_b</td><td>The warm-up rows are still readable as history even though they are never judged, and the last day of each window is confirmed to be the day being judged.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_standardiser_ignores_validation_rows</td><td>Makes the validation people fifty times larger and shifted by a thousand.</td></tr>
+<tr><td class="mono">test_standardiser_is_fitted_on_target_rows_only</td><td>Sets every warm-up row to an extreme value and requires the statistics to ignore them — a scale describing rows no model ever sees is the wrong scale.</td></tr>
+<tr><td class="mono">test_standardised_train_targets_have_zero_mean_unit_std</td><td>After rescaling, the training days really are centred on zero and one unit wide.</td></tr>
+<tr><td class="mono">test_constant_feature_is_left_at_zero_not_divided_by_a_floor</td><td>A feature that never varies stays at exactly zero instead of having its rounding dust divided by a tiny floor and blown up to millions.</td></tr>
+<tr><td class="mono">test_clipping_bounds_extremes_and_leaves_ordinary_values_alone</td><td>716 becomes 10, −34.94 becomes −10, 0.4 stays 0.4, and exactly two rows are reported as touched.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_clipping_happens_before_standardising</td><td>Plants one enormous value and checks the rescaled column still comes out one unit wide — only true if the bound was applied first.</td></tr>
+<tr><td class="mono">test_pos_weight_is_train_only_and_moves_with_the_split</td><td>Changes which people are in training and demands the weight move with them, and differ from the whole table's ratio — if it didn't, it would be leaking the test set's class balance into the loss.</td></tr>
+<tr><td class="mono">test_compute_pos_weight_matches_the_definition</td><td>244 ordinary examples and one attack must produce exactly 244.</td></tr>
+<tr><td class="mono">test_training_without_positives_is_refused</td><td>Asking for the weight when training contains no attacks must raise, rather than return a meaningless number and train on it.</td></tr>
+<tr><td class="mono">test_model_a_returns_raw_logits</td><td>Feeds deliberately huge inputs and requires some output to land outside the 0-to-1 range, which a hidden squashing step would make impossible.</td></tr>
+<tr><td class="mono">test_model_a_is_small_on_purpose</td><td>Pins the parameter count to the arithmetic of an 18→32→1 network, as a tripwire against a future “improvement” that would memorise the 1,140 attack rows.</td></tr>
+<tr><td class="mono">_train_once</td><td>Runs a three-epoch training exactly the way the real orchestrator does — fixing the randomness <em>before</em> the network is constructed — and hands back the best weights.</td></tr>
+<tr><td class="mono">test_same_seed_twice_gives_identical_weights</td><td>Two runs of the same seed must match bit for bit, with zero tolerance.</td></tr>
+<tr><td class="mono">test_different_seeds_give_different_weights</td><td>And two different seeds must not — otherwise the seed isn't reaching the weight initialisation at all.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_no_user_appears_in_both_train_and_val_tensors</td><td>Checks the assembled tensors, not just the user lists.</td></tr>
+<tr><td class="mono">test_overlapping_splits_are_refused</td><td>Hand-builds an overlapping split and requires it to be rejected rather than quietly used.</td></tr>
+<tr><td class="mono">test_stage_5_never_builds_the_test_split</td><td>The held-out people appear nowhere in what preparation returns, and there is no attribute through which someone could reach them “just to peek”.</td></tr>
+<tr><td class="mono">test_real_splits_file_parses_if_present</td><td>If the sample split file exists in this checkout, confirms the reader handles the nested layout Stage 4 actually writes; skips quietly otherwise.</td></tr>
+<tr><td class="mono">_CollapsedModel.__init__</td><td>A stand-in with exactly one parameter, present only so the optimiser has something to hold on to.</td></tr>
+<tr><td class="mono">_CollapsedModel.forward</td><td>Returns the same very low score for every input, multiplied into that lone parameter by zero so gradients still flow and the run looks normal.</td></tr>
+<tr><td class="mono">test_collapse_guard_fires_on_a_degenerate_model</td><td>Fifty thousand identical predictions must be recognised for what they are.</td></tr>
+<tr><td class="mono">test_collapse_guard_stays_quiet_on_a_healthy_spread</td><td>Fifty thousand varied predictions must not trip it — a guard that cries wolf is a guard that has been switched off.</td></tr>
+<tr><td class="mono">test_collapse_is_reported_through_a_real_training_run</td><td>End to end: the broken stand-in trained through the real loop must both set the flag and emit the warning into the log.</td></tr>
+<tr><td class="mono">test_threshold_sweep_does_not_default_to_half</td><td>With every score clustered near 0.001, the chosen cutoff must land far below 0.5 and separate the two classes perfectly.</td></tr>
+<tr><td class="mono">test_precision_at_k_reads_the_top_of_the_ranking</td><td>Confirms the queue metric looks only at the highest-scoring rows, and that widening the queue dilutes it as expected.</td></tr>
+<tr><td class="mono">test_end_to_end_run_beats_the_random_baseline</td><td>The whole sequence in miniature — prepare, train, choose a cutoff, score — and the result must beat guessing without tripping the collapse guard.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the synthetic table</p>
+<p class="zonesub">Two builders. Everything in the file runs on fake data, so the suite takes about a second and needs no copy of the real dataset present.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def make_frame(n_users=12, days=DAYS_PER_USER, positives_from_day=60, scale=1.0, offset=0.0, prefix="U") -&gt; pd.DataFrame:</code></td><td>Builds a gap-free fake table with the same shape as the real one, with attack days visibly raised so a model has something real to find. The scale and offset knobs let one test give validation wildly different values on purpose.</td></tr>
+<tr><td class="mono"><code>def make_splits(frame: pd.DataFrame, n_val: int = 4) -&gt; dict[str, list[str]]:</code></td><td>Puts the last few fake people in validation and the rest in training, with an empty test list that is present precisely so a test can prove it is never read.</td></tr>
+</table>
+<p class="zonehead">zone 2 · which rows may be judged</p>
+<p class="zonesub">Five tests on the rule that costs about 27,000 warm-up rows and buys the comparison its validity.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_first_27_days_are_never_prediction_targets() -&gt; None:</code></td><td>No day inside a person's first twenty-seven may be judged, the twenty-eighth must be, and the total has to match the arithmetic.</td></tr>
+<tr><td class="mono"><code>def test_row_mask_loses_no_positives() -&gt; None:</code></td><td>The warm-up period must throw away no attack days at all; on the real data the earliest attack opens about 160 days into every record.</td></tr>
+<tr><td class="mono"><code>def test_mask_applies_within_user_not_across_the_table() -&gt; None:</code></td><td>Every person gets their own warm-up, rather than one warm-up shared by the whole table — which is what a naive row count would produce.</td></tr>
+<tr><td class="mono"><code>def test_non_dense_calendar_is_refused() -&gt; None:</code></td><td>Deletes one row to create a date gap and demands an error, because a gap would silently stretch twenty-eight rows across more than twenty-eight days.</td></tr>
+<tr><td class="mono"><code>def test_history_rows_stay_available_to_model_b() -&gt; None:</code></td><td>The warm-up rows are still readable as history even though they are never judged, and the last day of each window is confirmed to be the day being judged.</td></tr>
+</table>
+<p class="zonehead">zone 3 · the scaling is measured on training rows only</p>
+<p class="zonesub">Four tests, each built so that the leak they are looking for would be unmissable if it happened.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_standardiser_ignores_validation_rows() -&gt; None:</code></td><td>Makes the validation people fifty times larger and shifted by a thousand. If a single one of their rows touched the measurement, the statistics would move enormously; they must not move at all.</td></tr>
+<tr><td class="mono"><code>def test_standardiser_is_fitted_on_target_rows_only() -&gt; None:</code></td><td>Sets every warm-up row to an extreme value and requires the statistics to ignore them — a scale describing rows no model ever sees is the wrong scale.</td></tr>
+<tr><td class="mono"><code>def test_standardised_train_targets_have_zero_mean_unit_std() -&gt; None:</code></td><td>After rescaling, the training days really are centred on zero and one unit wide.</td></tr>
+<tr><td class="mono"><code>def test_constant_feature_is_left_at_zero_not_divided_by_a_floor() -&gt; None:</code></td><td>A feature that never varies stays at exactly zero instead of having its rounding dust divided by a tiny floor and blown up to millions.</td></tr>
+</table>
+<p class="zonehead">zone 4 · clipping, and its position in the order</p>
+<p class="zonesub">Two tests: one that the bound is applied correctly, one that it is applied at the right moment.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_clipping_bounds_extremes_and_leaves_ordinary_values_alone() -&gt; None:</code></td><td>716 becomes 10, −34.94 becomes −10, 0.4 stays 0.4, and exactly two rows are reported as touched.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_clipping_happens_before_standardising() -&gt; None:</code></td><td>Plants one enormous value and checks the rescaled column still comes out one unit wide — only true if the bound was applied first. Swapping the two steps raises nothing and produces a wrong answer.</td></tr>
+</table>
+<p class="zonehead">zone 5 · the class weight</p>
+<p class="zonesub">Three tests on the multiplier that stops the model from answering “benign” to everything.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_pos_weight_is_train_only_and_moves_with_the_split() -&gt; None:</code></td><td>Changes which people are in training and demands the weight move with them, and differ from the whole table's ratio — if it didn't, it would be leaking the test set's class balance into the loss.</td></tr>
+<tr><td class="mono"><code>def test_compute_pos_weight_matches_the_definition() -&gt; None:</code></td><td>244 ordinary examples and one attack must produce exactly 244.</td></tr>
+<tr><td class="mono"><code>def test_training_without_positives_is_refused() -&gt; None:</code></td><td>Asking for the weight when training contains no attacks must raise, rather than return a meaningless number and train on it.</td></tr>
+</table>
+<p class="zonehead">zone 6 · the architecture</p>
+<p class="zonesub">Two tests on Model A: that it does not squash its own output, and that it stays small.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_model_a_returns_raw_logits() -&gt; None:</code></td><td>Feeds deliberately huge inputs and requires some output to land outside the 0-to-1 range, which a hidden squashing step would make impossible.</td></tr>
+<tr><td class="mono"><code>def test_model_a_is_small_on_purpose() -&gt; None:</code></td><td>Pins the parameter count to the arithmetic of an 18→32→1 network, as a tripwire against a future “improvement” that would memorise the 1,140 attack rows.</td></tr>
+</table>
+<p class="zonehead">zone 7 · determinism</p>
+<p class="zonesub">One helper and two tests. Without these, “average across three seeds” measures the process as much as the split.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def _train_once(frame: pd.DataFrame, splits: dict, seed: int) -&gt; dict:</code></td><td>Runs a three-epoch training exactly the way the real orchestrator does — fixing the randomness <em>before</em> the network is constructed — and hands back the best weights.</td></tr>
+<tr><td class="mono"><code>def test_same_seed_twice_gives_identical_weights() -&gt; None:</code></td><td>Two runs of the same seed must match bit for bit, with zero tolerance.</td></tr>
+<tr><td class="mono"><code>def test_different_seeds_give_different_weights() -&gt; None:</code></td><td>And two different seeds must not — otherwise the seed isn't reaching the weight initialisation at all.</td></tr>
+</table>
+<p class="zonehead">zone 8 · nobody is on both sides</p>
+<p class="zonesub">Four tests on split integrity, including one that the held-out group is not merely unused but unreachable.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_no_user_appears_in_both_train_and_val_tensors() -&gt; None:</code></td><td>Checks the assembled tensors, not just the user lists. Training on a person's Monday and scoring their Tuesday measures memorisation — and it looks excellent.</td></tr>
+<tr><td class="mono"><code>def test_overlapping_splits_are_refused() -&gt; None:</code></td><td>Hand-builds an overlapping split and requires it to be rejected rather than quietly used.</td></tr>
+<tr><td class="mono"><code>def test_stage_5_never_builds_the_test_split() -&gt; None:</code></td><td>The held-out people appear nowhere in what preparation returns, and there is no attribute through which someone could reach them “just to peek”.</td></tr>
+<tr><td class="mono"><code>def test_real_splits_file_parses_if_present() -&gt; None:</code></td><td>If the sample split file exists in this checkout, confirms the reader handles the nested layout Stage 4 actually writes; skips quietly otherwise.</td></tr>
+</table>
+<p class="zonehead">zone 9 · the collapse detector fires</p>
+<p class="zonesub">A deliberately broken stand-in model and four tests — the guard has to catch a real failure, stay quiet on a healthy one, and work end to end.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __init__(self) -&gt; None:</code></td><td>A stand-in with exactly one parameter, present only so the optimiser has something to hold on to.</td></tr>
+<tr><td class="mono"><code>def forward(self, x: torch.Tensor) -&gt; torch.Tensor:</code></td><td>Returns the same very low score for every input, multiplied into that lone parameter by zero so gradients still flow and the run looks normal.</td></tr>
+<tr><td class="mono"><code>def test_collapse_guard_fires_on_a_degenerate_model() -&gt; None:</code></td><td>Fifty thousand identical predictions must be recognised for what they are.</td></tr>
+<tr><td class="mono"><code>def test_collapse_guard_stays_quiet_on_a_healthy_spread() -&gt; None:</code></td><td>Fifty thousand varied predictions must not trip it — a guard that cries wolf is a guard that has been switched off.</td></tr>
+<tr><td class="mono"><code>def test_collapse_is_reported_through_a_real_training_run(caplog) -&gt; None:</code></td><td>End to end: the broken stand-in trained through the real loop must both set the flag and emit the warning into the log.</td></tr>
+</table>
+<p class="zonehead">zone 10 · metric behaviour worth pinning</p>
+<p class="zonesub">Three tests that fix behaviours the rest of the project quietly depends on.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_threshold_sweep_does_not_default_to_half() -&gt; None:</code></td><td>With every score clustered near 0.001, the chosen cutoff must land far below 0.5 and separate the two classes perfectly.</td></tr>
+<tr><td class="mono"><code>def test_precision_at_k_reads_the_top_of_the_ranking() -&gt; None:</code></td><td>Confirms the queue metric looks only at the highest-scoring rows, and that widening the queue dilutes it as expected.</td></tr>
+<tr><td class="mono"><code>def test_end_to_end_run_beats_the_random_baseline(caplog) -&gt; None:</code></td><td>The whole sequence in miniature — prepare, train, choose a cutoff, score — and the result must beat guessing without tripping the collapse guard.</td></tr>
+</table>
+
+<h2 id="test_model_b-py"><span class="n">10</span><code>modeling/test_model_b.py</code> <span class="count">26 functions · 507 lines</span></h2>
+<p>Tests for Stage 6. Model B added one class and one entry point, so it added exactly one new family of silent failures: everything to do with the second axis of the input. Nearly half this file is about which axis is being convolved.</p>
+<h3>Scan table</h3>
+<table class="scan"><tr><th class="mono">function</th><th>one line</th></tr>
+<tr><td class="mono">_FeatureAxisModel.__init__</td><td>Builds Model B's stack with the two axes deliberately swapped — the bug, written out in full rather than described.</td></tr>
+<tr><td class="mono">_FeatureAxisModel.forward</td><td>Flips the input so days act as separate channels and features become the sequence, then runs the same stack — producing perfectly plausible numbers from a meaningless operation.</td></tr>
+<tr><td class="mono">_bump</td><td>Makes an input that is flat everywhere except a four-day block raised to 1, placed clear of the window edges so the padding never truncates part of it.</td></tr>
+<tr><td class="mono">_shift_response</td><td>Measures how far a model's output moves when that block slides eight days later in the window.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_model_convolves_across_days_not_across_features</td><td>The same pattern eight days later must score the same, across eight random initialisations.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_the_shift_test_would_catch_a_feature_axis_convolution</td><td>Runs the identical check against the broken model and requires it to fail loudly — proof the test above is not passing for free.</td></tr>
+<tr><td class="mono">test_the_model_can_tell_a_rising_trend_from_a_falling_one</td><td>A climbing sequence and a subsiding one must score differently, because the slow-drift attack type is exactly that distinction.</td></tr>
+<tr><td class="mono">test_a_transposed_batch_is_refused_rather_than_silently_convolved</td><td>Feeding a batch in the wrong orientation must raise, because the convolution itself would happily accept it and return numbers.</td></tr>
+<tr><td class="mono">test_channels_are_features_and_length_is_days</td><td>Reads the wiring directly: eighteen input channels, the expected skip setting, and a time axis that stays twenty-eight long through both layers.</td></tr>
+<tr><td class="mono">test_receptive_field_reaches_seven_days</td><td>Skipping every other day in the second layer widens the reach from five days to seven at exactly the same parameter count — asserted both ways.</td></tr>
+<tr><td class="mono">test_pooling_is_over_time_so_a_sustained_shift_moves_the_output</td><td>Lifting every day of the window must move the score, confirming the averaging step runs over days and actually reaches the output.</td></tr>
+<tr><td class="mono">_coded_frame</td><td>Builds a table whose first two features literally encode which person and which day each row is, with values small enough to survive the clipping step untouched.</td></tr>
+<tr><td class="mono">_decode</td><td>Reverses the rescaling on one feature channel, so those codes can be read back out of a batch the model would have received.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_a_window_holds_exactly_the_28_days_ending_at_its_target</td><td>Decodes the day codes and checks each window is twenty-eight consecutive days ending on the day being judged — not the day before it, which would be invisible and a far harder problem than the one being reported.</td></tr>
+<tr><td class="mono">test_a_window_never_reaches_into_the_previous_users_rows</td><td>Every row in every window carries the same person's code, and it is the code of the person being judged — a window that ran off the front would splice two people's histories together and still train fine.</td></tr>
+<tr><td class="mono">test_the_mask_and_the_window_length_cannot_disagree_silently</td><td>Forces a judged day into the warm-up and requires a refusal, since the slicing would otherwise wrap around to the end of the array rather than raise.</td></tr>
+<tr class="hi"><td class="mono"><span class="st" title="one of the ones that matter">★</span> test_both_models_see_the_same_target_rows_and_the_same_labels</td><td>Same count, same order, and the last day of every window is exactly the row the one-day model scores.</td></tr>
+<tr><td class="mono">test_pos_weight_is_unchanged_by_which_model_reads_the_data</td><td>The class weight comes from the prepared labels rather than from the input view, so it cannot differ between the two models — and it must differ from the whole table's ratio.</td></tr>
+<tr><td class="mono">test_model_b_returns_raw_logits</td><td>Huge inputs must yield some output outside the 0-to-1 range, and no squashing layer may appear anywhere in the module tree.</td></tr>
+<tr><td class="mono">_train_model_b_once</td><td>A three-epoch run mirroring the real orchestrator, seeding order included, returning the best weights.</td></tr>
+<tr><td class="mono">test_same_seed_twice_gives_identical_model_b_weights</td><td>Two runs of one seed must match exactly, with zero tolerance.</td></tr>
+<tr><td class="mono">test_different_seeds_give_different_model_b_weights</td><td>Two different seeds must produce different filters.</td></tr>
+<tr><td class="mono">test_shape_contract</td><td>Batches of 1, 7 and 512 all come back as a flat row of scores.</td></tr>
+<tr><td class="mono">test_model_b_is_small_on_purpose</td><td>Recomputes 4,897 from the layer sizes and pins it, as a tripwire against a deeper version that would win the comparison by memorising rather than by seeing more days.</td></tr>
+<tr><td class="mono">test_a_receptive_field_longer_than_the_window_is_refused</td><td>A second layer that could only ever see padding, and an even filter width that would make the padding lopsided, must both raise at construction.</td></tr>
+<tr><td class="mono">test_model_b_trains_through_the_unmodified_loop_and_beats_random</td><td>The CNN and the window view go through the shared loop with no edits and beat guessing.</td></tr>
+</table>
+<h3>In file order, by zone</h3>
+<p class="zonehead">zone 1 · the time axis is the axis being convolved</p>
+<p class="zonesub">The most important section in the file, and the only one that ships a deliberately broken model so the test can be proved to catch something.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def __init__(self) -&gt; None:</code></td><td>Builds Model B's stack with the two axes deliberately swapped — the bug, written out in full rather than described.</td></tr>
+<tr><td class="mono"><code>def forward(self, x: torch.Tensor) -&gt; torch.Tensor:</code></td><td>Flips the input so days act as separate channels and features become the sequence, then runs the same stack — producing perfectly plausible numbers from a meaningless operation.</td></tr>
+<tr><td class="mono"><code>def _bump(start: int, width: int = 4) -&gt; torch.Tensor:</code></td><td>Makes an input that is flat everywhere except a four-day block raised to 1, placed clear of the window edges so the padding never truncates part of it.</td></tr>
+<tr><td class="mono"><code>def _shift_response(model: torch.nn.Module) -&gt; float:</code></td><td>Measures how far a model's output moves when that block slides eight days later in the window.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_model_convolves_across_days_not_across_features() -&gt; None:</code></td><td>The same pattern eight days later must score the same, across eight random initialisations. Only a genuine time-axis convolution has that property; one running across features hands the pattern to entirely different filters.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_the_shift_test_would_catch_a_feature_axis_convolution() -&gt; None:</code></td><td>Runs the identical check against the broken model and requires it to fail loudly — proof the test above is not passing for free. The obvious rising-versus-falling version doesn't discriminate at all.</td></tr>
+<tr><td class="mono"><code>def test_the_model_can_tell_a_rising_trend_from_a_falling_one() -&gt; None:</code></td><td>A climbing sequence and a subsiding one must score differently, because the slow-drift attack type is exactly that distinction.</td></tr>
+<tr><td class="mono"><code>def test_a_transposed_batch_is_refused_rather_than_silently_convolved() -&gt; None:</code></td><td>Feeding a batch in the wrong orientation must raise, because the convolution itself would happily accept it and return numbers.</td></tr>
+<tr><td class="mono"><code>def test_channels_are_features_and_length_is_days() -&gt; None:</code></td><td>Reads the wiring directly: eighteen input channels, the expected skip setting, and a time axis that stays twenty-eight long through both layers.</td></tr>
+<tr><td class="mono"><code>def test_receptive_field_reaches_seven_days() -&gt; None:</code></td><td>Skipping every other day in the second layer widens the reach from five days to seven at exactly the same parameter count — asserted both ways.</td></tr>
+<tr><td class="mono"><code>def test_pooling_is_over_time_so_a_sustained_shift_moves_the_output() -&gt; None:</code></td><td>Lifting every day of the window must move the score, confirming the averaging step runs over days and actually reaches the output.</td></tr>
+</table>
+<p class="zonehead">zone 2 · what is actually inside a window</p>
+<p class="zonesub">A fake table whose values spell out where each row came from, so a gathered batch can be checked row by row rather than only by shape.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def _coded_frame(n_users: int = 10, days: int = 120) -&gt; pd.DataFrame:</code></td><td>Builds a table whose first two features literally encode which person and which day each row is, with values small enough to survive the clipping step untouched.</td></tr>
+<tr><td class="mono"><code>def _decode(windows, feature, mean, std) -&gt; np.ndarray:</code></td><td>Reverses the rescaling on one feature channel, so those codes can be read back out of a batch the model would have received.</td></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_a_window_holds_exactly_the_28_days_ending_at_its_target() -&gt; None:</code></td><td>Decodes the day codes and checks each window is twenty-eight consecutive days ending on the day being judged — not the day before it, which would be invisible and a far harder problem than the one being reported.</td></tr>
+<tr><td class="mono"><code>def test_a_window_never_reaches_into_the_previous_users_rows() -&gt; None:</code></td><td>Every row in every window carries the same person's code, and it is the code of the person being judged — a window that ran off the front would splice two people's histories together and still train fine.</td></tr>
+<tr><td class="mono"><code>def test_the_mask_and_the_window_length_cannot_disagree_silently() -&gt; None:</code></td><td>Forces a judged day into the warm-up and requires a refusal, since the slicing would otherwise wrap around to the end of the array rather than raise.</td></tr>
+</table>
+<p class="zonehead">zone 3 · both models are scored on identical rows</p>
+<p class="zonesub">Two tests on the property without which the entire comparison is void.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><span class="st" title="one of the ones that matter">★</span> <code>def test_both_models_see_the_same_target_rows_and_the_same_labels() -&gt; None:</code></td><td>Same count, same order, and the last day of every window is exactly the row the one-day model scores. A difference of a few thousand warm-up rows would shift the headline figure by several percent, purely mechanically.</td></tr>
+<tr><td class="mono"><code>def test_pos_weight_is_unchanged_by_which_model_reads_the_data() -&gt; None:</code></td><td>The class weight comes from the prepared labels rather than from the input view, so it cannot differ between the two models — and it must differ from the whole table's ratio.</td></tr>
+</table>
+<p class="zonehead">zone 4 · no squashing</p>
+<p class="zonesub">One test, the Model B twin of the Model A version.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_model_b_returns_raw_logits() -&gt; None:</code></td><td>Huge inputs must yield some output outside the 0-to-1 range, and no squashing layer may appear anywhere in the module tree.</td></tr>
+</table>
+<p class="zonehead">zone 5 · determinism</p>
+<p class="zonesub">The same helper-plus-two-tests shape as the Stage 5 suite, with the CNN and the window view substituted in.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def _train_model_b_once(frame: pd.DataFrame, splits: dict, seed: int) -&gt; dict:</code></td><td>A three-epoch run mirroring the real orchestrator, seeding order included, returning the best weights.</td></tr>
+<tr><td class="mono"><code>def test_same_seed_twice_gives_identical_model_b_weights() -&gt; None:</code></td><td>Two runs of one seed must match exactly, with zero tolerance.</td></tr>
+<tr><td class="mono"><code>def test_different_seeds_give_different_model_b_weights() -&gt; None:</code></td><td>Two different seeds must produce different filters.</td></tr>
+</table>
+<p class="zonehead">zone 6 · shape and size contract</p>
+<p class="zonesub">Three tests pinning the input and output shapes, the parameter budget, and the configurations that must be refused at construction.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_shape_contract() -&gt; None:</code></td><td>Batches of 1, 7 and 512 all come back as a flat row of scores. An extra trailing dimension would make the loss broadcast into a square and train happily on something meaningless.</td></tr>
+<tr><td class="mono"><code>def test_model_b_is_small_on_purpose() -&gt; None:</code></td><td>Recomputes 4,897 from the layer sizes and pins it, as a tripwire against a deeper version that would win the comparison by memorising rather than by seeing more days.</td></tr>
+<tr><td class="mono"><code>def test_a_receptive_field_longer_than_the_window_is_refused() -&gt; None:</code></td><td>A second layer that could only ever see padding, and an even filter width that would make the padding lopsided, must both raise at construction.</td></tr>
+</table>
+<p class="zonehead">zone 7 · end to end</p>
+<p class="zonesub">One test, and it is Stage 6's whole rule expressed as an assertion.</p>
+<table class="fntable"><tr><th>signature</th><th>what it does</th></tr>
+<tr><td class="mono"><code>def test_model_b_trains_through_the_unmodified_loop_and_beats_random() -&gt; None:</code></td><td>The CNN and the window view go through the shared loop with no edits and beat guessing. If this had needed a change in <code>train.py</code>, the two models were not trained identically.</td></tr>
+</table>
+
+<h2><span class="n">·</span>Where a docstring and its body disagree</h2>
+<p>Six places where the code does not do quite what the comment above it says. None
+of them is a bug that changes a result — but each is a sentence that would be wrong
+if read out loud.</p>
+<table>
+<tr><th>where</th><th>the disagreement</th></tr>
+<tr><td class="mono">data.SplitData.window_features</td><td>Its docstring says
+“Stage 6 calls this and Stage 5 does not.” <b>Nothing calls it.</b> Stage 6 uses
+<code>window_view</code>, which slices lazily; this eager version is dead code.</td></tr>
+<tr><td class="mono">metrics.sweep_threshold</td><td>The docstring's whole argument is
+“never assume 0.5” — and the no-attack-days branch returns exactly 0.5. Harmless,
+because that branch only fires on a degenerate split, but it is the one value the
+docstring names as certainly wrong.</td></tr>
+<tr><td class="mono">runner.save_checkpoint</td><td>Records <code>window_days</code>
+as the config constant 28 whenever the input kind is <code>"window"</code>, regardless
+of the window length actually used. <code>window_view(days=7)</code> is legal and would
+be saved as 28.</td></tr>
+<tr><td class="mono">data.PointView.input_shape<br>data.WindowView.input_shape</td>
+<td>Both exist, both are documented, neither is called anywhere in the project.
+Same for the constant <code>MODEL_A_CONTEXT_DAYS</code> at the top of the file.</td></tr>
+<tr><td class="mono">metrics.aggregate</td><td>Typed as taking
+<code>list[float]</code>, but the body filters out <code>None</code> — so the real
+input type is <code>list[float | None]</code>, and callers rely on that.</td></tr>
+<tr><td class="mono">models.ModelA / ModelB</td><td>Both take a dropout rate, and
+<code>config.DROPOUT</code> is <code>0.0</code>. Model A therefore adds no dropout
+layer at all and Model B installs a pass-through, so any discussion of dropout in this
+package describes a switch that is off.</td></tr>
+</table>
+<div class="note"><b>Also unused, from a clean static check:</b>
+<code>BENIGN_SCENARIO</code> is imported in <code>metrics.py</code> and never used;
+<code>numpy</code> is imported in <code>runner.py</code> and never used;
+<code>dataclasses.field</code> is imported in <code>train.py</code> and never used.</div>
+
+
+<h2><span class="n">·</span>The five functions to actually remember</h2>
+<p>Not the five most complex. The five where, if you got them wrong, the number at the
+end of the project would still look completely reasonable.</p>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b><code>data.target_mask</code></b>
+    <p>Decides which days either model is allowed to be scored on: a person's
+    twenty-eighth day onward. It is the only thing making the two models comparable —
+    the twenty-eight-day model physically cannot score the earlier days, and those
+    early days are warm-up rows where every feature is zero, the easiest negatives in
+    the table. Let the one-day model keep them and it hands the other model about 6% of
+    the headline metric for free, with no error and no warning.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b><code>data.prepare</code></b>
+    <p>Performs five steps in one fixed order — clip, mark judgeable days, split by
+    person, measure the scaling on training rows only, apply it everywhere. Swap any
+    two of them and you get a number rather than an exception: clipping after rescaling
+    divides by a spread the outlier inflated; measuring before the split leaks
+    validation statistics into training. This function is the argument that none of
+    that happened.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b><code>data.WindowView.gather</code></b>
+    <p>Where the twenty-eight-day input is actually built, one batch at a time, out of
+    the same array the one-day model reads. Two things ride on it: the window must end
+    on the day being judged rather than the day before, and it must never cross from
+    one person into the next. Both mistakes leave the tensor exactly the right shape,
+    train without complaint, and answer a different question than the one being
+    reported.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b><code>train.train_model</code></b>
+    <p>The loop, and it is deliberately incapable of knowing which model it is running —
+    that is the reason Stage 6 added a class and touched nothing else. Two decisions
+    inside it are the ones worth stating: the loss is weighted by the ordinary-to-attack
+    ratio, without which the cheapest way to reduce loss is to answer “benign” to
+    everything; and the epoch kept is the best-<em>ranking</em> one, not the last and not
+    the lowest-loss one, because validation loss is dominated by the 99.6% of days nobody
+    cares about.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <b><code>metrics.PredictionStats.collapsed</code></b>
+    <p>The one guard against the failure that produces no error at all. A model that has
+    given up and scores every day the same is 99.6% accurate, completely useless, and
+    produces a loss curve that looks healthy the whole way down. Counting how many
+    <em>different</em> scores come out is what catches it — thousands from a model that is
+    genuinely ranking, a handful from one that has collapsed.</p>
+  </div>
+</div>
+
+<div class="note good"><b>The honourable mention.</b>
+<code>test_the_shift_test_would_catch_a_feature_axis_convolution</code> — a test whose
+only job is to prove another test isn't passing for free. The obvious way to check that
+the CNN convolves over time rather than over features (rising ramp vs. falling ramp)
+turns out not to discriminate at all, and this file says so in code rather than in a
+comment.</div>
+
+<footer>
+  <p>Generated from <code>modeling/</code> as it stands: 3,531 lines across ten files,
+  141 functions and methods. Descriptions written from the function bodies, not the
+  docstrings; the six places those two disagree are listed above.</p>
+</footer>
+
+</div>
+</body>
+</html>

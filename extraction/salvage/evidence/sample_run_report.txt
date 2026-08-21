@@ -1,0 +1,78 @@
+------------------------------------------------------------------------
+InnerSight Stage 1 - daily counts
+------------------------------------------------------------------------
+Rows (user-days)   : 8,655
+Distinct users     : 30
+Distinct days      : 436
+Date range         : 2010-01-02 -> 2011-05-16
+
+Feature totals:
+   0 logon_count                            35,122
+   1 logoff_count                           32,831
+   2 after_hours_logons                     18,164
+   3 weekend_logons                            405
+   4 unique_pcs_used                        32,760
+   5 usb_connect_count                      13,201
+   6 usb_disconnect_count                   13,141
+   7 after_hours_usb                         8,209
+   8 file_count                             26,222
+   9 file_to_removable_count                26,222
+  10 unique_filenames                       26,222
+  11 email_sent_count                       89,577
+  12 email_to_external_count                45,142
+  13 large_attachment_count                      0
+  14 total_email_size                2,686,991,619
+  15 http_request_count                    967,805
+  16 job_search_visits                      14,977
+  17 cloud_upload_visits                       462
+
+Sanity checks:
+  ok    no negative counts                 none
+  ok    no NaNs anywhere                   none
+  ok    no duplicate (user, day)           0 duplicates
+  ok    logons approx logoffs, not equal   35,122 logons vs 32,831 logoffs
+  ok    job_search_visits non-zero         14,977 visits
+  ok    cloud_upload_visits non-zero       462 visits
+  ok    http_request_count non-zero        967,805 requests
+   -   file_to_removable_count == file_count: True (expected True on r4.2)
+   -   unique_filenames == file_count: True (expected True on r4.2)
+   -   large_attachment_count total: 0 (expected 0 on r4.2)
+------------------------------------------------------------------------
+Written to: /tmp/throwaway.parquet
+
+------------------------------------------------------------------------
+KPC0073 - 149 days
+------------------------------------------------------------------------
+       day  logon_count  after_hours_logons  unique_pcs_used  usb_connect_count  file_count  email_to_external_count  http_request_count  job_search_visits  cloud_upload_visits
+2010-01-04            1                   0                1                  0           0                        2                  95                  1                    0
+2010-01-05            1                   0                1                  0           0                        1                  95                  0                    0
+2010-01-06            1                   0                1                  0           0                        2                  95                  0                    0
+2010-01-07            1                   0                1                  0           0                        5                  95                  0                    0
+2010-01-08            1                   0                1                  0           0                        4                  95                  0                    0
+2010-01-11            1                   0                1                  0           0                        6                  95                  0                    0
+2010-01-12            1                   0                1                  0           0                        1                  95                  0                    0
+2010-01-13            1                   0                1                  0           0                        3                  95                  0                    0
+2010-01-14            1                   0                1                  0           0                        4                  95                  0                    0
+2010-01-15            1                   0                1                  0           0                        2                  95                  0                    0
+2010-01-18            1                   0                1                  0           0                        2                  95                  0                    0
+2010-01-19            1                   0                1                  0           0                        1                  95                  0                    0
+2010-01-20            1                   0                1                  0           0                        5                  95                  0                    0
+2010-01-21            1                   0                1                  0           0                        4                  95                  0                    0
+2010-01-22            1                   0                1                  0           0                        1                  95                  0                    0
+2010-01-25            1                   0                1                  0           0                        4                  95                  0                    0
+2010-01-26            1                   0                1                  0           0                        0                  95                  0                    0
+2010-01-27            1                   0                1                  0           0                        4                  95                  0                    0
+2010-01-28            1                   0                1                  0           0                        7                  95                  0                    0
+2010-01-29            1                   0                1                  0           0                        6                  95                  0                    0
+2010-02-01            1                   0                1                  0           0                        8                  95                  0                    0
+2010-02-02            1                   0                1                  0           0                        6                  95                  1                    0
+2010-02-03            1                   0                1                  0           0                        4                  95                  0                    0
+2010-02-04            1                   0                1                  0           0                        2                  95                  0                    0
+2010-02-05            1                   0                1                  0           0                        2                  95                  0                    0
+2010-02-08            1                   0                1                  0           0                        0                  95                  1                    0
+2010-02-09            1                   0                1                  0           0                        3                  95                  0                    0
+2010-02-10            1                   0                1                  0           0                        5                  95                  1                    0
+2010-02-11            1                   0                1                  0           0                        2                  95                  0                    0
+2010-02-12            1                   0                1                  0           0                        2                  95                  0                    0
+(showing 30 of 149 days, 9 of 18 features)
+------------------------------------------------------------------------

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 1 in plain words</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.7; font-size:17px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:38px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:18px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:56px 0 14px; letter-spacing:-.015em}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:20px; line-height:1.55; margin:20px 0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:16px 18px; overflow-x:auto;
+      font-family:var(--mono); font-size:13px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:15px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:13px}
+  td.num{text-align:right; font-family:var(--mono); font-size:13px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:14px 18px; border-radius:0 6px 6px 0; margin:18px 0}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:12px 0; padding-left:24px} li{margin:8px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:20px 0}
+  .stat{flex:1 1 140px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:16px}
+  .stat .v{font-family:var(--mono); font-size:23px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:13px; color:var(--muted); margin-top:3px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:14px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:14px 20px; font-weight:650; font-size:17px}
+  .qa .a{padding:16px 20px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:12px}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:18px 22px; margin:18px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:8px}
+  .say p{margin:0; font-size:17.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 1 · study notes</p>
+  <h1>Stage 1, in plain words</h1>
+  <p class="sub">What we built, why we built it that way, and what we have now. Written to be read once and remembered, not to look impressive.</p>
+</header>
+
+<h2><span class="n">1</span>The problem</h2>
+
+<p class="big">An insider is an employee who already has permission to do everything they do.</p>
+
+<p>They don't hack in. They don't steal a password. They log in with their own account, open files they're allowed to open, and copy them to a USB stick they're allowed to use. Then they walk out.</p>
+
+<p>This is why normal security tools fail. Those tools look for things that are <em>not allowed</em>: a stranger's IP address, a known virus, a blocked website. An insider does nothing that isn't allowed.</p>
+
+<div class="callout">
+  <p><strong>So we changed the question.</strong></p>
+  <p>Instead of asking <em>"is this action bad?"</em> — which has no useful answer — we ask <strong>"is this normal for this specific person?"</strong></p>
+</div>
+
+<p>Here is why that works. Suppose someone connects a USB stick five times today.</p>
+
+<ul>
+  <li>If they're a hardware engineer who does that every day — <b>nothing happened.</b></li>
+  <li>If they're an accountant who has never touched a USB stick in eighteen months — <b>something happened.</b></li>
+</ul>
+
+<p>Same action. Same number. Completely different meaning. The only thing that tells them apart is knowing what each person normally does.</p>
+
+<p>So the system needs a picture of "normal" for every single employee. Building that picture is what Stage 1 is for.</p>
+
+<h2><span class="n">2</span>What Stage 1 actually does</h2>
+
+<p>The raw data is five big files. Every login, every USB plug-in, every file copy, every email, every website visit — for 1,000 employees over 17 months. About 16 gigabytes.</p>
+
+<p>That's 32.8 million separate events. Far too much to work with, and most of it is noise.</p>
+
+<p><b>Stage 1 squeezes it down to 18 numbers per person per day.</b></p>
+
+<pre><code>Before:  KPC0073 logged in at 08:14
+         KPC0073 opened a web page at 08:15
+         KPC0073 opened a web page at 08:15
+         ... (95 more web pages)
+         KPC0073 plugged in a USB stick at 21:10
+         KPC0073 logged off at 22:51
+
+After:   KPC0073  2010-07-07   logons: 2   after-hours: 1   usb: 1   web: 96 ...</code></pre>
+
+<p>One line per person per day. That's it.</p>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">32.8 M</div><div class="k">events in</div></div>
+  <div class="stat"><div class="v">330,452</div><div class="k">lines out</div></div>
+  <div class="stat"><div class="v">16 GB → 2.8 MB</div><div class="k">size</div></div>
+  <div class="stat"><div class="v">90 sec</div><div class="k">to run</div></div>
+</div>
+
+<p>This matters more than it sounds. Everything before this point is slow and painful to work with. Everything after it opens instantly. <b>We run Stage 1 once, and never open the raw files again.</b></p>
+
+<h3>What Stage 1 does NOT do</h3>
+
+<p>It doesn't mark anyone as guilty. It doesn't calculate anything clever. It doesn't train a model. It just counts.</p>
+
+<p>That's on purpose. Counting is the slow part, so we keep the slow part as simple as possible. Everything that might change later — how we mark attacks, how we measure "unusual" — lives in later stages, which run in seconds.</p>
+
+<h2><span class="n">3</span>Why we used this dataset</h2>
+
+<p>This is the first question you'll be asked, so it's worth knowing the answer cold.</p>
+
+<p>Real companies do not publish their employees' activity logs. So there is one standard research dataset, made by Carnegie Mellon University: a simulated company with fake employees, where some of them are secretly attackers and we're told exactly who.</p>
+
+<p>It comes in ten versions. We counted the number of known attackers in each one:</p>
+
+<table>
+  <tr><th>Version</th><th class="num">Attackers</th><th>Can we train on it?</th></tr>
+  <tr><td>r1</td><td class="num">0</td><td>no</td></tr>
+  <tr><td>r2</td><td class="num">1</td><td>no</td></tr>
+  <tr><td>r3.1 / r3.2</td><td class="num">2 each</td><td>no</td></tr>
+  <tr><td>r4.1</td><td class="num">3</td><td>no</td></tr>
+  <tr class="hi"><td><b>r4.2</b></td><td class="num"><b>70</b></td><td><b>yes</b></td></tr>
+  <tr><td>r5.1</td><td class="num">4</td><td>no</td></tr>
+  <tr class="hi"><td><b>r5.2</b></td><td class="num"><b>99</b></td><td><b>yes</b></td></tr>
+  <tr><td>r6.1 / r6.2</td><td class="num">5 each</td><td>no</td></tr>
+</table>
+
+<p><b>Eight of the ten versions have almost no attackers in them.</b> r4.1 has three people. You can't teach a model from three examples, and you certainly can't split three people into a training group and a testing group.</p>
+
+<p>That leaves two usable versions. r5.2 is twice as big and twice as complicated. So:</p>
+
+<div class="say">
+  <span class="lbl">Say this</span>
+  <p>“r4.2 is the smallest dataset in the whole collection that actually has enough labelled attackers to train on. That's why it's the standard benchmark, and that's why we used it.”</p>
+</div>
+
+<h3>What's in r4.2</h3>
+
+<table>
+  <tr><td>Employees</td><td class="mono">1,000</td></tr>
+  <tr><td>Time covered</td><td class="mono">Jan 2010 – May 2011 (17 months)</td></tr>
+  <tr><td>Attackers</td><td class="mono">70</td></tr>
+</table>
+
+<p>The 70 attackers do one of three things:</p>
+
+<table>
+  <tr><th>Type</th><th>What they do</th><th>How long it lasts</th></tr>
+  <tr><td><b>1</b> (30 people)</td><td>Stay late, copy files to USB, upload them to a leak website, then quit</td><td>1–12 days</td></tr>
+  <tr><td><b>2</b> (30 people)</td><td>Start job hunting, then steal data on the way out</td><td>3–8 weeks</td></tr>
+  <tr><td><b>3</b> (10 people)</td><td>An IT admin puts a keylogger on his boss's computer</td><td>1–2 days</td></tr>
+</table>
+
+<div class="note"><b>Admit this before someone points it out.</b> 70 attackers out of 1,000 employees is 7%. In a real company it's nowhere near that — it's closer to zero. The dataset's own documentation calls this an “unrealistically high amount” of attack data, on purpose, so researchers have something to work with. We used it because it's the only option, not because it's realistic. Saying that yourself sounds like you understand your data. Being caught by it sounds like you didn't check.</div>
+
+<h2><span class="n">4</span>The 18 numbers</h2>
+
+<p>Each day, for each person, we count 18 things:</p>
+
+<table>
+  <tr><th>#</th><th>What it counts</th><th class="num">Total across all 1,000 people</th></tr>
+  <tr><td class="mono">0</td><td>logins</td><td class="num">470,591</td></tr>
+  <tr><td class="mono">1</td><td>logoffs</td><td class="num">384,268</td></tr>
+  <tr><td class="mono">2</td><td>logins outside 7am–7pm</td><td class="num">31,721</td></tr>
+  <tr><td class="mono">3</td><td>logins at the weekend</td><td class="num">11,864</td></tr>
+  <tr><td class="mono">4</td><td>different computers used</td><td class="num">380,662</td></tr>
+  <tr><td class="mono">5</td><td>USB sticks plugged in</td><td class="num">203,339</td></tr>
+  <tr><td class="mono">6</td><td>USB sticks unplugged</td><td class="num">202,041</td></tr>
+  <tr><td class="mono">7</td><td>USB activity outside work hours</td><td class="num">17,959</td></tr>
+  <tr><td class="mono">8</td><td>files copied</td><td class="num">445,581</td></tr>
+  <tr><td class="mono">9</td><td>files copied to USB</td><td class="num">445,581</td></tr>
+  <tr><td class="mono">10</td><td>different filenames</td><td class="num">445,581</td></tr>
+  <tr><td class="mono">11</td><td>emails sent</td><td class="num">2,629,979</td></tr>
+  <tr><td class="mono">12</td><td>emails sent outside the company</td><td class="num">1,264,049</td></tr>
+  <tr><td class="mono">13</td><td>emails with big attachments</td><td class="num">0</td></tr>
+  <tr><td class="mono">14</td><td>total email size</td><td class="num">78.9 GB</td></tr>
+  <tr><td class="mono">15</td><td>web pages visited</td><td class="num">28,434,423</td></tr>
+  <tr><td class="mono">16</td><td>visits to job websites</td><td class="num">400,161</td></tr>
+  <tr><td class="mono">17</td><td>visits to file-upload websites</td><td class="num">42,264</td></tr>
+</table>
+
+<p>Two details worth knowing:</p>
+
+<p><b>"Outside work hours" means before 7am or after 7pm.</b> We didn't pick those hours — they come from the dataset's own documentation. That matters, because if we'd tuned them ourselves someone could say we picked whatever made our results look best.</p>
+
+<p><b>Email counts check the "bcc" field.</b> An employee can send an email to a colleague and secretly blind-copy it to their personal Gmail. If you only look at the "to" field, that looks like a completely internal email. Checking bcc catches it — and that's exactly the trick attack type 2 uses.</p>
+
+<h2><span class="n">5</span>Three of the 18 don't work — and we say so</h2>
+
+<p>Look at rows 8, 9 and 10 in that table. <b>445,581 three times.</b> And row 13 is <b>zero</b>.</p>
+
+<p>Those aren't bugs. Here's what happened:</p>
+
+<table>
+  <tr><th>Number</th><th>Problem</th><th>Why</th></tr>
+  <tr><td>files copied to USB</td><td>same as "files copied"</td><td>In this dataset <em>every</em> file copy is already a copy to USB. There's nothing else to count.</td></tr>
+  <tr><td>different filenames</td><td>same as "files copied"</td><td>The fake data gives every file a random new name, so 445,581 files have 445,581 different names.</td></tr>
+  <tr><td>big attachments</td><td>always zero</td><td>Our cutoff was 1 MB. The biggest email in the whole dataset is 141 KB. Nothing ever reaches the cutoff.</td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">Say this</span>
+  <p>“All 18 definitions are correct, and all three of these work fine on the newer versions of the dataset. On this one specific version they happen to be useless. So r4.2 really gives us <b>15 useful numbers, not 18</b> — and we found that by measuring, not by assuming.”</p>
+</div>
+
+<p>Say this <em>before</em> anyone asks. If an examiner spots it first, it looks like a mistake you missed. If you raise it, it looks like you know your data.</p>
+
+<h2><span class="n">6</span>The two lists we had to choose</h2>
+
+<p>Sixteen of the eighteen numbers are just counting — no opinions involved. Two of them are different.</p>
+
+<p>"Visits to job websites" and "visits to file-upload websites" require <em>deciding which websites count</em>. That's the only place in Stage 1 where we could have quietly cheated. So we decided both by measuring.</p>
+
+<h3>The test we used</h3>
+
+<p class="big">Do the attackers visit this website <em>during</em> their attack, and not otherwise?</p>
+
+<p>For job sites, we checked two known attackers. Here's how many times each visited each site inside their attack period versus outside it:</p>
+
+<table>
+  <tr><th>Website</th><th class="mono">during / outside</th><th>Decision</th></tr>
+  <tr><td class="mono">monster.com</td><td class="mono">10 / 0 &nbsp;&nbsp; 7 / 0</td><td>keep</td></tr>
+  <tr><td class="mono">careerbuilder.com</td><td class="mono">11 / 0 &nbsp; 10 / 0</td><td>keep</td></tr>
+  <tr><td class="mono">indeed.com</td><td class="mono">3 / 0 &nbsp;&nbsp;&nbsp; 4 / 0</td><td>keep</td></tr>
+  <tr class="hi"><td class="mono">aol.com/jobs</td><td class="mono">5 / 0 &nbsp;&nbsp;&nbsp; 5 / 0</td><td><b>added</b> — behaves the same</td></tr>
+  <tr><td class="mono">craigslist.org</td><td class="mono">17 / <b>22</b></td><td><b>dropped</b> — more visits outside than inside</td></tr>
+  <tr><td class="mono">linkedin.com</td><td class="mono">40,446 visits by everyone</td><td><b>dropped</b> — it's just normal browsing</td></tr>
+</table>
+
+<h3>The mistake we caught, and this one is the good story</h3>
+
+<p>The upload-website list started with four sites. One of them, <b>mediafire.com</b>, turned out to be visited about <b>334,000 times</b> — by basically everyone, all the time. It's a popular file-sharing site.</p>
+
+<p>Meanwhile the site that actually matters, wikileaks.org, appears about <b>90 times in 28 million web requests</b>.</p>
+
+<p>So that one number was 90% "browsed a normal website" and 0.03% "uploaded stolen data".</p>
+
+<div class="note"><b>Why this was worse than it sounds.</b> Because we measure each person against <em>their own</em> history, the damage wasn't spread evenly — it hit some attackers and not others. One attacker never used mediafire, so his normal was zero and his leak-site visit stood out enormously. Another attacker browsed mediafire regularly, so his normal was already noisy and the same visit vanished into it. Whether we caught an attacker depended on their unrelated browsing habits. That's a coin flip.</div>
+
+<p>We removed mediafire. Here's what happened to the attacker whose signal it was hiding:</p>
+
+<table>
+  <tr><th>BIH0745 — days with upload-site activity</th><th>Before</th><th>After</th></tr>
+  <tr><td>out of 500 days</td><td>dozens, scattered</td><td><b>exactly 1</b></td></tr>
+  <tr><td>which day</td><td>impossible to tell</td><td><b>2010-07-13 — his actual attack day</b></td></tr>
+</table>
+
+<div class="say">
+  <span class="lbl">If someone says “isn't dropping websites cheating?”</span>
+  <p>“The candidate websites came from the dataset's own published descriptions of the attacks — that's what every paper on this dataset does. What we <em>removed</em> was decided by one test applied to every candidate equally: does this site get visited during attacks and not otherwise? Craigslist and mediafire failed that test clearly. And we deliberately kept two upload sites that have nothing to do with any known attack, so the number isn't just a lookup for the one website the answer key mentions.”</p>
+</div>
+
+<h2><span class="n">7</span>How we know it's actually correct</h2>
+
+<p>Checking that the program didn't crash proves nothing. Checking the row counts proves almost nothing. Here's the test that actually proves it.</p>
+
+<p>Take attacker <b>KPC0073</b>. In seventeen months, his entire history contains 16 USB events. Here's what our program produced for him:</p>
+
+<pre><code>       day    logins  after-hours  usb  job sites  upload sites
+2010-02-16         1            0    0         14             0
+2010-03-22         1            0    0         11             0
+2010-06-08         1            0    0          3             0
+2010-07-06         2            1    2          0             0
+2010-07-07         2            1    1          0             1
+2010-07-09         2            1    3          0             0
+2010-07-12         2            1    1          0             1
+2010-07-15         2            1    1          0             1
+(the other 127 days: nothing at all)</code></pre>
+
+<p>Now here's what the dataset's answer key says he did:</p>
+
+<pre><code>07/07/2010 21:23   visited wikileaks.org
+07/12/2010 23:51   visited wikileaks.org
+07/15/2010 02:40   visited wikileaks.org</code></pre>
+
+<div class="note good"><b>They match exactly.</b> Our "upload sites" column shows 1 on 07-07, 07-12 and 07-15 — the same three days the answer key lists — and 0 on all 498 other days. His USB activity shows up on exactly the five days the raw logs contain it, and never before July. His logins go from 1 to 2 and his after-hours logins go from 0 to 1 on those same days.</div>
+
+<p>Look at that table again, because it's also the clearest possible example of the whole idea:</p>
+
+<p class="big">Nothing in those rows is against the rules. Logging in is fine. Using a USB stick is fine. Visiting a website is fine. The only thing that's strange is that <em>he</em> did them, when he never had before.</p>
+
+<h3>The other checks</h3>
+
+<ul>
+  <li><b>9 automated tests</b> that run in half a second.</li>
+  <li><b>Checks printed every single time the program runs</b> — no negative counts, no missing values, no duplicated days.</li>
+  <li><b>Three "fingerprint" checks</b> confirming the known quirks are still there. If "big attachments" ever stops being zero, we're not looking at r4.2 any more.</li>
+  <li>We confirmed r4.1 and r4.2 share <b>zero out of 1,000</b> usernames, so the two versions can't be mixed up by accident.</li>
+</ul>
+
+<h2><span class="n">8</span>Why it only takes 90 seconds</h2>
+
+<p>People are surprised that 16 GB processes in a minute and a half. Two reasons:</p>
+
+<p><b>Most of those 16 GB is junk we skip.</b> Every log file has a "content" column full of generated filler text. We don't use it for anything, so we tell the file reader to skip that column entirely. It never gets loaded into memory at all.</p>
+
+<p><b>We never load a whole file.</b> The biggest file is read in slices of 50,000 rows. Each slice is immediately reduced to daily counts and then thrown away. So the memory used depends on <em>how many people and how many days</em> — never on how big the file is.</p>
+
+<h2><span class="n">9</span>What we have now</h2>
+
+<pre><code>data/daily_counts.parquet          2.8 MB   ← the real thing, 1,000 people
+data/daily_counts.sample.parquet   113 KB   ← 30-person copy for quick testing
+
+extraction/
+├── extract.py          the program
+├── test_extract.py     9 tests, all passing
+├── README.md           how to run it
+└── salvage/            where the code came from + proof it works</code></pre>
+
+<table>
+  <tr><td>Lines (one per person per day)</td><td class="mono">330,452</td></tr>
+  <tr><td>People</td><td class="mono">1,000</td></tr>
+  <tr><td>Days covered</td><td class="mono">501 &nbsp; (Jan 2010 → May 2011)</td></tr>
+  <tr><td>Missing values</td><td class="mono">none</td></tr>
+</table>
+
+<div class="note"><b>Why 330,452 and not 501,000?</b> 1,000 people × 501 days would be 501,000. But Stage 1 only writes a line for a day where something actually happened — and most people do nothing at weekends. About 358 of the 501 days are weekdays, and some employees left partway through. <b>Stage 2 fills the missing days back in with zeros</b>, because a day where someone did nothing is still information — especially for an attacker who has resigned and stopped coming to work.</div>
+
+<h2><span class="n">10</span>Weaknesses to admit up front</h2>
+
+<ul>
+  <li><b>The data is fake and deliberately overloaded with attackers.</b> 7% here, near-zero in reality.</li>
+  <li><b>Only 15 of the 18 numbers are useful on this version.</b> Correct definitions, useless data.</li>
+  <li><b>The answer key is narrower than the actual bad behaviour.</b> Attacker BIH0745's official attack window is 65 minutes long — but his heaviest late-night USB copying happened outside it. So our model gets marked wrong for spotting real suspicious behaviour. That's the dataset's problem, not ours, and we don't try to "fix" it by widening the windows — that would be adjusting the answers to suit the model.</li>
+  <li><b>Our website lists come from knowing what the attacks were.</b> Standard practice for this dataset, but a real security team wouldn't have that on day one.</li>
+  <li><b>Part of the code was reused</b> from an earlier version of this project. The original is kept untouched in <code>extraction/salvage/provenance/</code>, and everything it claimed was re-checked against the real data.</li>
+</ul>
+
+<h2><span class="n">11</span>Questions you'll get</h2>
+
+<div class="qa"><div class="q">Why fake data instead of real data?</div><div class="a">
+<p>Real insider-threat data doesn't exist publicly. No company publishes logs of their employees' activity, and the attackers are rare and legally sensitive. This Carnegie Mellon dataset is the standard because it's the only labelled one that exists. Within it, only two of ten versions have enough attackers to train on, and we picked the smaller one.</p></div></div>
+
+<div class="qa"><div class="q">Why one line per person per day?</div><div class="a">
+<p>One line per event is too detailed — a single login tells you nothing, and the answer key marks periods, not individual clicks. One line per month is too coarse — attack type 1 lasts as little as one day and would disappear entirely. A day matches how the answers are written, keeps all 70 attackers, and still lets the second model look at 28 days in a row by stacking lines.</p></div></div>
+
+<div class="qa"><div class="q">How do you know your counting is right?</div><div class="a">
+<p>Three ways. Automated tests cover the logic. Automatic checks run every time the program runs. And most convincingly, we rebuilt a known attacker's timeline and it matched the official answer key day for day — including the three leak-site visits on exactly the dates the answer key lists.</p></div></div>
+
+<div class="qa"><div class="q">Three of your numbers are broken. Isn't that a bug?</div><div class="a">
+<p>No — the definitions are right, and they work on the newer versions of the dataset. On this version the data makes them useless: there's no separate "copied to USB" column because every file copy already is one, every filename is randomly unique, and no email is big enough to hit our attachment cutoff. We measured all three rather than assuming, and we report 15 useful numbers instead of claiming 18.</p></div></div>
+
+<div class="qa"><div class="q">Why does 16 GB only take 90 seconds?</div><div class="a">
+<p>Because most of it is a filler column we skip before it's ever loaded, and we read the files in slices rather than all at once. The data is big but very thin — a lot of bytes carrying very little information.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to finish on.</strong></p>
+  <p>“Stage 1 turns 32.8 million events into 330,452 lines of 18 daily counts, in 90 seconds, and we proved it's correct by rebuilding a known attacker's timeline and matching the official answer key exactly. It contains no model and no answers — it exists so that every question after it becomes a question about <em>how unusual this is for this particular person</em>, which is the only way insider threat is detectable at all.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 1 study notes · CERT Insider Threat Test Dataset r4.2 (Carnegie Mellon University / ExactData).
+  Every number here was measured from the actual files.
+</footer>
+
+</div>
+</body>
+</html>

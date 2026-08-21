@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — every function in splitting/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+<style>
+  /* additive only — the block above is copied verbatim from innersight_code_map.html */
+  .fn{margin:20px 0}
+  .fn .sig{font-family:var(--mono); font-size:12.5px; background:var(--code-bg);
+           border-radius:6px; padding:9px 12px; overflow-x:auto; white-space:pre; line-height:1.55}
+  .fn p{margin:7px 0 0}
+  .star{color:var(--accent); font-weight:800}
+  .zonelead{color:var(--muted); font-size:15.5px; margin:6px 0 14px; max-width:70ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 4 · function reference</p>
+  <h1>Every function in <code>splitting/</code></h1>
+  <p class="sub">37 functions across three files, in plain language — what each one
+  does, and which six are where the actual thinking lives.</p>
+</header>
+
+<p class="big"><code>splitting/</code> decides which of the 1,000 users are used to
+train the models, which are used to tune them, and which are held back to test
+them. It assigns <em>people</em>, never days, and it does the assignment three
+times with three different random seeds so the report can show how much the
+result depends on the draw. It copies no data: the output is
+<code>data/splits.json</code>, a list of names that indexes into the dataset
+Stage 3 already wrote.</p>
+
+<div class="callout">
+  <p><strong>The one thing to hold onto.</strong> This is about sixty lines of
+  real logic, and it is the only stage that can invalidate every number in the
+  final report without producing a single error message. A user's rows all
+  describe the same person against the same personal baseline — put their Monday
+  in training and their Tuesday in test and the model has already met them. The
+  score that follows measures memorisation, and memorisation scores
+  <em>excellently</em>.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">the three files</span></h3>
+  <table>
+    <tr><td class="mono">splitting/__init__.py</td><td>24 lines · <b>0 functions</b> — the package docstring and <code>__all__</code></td></tr>
+    <tr><td class="mono">splitting/split.py</td><td>654 lines · <b>16 functions</b> (12 public, 2 private, 1 property, 1 CLI) + 2 classes</td></tr>
+    <tr><td class="mono">splitting/test_split.py</td><td>320 lines · <b>21 functions</b> — 2 helpers, 19 tests</td></tr>
+  </table>
+</div>
+
+<!-- ================================================================= -->
+<h2><span class="n">01</span>splitting/__init__.py</h2>
+
+<p>No functions at all. The file is a docstring stating the two decisions that
+carry the stage — split by user, stratify by <code>user_scenario</code> — plus a
+single line:</p>
+
+<pre><code>__all__ = ["split"]</code></pre>
+
+<p>That names the <code>split</code> submodule so <code>from splitting import *</code>
+pulls it in. Nothing is re-exported, so callers reach the functions the explicit
+way: <code>from splitting.split import split_users</code>.</p>
+
+<!-- ================================================================= -->
+<h2><span class="n">02</span>splitting/split.py</h2>
+
+<p>The module has a fixed shape, and the section rules in the source name it:</p>
+
+<div class="zones">
+<span class="z">zone 1</span>  the constants and the error class     <span class="c">SPLIT_NAMES, REQUIRED_COLUMNS, SplitError …</span>
+<span class="z">zone 2</span>  reading                               <span class="c">read_user_table, user_table</span>
+<span class="z">zone 3</span>  the split itself                      <span class="c">allocate, split_users, split_all_seeds</span>
+<span class="z">zone 4</span>  summarising                           <span class="c">summarise_split, summarise, build_payload, dumps</span>
+<span class="z">zone 5</span>  checks                                <span class="c">Check, check_splits, verify</span>
+<span class="z">zone 6</span>  the report                            <span class="c">_seed_lines, format_report, _spread_lines</span>
+<span class="z">zone 7</span>  the CLI                               <span class="c">main</span>
+</div>
+
+<h3>Scan table — all 16 functions</h3>
+
+<table>
+  <tr><th class="mono">function</th><th>zone</th><th>what it does</th></tr>
+  <tr><td class="mono">read_user_table</td><td>2</td><td>Opens the parquet reading only three columns and collapses ~465,000 daily rows to 1,000 people.</td></tr>
+  <tr class="hi"><td class="mono">⭐ user_table</td><td>2</td><td>Turns day-per-row into person-per-row, and refuses to continue if one person carries two scenario numbers.</td></tr>
+  <tr class="hi"><td class="mono">⭐ allocate</td><td>3</td><td>Cuts a headcount into three whole numbers that add back to exactly the headcount.</td></tr>
+  <tr class="hi"><td class="mono">⭐ split_users</td><td>3</td><td>The assignment itself: sort each scenario group, shuffle it with its own seeded generator, deal out 60/20/20.</td></tr>
+  <tr><td class="mono">split_all_seeds</td><td>3</td><td>Repeats that assignment once per seed and keys the results by seed number.</td></tr>
+  <tr class="hi"><td class="mono">⭐ summarise_split</td><td>4</td><td>Counts one split by people, day-rows and attack days, each broken down by scenario.</td></tr>
+  <tr><td class="mono">summarise</td><td>4</td><td>Applies that count to every split of every seed.</td></tr>
+  <tr><td class="mono">build_payload</td><td>4</td><td>Assembles the whole <code>splits.json</code> document — fractions, seeds, name lists, summary.</td></tr>
+  <tr><td class="mono">dumps</td><td>4</td><td>Renders the document as text with alphabetised keys, so two runs can be compared with a plain diff.</td></tr>
+  <tr><td class="mono">Check.status</td><td>5</td><td>Converts a pass/fail flag into the word printed in the report: <code>ok</code>, <code>FAIL</code> or <code>warn</code>.</td></tr>
+  <tr class="hi"><td class="mono">⭐ check_splits</td><td>5</td><td>Six assertions run against the real output, one of which is allowed to fail.</td></tr>
+  <tr><td class="mono">verify</td><td>5</td><td>Runs those assertions and stops the program if a must-hold one failed.</td></tr>
+  <tr><td class="mono">_seed_lines</td><td>6</td><td>Builds one seed's block of the printed report, including the off-band warning.</td></tr>
+  <tr><td class="mono">format_report</td><td>6</td><td>Glues the census, the per-seed blocks, the spread and the check results into one printable string.</td></tr>
+  <tr class="hi"><td class="mono">⭐ _spread_lines</td><td>6</td><td>Shows how far the attack-day counts move between seeds — the number that decides how the final table may be phrased.</td></tr>
+  <tr><td class="mono">main</td><td>7</td><td>Command-line entry point: read, split, verify, write, print.</td></tr>
+</table>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 1 — the constants and the error class</h3>
+<p class="zonelead">Values that other zones treat as contracts rather than
+conveniences: an ordering, a column allow-list, and a plausibility band.</p>
+
+<div class="card">
+<table>
+  <tr><th class="mono">name</th><th>what it does</th></tr>
+  <tr><td class="mono">SPLIT_NAMES</td><td><code>("train", "val", "test")</code>. Fixes the order users are dealt out in, the order columns are printed in, and the tie-break when a leftover has to go somewhere — which is why a group of one person lands in train.</td></tr>
+  <tr><td class="mono">REQUIRED_COLUMNS</td><td>The only three columns read from the parquet: user, scenario, label. Pulling the 18 z-score columns in to shuffle a list of names would be 16 MB of waste, and having them in memory makes it easy to accidentally write a modified copy of the dataset.</td></tr>
+  <tr><td class="mono">ROWS_COLUMN<br>POSITIVES_COLUMN</td><td>The two column names the per-person table invents: how many days that person has, and how many of those days are labelled attack.</td></tr>
+  <tr><td class="mono">JSON_INDENT</td><td>2, so the written document is readable.</td></tr>
+  <tr><td class="mono">MIN_PLAUSIBLE_POSITIVE_RATE<br>MAX_PLAUSIBLE_POSITIVE_RATE</td><td>0.2% and 0.7%, a band around the whole table's true 0.407%. A split outside it gets a printed note — deliberately not a reshuffle, because reshuffling until the numbers look tidy is selection on the test set.</td></tr>
+  <tr><td class="mono">_RULE</td><td>78 equals signs, the report's horizontal rule.</td></tr>
+  <tr><td class="mono">class SplitError</td><td>Raised when something that must be true of any valid assignment is not. Subclasses <code>AssertionError</code>, so it reads as a broken invariant rather than a bad argument.</td></tr>
+</table>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 2 — reading</h3>
+<p class="zonelead">Getting from a 465,000-row file to a 1,000-row table of
+people, and refusing anything that would make the rest meaningless.</p>
+
+<div class="fn">
+  <div class="sig">def read_user_table(path: Path) -> pd.DataFrame</div>
+  <p>Opens the parquet file asking for three columns only, and hands them
+  straight to <code>user_table</code>. Everything downstream in the module works
+  on people, never on days.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def user_table(frame: pd.DataFrame) -> pd.DataFrame   <span class="star">⭐</span></div>
+  <p>Collapses a day-per-row table into a person-per-row table holding each
+  person's scenario, their day count and their attack-day count, sorted by name.
+  It stops with an error if the user column isn't text, or if any one person
+  carries two different scenario numbers — that means the insider list was joined
+  at the wrong grain, and every stratified count after it would be fiction.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 3 — the split itself</h3>
+<p class="zonelead">Sixty lines that decide the whole stage: how to divide a
+headcount without losing anyone, and how to divide it the same way every time.</p>
+
+<div class="fn">
+  <div class="sig">def allocate(n: int, fractions: SplitFractions = SPLIT) -> dict[str, int]   <span class="star">⭐</span></div>
+  <p>Cuts a count of <code>n</code> people into three whole numbers that add back
+  up to exactly <code>n</code>, giving each leftover to whichever share was
+  rounded down hardest. Rounding the three shares independently would quietly
+  gain or lose a person, and losing six out of a thirty-person scenario group is
+  exactly the kind of thing nobody notices.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def split_users(
+    scenarios: Mapping[str, int] | pd.Series,
+    seed: int,
+    fractions: SplitFractions = SPLIT,
+) -> dict[str, list[str]]   <span class="star">⭐</span></div>
+  <p>Takes each scenario group separately, sorts its members alphabetically,
+  shuffles that sorted list with a generator seeded from the pair
+  <code>(seed, scenario)</code>, and deals out the first 60% / next 20% / last
+  20%. Sorting before shuffling means the order rows happened to arrive in can't
+  reach the result, and giving each group its own generator means adding or
+  removing scenario-1 users can't reshuffle the benign ones.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def split_all_seeds(
+    table: pd.DataFrame,
+    seeds: Sequence[int] = SEEDS,
+    fractions: SplitFractions = SPLIT,
+) -> dict[int, dict[str, list[str]]]</div>
+  <p>Runs the assignment once for each configured seed and returns them keyed by
+  seed number, which is what lets the report show a range instead of a single
+  lucky draw.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 4 — summarising</h3>
+<p class="zonelead">Turning three lists of names into the counts a reader — and
+Stage 7 — will actually want, and writing them out diffably.</p>
+
+<div class="fn">
+  <div class="sig">def summarise_split(users: Sequence[str], table: pd.DataFrame) -> dict[str, object]   <span class="star">⭐</span></div>
+  <p>Counts one split three ways — how many people, how many day-rows behind
+  them, how many of those days are attacks — with a per-scenario breakdown of
+  both the headcount and the attack days. Those per-scenario attack counts are
+  what Stage 7 needs to say anything honest about recall per attack type, and
+  they are computed here so nobody has to reopen the 16 MB table later.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def summarise(
+    splits: Mapping[int, Mapping[str, Sequence[str]]],
+    table: pd.DataFrame,
+) -> dict[str, dict[str, dict[str, object]]]</div>
+  <p>Applies that count to all three splits of every seed, producing the nested
+  block of numbers that goes into the written document.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def build_payload(
+    splits: Mapping[int, Mapping[str, Sequence[str]]],
+    table: pd.DataFrame,
+    fractions: SplitFractions = SPLIT,
+) -> dict[str, object]</div>
+  <p>Assembles the complete <code>splits.json</code> document: the fractions
+  used, the seed list, the population size, the name lists themselves, and the
+  summary block.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def dumps(payload: Mapping[str, object]) -> str</div>
+  <p>Renders that document as text with keys in alphabetical order, a fixed
+  indent and a trailing newline, so two runs can be compared with an ordinary
+  diff and a difference means something real.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 5 — checks</h3>
+<p class="zonelead">The stage's own audit of its output, run on every real run —
+not only in the tests — with one finding allowed to be a warning.</p>
+
+<div class="card">
+  <p><b class="star">class Check</b> — a frozen record of one assertion: whether
+  it held, the sentence describing it, and whether failing it should stop the
+  run. <code>fatal</code> defaults to true.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">@property
+def status(self) -> str</div>
+  <p>Turns the pass/fail flag into the word printed at the start of the report
+  line: <code>ok</code> when it held, <code>FAIL</code> when a must-hold check
+  broke, <code>warn</code> when a tolerated one did.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def check_splits(
+    splits: Mapping[int, Mapping[str, Sequence[str]]],
+    table: pd.DataFrame,
+    fractions: SplitFractions = SPLIT,
+) -> list[Check]   <span class="star">⭐</span></div>
+  <p>Tests six things against the real output: nobody appears in two splits,
+  nobody is dropped or invented, each scenario is cut in the expected proportion,
+  re-running a seed reproduces it exactly, different seeds really differ, and
+  every split holds at least one insider of every attack type. Only the last is
+  non-fatal — the 30-user sample has two scenario-2 insiders and cannot
+  mathematically put one in all three splits.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def verify(
+    splits: Mapping[int, Mapping[str, Sequence[str]]],
+    table: pd.DataFrame,
+    fractions: SplitFractions = SPLIT,
+) -> list[Check]</div>
+  <p>Runs those six checks and raises if any must-hold one failed, so a broken
+  assignment can never reach disk. Returns the full list either way, because the
+  report prints the warnings too.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 6 — the report</h3>
+<p class="zonelead">The block of text printed on every run. It is the stage's
+only real output for a human, so it carries the caveats as well as the counts.</p>
+
+<div class="fn">
+  <div class="sig">def _seed_lines(seed: int, summary: Mapping[str, Mapping[str, object]]) -> list[str]</div>
+  <p>Builds one seed's block: a row per split with headcounts by scenario, rows,
+  attack days and the attack-day rate, then the test set's attack-day count for
+  each of the three scenarios, and a note if any rate falls outside the
+  0.2–0.7% band — worded to say "report it, do not reshuffle".</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def format_report(
+    payload: Mapping[str, object],
+    table: pd.DataFrame,
+    checks: Sequence[Check],
+    out: Path | None = None,
+) -> str</div>
+  <p>Glues everything into one printable string: the population census, the
+  fractions and seeds, each seed's block, the across-seed spread, and every check
+  with its <code>ok</code>/<code>warn</code>/<code>FAIL</code> word.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def _spread_lines(
+    summary: Mapping[str, Mapping[str, Mapping[str, object]]],
+    seeds: Sequence[int],
+) -> list[str]   <span class="star">⭐</span></div>
+  <p>Reports the smallest, largest, mean and standard deviation of each split's
+  attack-day count across the seeds, then names how many scenario-3 attack rows
+  each seed's test set actually holds. If those counts swing by a third, a single
+  reported recall figure is a statement about luck rather than about the model,
+  and this is the line that says so.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone 7 — the CLI</h3>
+<p class="zonelead">One function, the whole run.</p>
+
+<div class="fn">
+  <div class="sig">def main(argv: Sequence[str] | None = None) -> int</div>
+  <p>Parses the flags, picks the full or sample paths, reads the user table,
+  splits it for every seed, verifies, writes the JSON and prints the report,
+  returning 1 with a pointer to Stage 3 if the dataset is missing. Sample and
+  full runs write to different files on purpose: Stage 1 was once wrecked by a
+  seven-second dev run overwriting the real table.</p>
+</div>
+
+<div class="note"><b>Worth knowing:</b> <code>--seeds</code> exists but its own
+help text argues against using it — generating extra seeds and keeping the
+tidiest is selection on the test set. Note also what <code>main</code> does
+<em>not</em> do: no <code>pos_weight</code> is computed here, because freezing a
+whole-table class balance would leak the test set's proportions into Stage 5's
+loss function.</div>
+
+<!-- ================================================================= -->
+<h2><span class="n">03</span>splitting/test_split.py</h2>
+
+<p>Two helpers and nineteen tests, organised by the failure each one is guarding
+against. They are chosen on one criterion: cover the failures that are
+<em>silent</em>. A crash in this stage would be a gift.</p>
+
+<div class="note"><b>A counting note:</b> the README says 31 tests and the file
+has 19 test functions. Both are right —
+<code>test_allocation_of_a_tiny_group_sums_to_the_group</code> is parametrised
+over group sizes 0 to 12, so pytest collects 13 cases from it and 31 in total.</div>
+
+<h3>Scan table — all 21 functions</h3>
+
+<table>
+  <tr><th class="mono">function</th><th>guards against</th><th>what it does</th></tr>
+  <tr class="hi"><td class="mono">⭐ make_population</td><td>—</td><td>Builds a fake day-per-row dataset from "this many users of scenario 0, this many of scenario 1…".</td></tr>
+  <tr><td class="mono">realistic_table</td><td>—</td><td>A 1,000-user table with r4.2's real census: 930 benign, 30/30/10 insiders.</td></tr>
+  <tr><td class="mono">test_no_user_lands_in_two_splits</td><td>leakage</td><td>Checks the three name lists share nobody, for every seed.</td></tr>
+  <tr><td class="mono">test_every_user_is_assigned_exactly_once</td><td>silent drop</td><td>Checks the three lists together are exactly the input population.</td></tr>
+  <tr><td class="mono">test_each_scenario_is_divided_in_the_right_proportion</td><td>bad stratification</td><td>Pins the exact expected counts: 930→558/186/186, 30→18/6/6, 10→6/2/2.</td></tr>
+  <tr class="hi"><td class="mono">⭐ test_scenario_three_puts_an_insider_in_every_split</td><td>a missing results row</td><td>Checks all three splits get at least one of the ten scenario-3 insiders.</td></tr>
+  <tr><td class="mono">test_the_same_seed_twice_gives_a_byte_identical_document</td><td>drift</td><td>Builds the JSON text twice and compares the strings.</td></tr>
+  <tr class="hi"><td class="mono">⭐ test_the_input_order_cannot_reach_the_shuffle</td><td>machine-dependent splits</td><td>Feeds the same people forwards, backwards and randomly reordered, demanding identical assignments.</td></tr>
+  <tr><td class="mono">test_a_dict_input_in_a_different_insertion_order_gives_the_same_split</td><td>machine-dependent splits</td><td>Same demand for a plain dict, which remembers its insertion order.</td></tr>
+  <tr class="hi"><td class="mono">⭐ test_one_scenario_group_does_not_depend_on_the_others</td><td>cross-contamination</td><td>Removes every scenario-1 user and checks the benign assignment is unchanged.</td></tr>
+  <tr><td class="mono">test_different_seeds_produce_different_splits</td><td>a meaningless spread</td><td>Checks the three seeds really give three different test sets.</td></tr>
+  <tr><td class="mono">test_allocation_of_a_tiny_group_sums_to_the_group</td><td>silent drop</td><td>For every group size 0–12, checks the three parts add back to the whole and none is negative.</td></tr>
+  <tr><td class="mono">test_a_scenario_smaller_than_the_number_of_splits_keeps_everyone</td><td>silent drop</td><td>With groups of 1, 2 and 3 people, checks nobody is discarded for being un-splittable.</td></tr>
+  <tr><td class="mono">test_an_empty_population_does_not_crash</td><td>an edge-case crash</td><td>An empty input yields three empty lists rather than an error.</td></tr>
+  <tr><td class="mono">test_the_summary_counts_rows_and_positives_not_users</td><td>a misleading summary</td><td>On a hand-computable population, pins the exact row, attack-day and rate figures.</td></tr>
+  <tr><td class="mono">test_the_document_carries_every_seed_and_every_user</td><td>a truncated file</td><td>Checks the written document holds all 1,000 users for each configured seed.</td></tr>
+  <tr><td class="mono">test_a_scenario_that_changes_within_a_user_is_a_hard_failure</td><td>a bad upstream join</td><td>Flips one row's scenario and requires an exception rather than a guessed value.</td></tr>
+  <tr><td class="mono">test_verify_raises_on_a_leaked_user</td><td>leakage reaching disk</td><td>Copies a training user into the test list and checks the verifier refuses it.</td></tr>
+  <tr><td class="mono">test_a_thin_scenario_is_reported_but_not_fatal</td><td>an over-strict check</td><td>On a sample-sized population, checks the coverage failure is a warning and does not stop the run.</td></tr>
+  <tr><td class="mono">test_fractions_other_than_60_20_20_still_partition_the_population</td><td>hard-coded arithmetic</td><td>With 70/15/15, checks everyone is still assigned and train gets exactly 700.</td></tr>
+  <tr><td class="mono">test_the_json_is_sorted_and_therefore_diffable</td><td>unreadable diffs</td><td>Checks the trailing newline, the alphabetised top-level keys and the sorted name lists.</td></tr>
+</table>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone A — the two builders</h3>
+<p class="zonelead">Everything below runs on synthetic people, so these two
+decide what "a population" means in every test.</p>
+
+<div class="fn">
+  <div class="sig">def make_population(
+    counts: dict[int, int], days: int = 5, positives: dict[int, int] | None = None
+) -> pd.DataFrame   <span class="star">⭐</span></div>
+  <p>Builds a day-per-row frame from a recipe like "930 users of scenario 0, 10
+  of scenario 3", giving each person the same number of days and marking the
+  first few of them as attack days. Ids look like <code>S3U0007</code> and the
+  user column is given pandas' <code>string</code> type, which is what
+  <code>user_table</code>'s text check insists on.</p>
+</div>
+
+<div class="note"><b>Docstring vs body:</b> the docstring claims ids are "built
+so that lexicographic order is NOT the order they appear in the frame". The body
+does the opposite — it loops scenarios in ascending order and indexes ascending
+within each, so <code>S0U0000, S0U0001, …</code> comes out in exactly
+alphabetical order. The order-independence tests do not rely on the claim; they
+reverse and re-sample the frame themselves. The comment is stale, not the code.</div>
+
+<div class="fn">
+  <div class="sig">def realistic_table() -> pd.DataFrame</div>
+  <p>The r4.2 census as a one-row-per-person table: 930 benign plus 30, 30 and 10
+  insiders, so the proportion tests are asserting against the numbers the project
+  really has.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone B — disjointness and completeness</h3>
+<p class="zonelead">The two failures that turn memorisation into a good score, or
+lose people without saying so.</p>
+
+<div class="fn">
+  <div class="sig">def test_no_user_lands_in_two_splits() -> None</div>
+  <p>For every configured seed, checks the three name lists overlap nowhere — the
+  leak that would let a model be tested on someone it was trained on.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_every_user_is_assigned_exactly_once() -> None</div>
+  <p>Checks the three lists together come to exactly the input population, with
+  nobody dropped and nobody conjured up.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone C — stratification, and scenario 3 surviving it</h3>
+<p class="zonelead">The stage's central claim: each attack type is divided
+separately, so the rarest one still appears everywhere.</p>
+
+<div class="fn">
+  <div class="sig">def test_each_scenario_is_divided_in_the_right_proportion() -> None</div>
+  <p>Hard-codes the expected counts for all four groups and every seed, so a
+  change to the allocation arithmetic has to be deliberate.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_scenario_three_puts_an_insider_in_every_split() -> None   <span class="star">⭐</span></div>
+  <p>With only ten scenario-3 insiders in the whole release, checks each of the
+  three splits gets at least one. Without this, the test set can end up with none
+  of that attack type, and a third of the final results table is undefined rather
+  than reported as missing.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone D — determinism and order independence</h3>
+<p class="zonelead">Four tests on the same worry: that the same seed might not
+mean the same split tomorrow, on another machine, or after an unrelated change.</p>
+
+<div class="fn">
+  <div class="sig">def test_the_same_seed_twice_gives_a_byte_identical_document() -> None</div>
+  <p>Builds the finished JSON text twice and compares the two strings character
+  for character.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_the_input_order_cannot_reach_the_shuffle() -> None   <span class="star">⭐</span></div>
+  <p>Feeds the same population three ways — as built, reversed, and randomly
+  re-sorted — and demands identical assignments. The order rows come out of a
+  parquet file is not guaranteed, so without the sort-first rule the same seed
+  would give a different split elsewhere and nothing would warn you.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_a_dict_input_in_a_different_insertion_order_gives_the_same_split() -> None</div>
+  <p>The same demand when the input is a plain dictionary rather than a pandas
+  column, since dictionaries iterate in insertion order.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_one_scenario_group_does_not_depend_on_the_others() -> None   <span class="star">⭐</span></div>
+  <p>Removes every scenario-1 user and checks the benign people land exactly
+  where they did before. This is the evidence that each group draws from its own
+  random stream, so an upstream change to one attack type cannot silently
+  reshuffle all the others.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_different_seeds_produce_different_splits() -> None</div>
+  <p>Checks the three seeds really give three distinct test sets — otherwise the
+  reported spread across seeds would be describing nothing.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone E — tiny inputs</h3>
+<p class="zonelead">Groups too small to divide cleanly. The worry is not a crash;
+it is a person quietly vanishing.</p>
+
+<div class="fn">
+  <div class="sig">@pytest.mark.parametrize("n", list(range(0, 13)))
+def test_allocation_of_a_tiny_group_sums_to_the_group(n: int) -> None</div>
+  <p>For every group size from 0 to 12, checks the three parts add back to the
+  whole and none of them is negative.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_a_scenario_smaller_than_the_number_of_splits_keeps_everyone() -> None</div>
+  <p>With groups of one, two and three people, checks everyone is still placed
+  somewhere rather than discarded for being un-splittable.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_an_empty_population_does_not_crash() -> None</div>
+  <p>An empty input produces three empty lists rather than an error, so an
+  unusual filter upstream degrades quietly instead of exploding.</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+<h3>Zone F — the summary block and the guards</h3>
+<p class="zonelead">What gets written, and what the stage refuses to write.</p>
+
+<div class="fn">
+  <div class="sig">def test_the_summary_counts_rows_and_positives_not_users() -> None</div>
+  <p>On a small population whose numbers can be checked by hand, pins the exact
+  row counts, attack-day counts and rate. Two people of the same scenario can
+  carry wildly different attack-day totals — scenario 2 averages 56, scenario 3
+  exactly 2 — so a summary counting people would say nothing about class balance.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_the_document_carries_every_seed_and_every_user() -> None</div>
+  <p>Checks the assembled document reports 1,000 people, lists the configured
+  seeds, and holds all 1,000 names under each one.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_a_scenario_that_changes_within_a_user_is_a_hard_failure() -> None</div>
+  <p>Flips one row's scenario so a person carries two, and requires an exception.
+  Picking a value there would hide a bad join and quietly falsify every
+  stratified count downstream.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_verify_raises_on_a_leaked_user() -> None</div>
+  <p>Copies one training name into the test list and checks the verifier refuses
+  the whole thing rather than writing the file anyway.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_a_thin_scenario_is_reported_but_not_fatal() -> None</div>
+  <p>On a sample-sized population where one attack type has too few insiders to
+  reach all three splits, checks the coverage finding is raised as a warning and
+  the run continues — a fact about the sample, not a broken split.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_fractions_other_than_60_20_20_still_partition_the_population() -> None</div>
+  <p>Re-runs with a 70/15/15 division and checks everyone is still placed and
+  train holds exactly 700, so the arithmetic isn't quietly hard-coded to the
+  usual numbers.</p>
+</div>
+
+<div class="fn">
+  <div class="sig">def test_the_json_is_sorted_and_therefore_diffable() -> None</div>
+  <p>Checks the file ends in a newline, its top-level keys are alphabetical, and
+  every name list inside is sorted — so a diff between two runs shows real
+  changes rather than reordering.</p>
+</div>
+
+<!-- ================================================================= -->
+<h2><span class="n">04</span>The five functions to actually remember</h2>
+
+<p>Thirty-seven functions, and five of them are the stage. The rest is reading,
+formatting and plumbing around these.</p>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b>split_users</b>
+    <p>This <em>is</em> Stage 4. Sort each scenario group, shuffle it with a
+    generator seeded from <code>(seed, scenario)</code>, deal out 60/20/20. If you
+    understand why each of those three words is in that order — sort, then
+    shuffle, then per-group seed — you understand the whole stage.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b>user_table</b>
+    <p>The step that makes splitting by person possible at all: 465,000 days
+    become 1,000 people before anything is decided. It also holds the stage's one
+    hard refusal — a person with two scenario numbers means the insider list was
+    joined at the wrong grain, and it stops rather than guessing.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b>allocate</b>
+    <p>Small, and the reason nobody disappears. On the real group sizes the
+    fractions already come out whole, so the leftover-handling never fires — it
+    exists entirely for the groups where it would, and for the tie-break that
+    sends a group of one to train.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b>check_splits</b>
+    <p>The stage cannot be tested by looking at its output, because a wrong split
+    looks exactly like a right one. This runs the six invariants on the real
+    assignment on every real run, and its one deliberately non-fatal check is a
+    good example of a guard that knows the difference between a bug and a fact
+    about the data.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <b>_spread_lines</b>
+    <p>Private, four lines of formatting, and it decides how the thesis is
+    allowed to phrase its results. It prints how far the attack-day counts move
+    between seeds and how many scenario-3 attack rows each test set holds. When
+    that number is four, "recall on scenario 3" is a claim about four rows, and
+    this is the line that forces you to say so.</p>
+  </div>
+</div>
+
+<div class="note good"><b>Honourable mention:</b>
+<code>summarise_split</code> — it computes <code>positives_by_scenario</code>,
+which is not in the original brief for the file format and is there because
+Stage 7 cannot report per-attack-type recall without it.</div>
+
+<footer>
+  <p>Counted against the source: <b>0</b> functions in <code>__init__.py</code>,
+  <b>16</b> in <code>split.py</code> (15 module-level including <code>main</code>,
+  plus the <code>status</code> property on <code>Check</code>) and <b>21</b> in
+  <code>test_split.py</code> — 37 in total, all described above. Two classes,
+  <code>SplitError</code> and <code>Check</code>, are covered in their zones.</p>
+</footer>
+
+</div>
+</body>
+</html>

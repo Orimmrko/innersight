@@ -12,3 +12,16 @@ data/*
 outputs/checkpoints/*
 outputs/figures/*
 !**/.gitkeep
+
+# scratch: files moved aside for deletion (tooling cannot rm)
+_to_delete/
+
+# tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# rehearsal artifacts from --sample runs: never results, never committed
+*.sample.json
+*.sample.log
+*.sample.png

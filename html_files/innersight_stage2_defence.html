@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 2 Explained (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 2 · defence preparation</p>
+  <h1>Filling in the missing days, then marking the bad ones</h1>
+  <p class="sub">What Stage 2 does, why it does it, what came out, and the answers to the questions you are likely to be asked. Written to be read out loud.</p>
+</header>
+
+<div class="callout">
+  <p><strong>Say this first, if you say nothing else.</strong></p>
+  <p>An insider does nothing forbidden. They do <em>normal</em> things — log in, copy a file, visit a website — at odd hours and in odd amounts, using their own real password. So there is no rule to write. The only question that works is <strong>“is this unlike <em>them</em>?”</strong></p>
+  <p>Stage 2 is the stage that lets us score the answer. It attaches the answer key. And before it can do that fairly, it has to repair the calendar — because <strong>528 of the 1,892 bad days did not exist in our table until this stage created them. That is 28% of every bad example the models will ever see.</strong></p>
+</div>
+
+<div class="card">
+<h4>Words used in this document</h4>
+<table>
+  <tr><td><b>row</b></td><td>one person on one day, with 18 numbers describing what they did</td></tr>
+  <tr><td><b>label</b></td><td>0 or 1. Is this day part of an attack?</td></tr>
+  <tr><td><b>window</b></td><td>the start and end date of one insider's attack, taken from the answer key</td></tr>
+  <tr><td><b>positive</b></td><td>a row with label = 1. A bad day.</td></tr>
+  <tr><td><b>the fill</b></td><td>adding back the days a person was at work but generated no computer activity</td></tr>
+  <tr><td><b>the answer key</b></td><td><code>insiders.csv</code> — CERT's list of who the 70 insiders are and when they attacked</td></tr>
+</table>
+</div>
+
+<h2>1 — What Stage 2 does</h2>
+
+<p>Stage 1 gave us 330,452 rows. Stage 2 reads that file, does two jobs, and saves a new file. It deletes nothing and changes none of the numbers.</p>
+
+<p><b>Job one: fill in the missing days.</b> Stage 1 only wrote down a day if the person did something. So quiet days — mostly weekends — are simply not in the table. For each person, we add back every calendar day between their first day and their last day. The added days get 0 for all 18 features.</p>
+
+<p><b>Job two: mark the bad days.</b> We read the answer key, keep only the 70 insiders from our release, and add two columns. <code>label</code> says whether <em>this day</em> is part of an attack. <code>user_scenario</code> says whether <em>this person</em> is an insider, and which type.</p>
+
+<h4>Why both jobs are in one stage</h4>
+
+<p>Because the second job is wrong without the first.</p>
+
+<p>The answer key marks <em>periods</em> — "this person was attacking from June 28th to August 20th." A period that long contains days where the person did nothing at all. If our table has no row for those days, we cannot mark them. The bad day is not marked wrongly. It is <b>missing</b>.</p>
+
+<p>So doing the fill later would mean training the models on 28% fewer bad examples than the answer key actually gives us — and nothing anywhere would show an error.</p>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">330,452</div><div class="k">rows in</div></div>
+  <div class="stat"><div class="v">464,687</div><div class="k">rows out</div></div>
+  <div class="stat"><div class="v">1,892</div><div class="k">bad days</div></div>
+  <div class="stat"><div class="v">0.407%</div><div class="k">are bad</div></div>
+  <div class="stat"><div class="v">~4 s</div><div class="k">to run</div></div>
+</div>
+
+<h2>2 — The fill, and the number that justifies it</h2>
+
+<div class="callout">
+  <p><strong>528 of the 1,892 bad days only exist because of the fill.</strong> That is 28% of all our bad examples. 50 of the 70 insiders have at least one.</p>
+  <p>These are days when a person was inside their attack period and produced <em>no computer activity of any kind</em>. Stage 1 only writes a row when something happens, so it wrote nothing.</p>
+  <p>Without the fill they are not rows with a wrong label. <b>They are not rows.</b></p>
+</div>
+
+<table>
+  <tr><th>Scenario</th><th class="num">Bad days</th><th class="num">Only exist after the fill</th><th class="num">Share</th></tr>
+  <tr><td><b>1</b> — USB copying, then leak site</td><td class="num">196</td><td class="num">40</td><td class="num">20%</td></tr>
+  <tr class="hi"><td><b>2</b> — job hunting, then theft</td><td class="num">1,676</td><td class="num"><b>488</b></td><td class="num"><b>29%</b></td></tr>
+  <tr><td><b>3</b> — keylogger on the boss's PC</td><td class="num">20</td><td class="num">0</td><td class="num">0%</td></tr>
+  <tr><td><b>Total</b></td><td class="num"><b>1,892</b></td><td class="num"><b>528</b></td><td class="num"><b>28%</b></td></tr>
+</table>
+
+<p>Scenario 3 gains nothing, because its attacks are only two days long and the person is active on both. Scenario 2 gains the most, because its attacks last 45 to 59 days — and a period that long is guaranteed to contain quiet days.</p>
+
+<h3>2.1 — Be honest about which days these are</h3>
+
+<div class="note"><b>Say this before someone finds it.</b> Of those 528 days, <b>494 are Saturdays and Sundays</b>. Only 34 are weekdays. And the longest an insider ever stays quiet in the middle of their attack is <b>4 days</b> — a long weekend. Nobody in this dataset disappears for a fortnight.</div>
+
+<p>There is a tempting story here: "scenario 2 is someone who resigned and stopped coming to work, so their silence is the clue." <b>Do not say it.</b> We checked, and it is not true of this data. Scenario-2 insiders keep working normally right through their attack. Their activity in the last quarter of the attack period is about the same as in the first quarter. They do not fade away.</p>
+
+<p>What the fill really buys us is two things. Both are easier to defend than the story above.</p>
+
+<h3>2.2 — First: 28% more bad examples exist at all</h3>
+
+<p>A Saturday inside a 57-day attack is a real bad day. It is a day when someone under suspicion produced no logins, no USB events, no email, no browsing.</p>
+
+<p>Can a model learn anything from a row of eighteen zeros? Maybe not — that is Stage 5's problem. But whether the row <em>exists</em> is our problem, and there is no good reason to hide a quarter of the answer key from the model.</p>
+
+<h3>2.3 — Second: it makes "28 days" actually mean 28 days</h3>
+
+<p>This is the important one. It would have quietly broken Model B.</p>
+
+<p>Model B looks at the 28 days ending on the day it is judging. But in the unfilled table, weekends are missing. So "the last 28 rows" is not "the last 28 days". We measured every possible 28-row stretch, for all 1,000 people:</p>
+
+<table>
+  <tr><th>28 rows in a row, before the fill</th><th class="num">How many real days that covers</th></tr>
+  <tr><td>shortest</td><td class="num">28</td></tr>
+  <tr class="hi"><td><b>typical (median)</b></td><td class="num"><b>39</b></td></tr>
+  <tr><td>longest</td><td class="num">47</td></tr>
+  <tr class="hi"><td><b>how often it is not 28 days</b></td><td class="num"><b>99% of the time</b></td></tr>
+</table>
+
+<div class="note bad"><b>Read that again.</b> Your whole project is "Model A sees 1 day, Model B sees 28 days." Without the fill, Model B is not seeing 28 days. It is seeing a stretch of anywhere from 28 to 47 days, different for every person and every window — usually about 39. Nothing would crash. You would simply have been measuring something different from what your report claims.</div>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“The fill isn't tidying up. It's what makes our experiment mean what we say it means. Before the fill, 28 rows in a row covered 39 days on average, and were the wrong length 99% of the time — so ‘28 days of context’ would have been a claim the data didn't support. And separately, 28% of our bad examples only exist because of it.”</p>
+</div>
+
+<h2>3 — Why each person's own dates, not all 501 days</h2>
+
+<p>The dataset covers 501 days. The obvious thing is to give everyone all 501 days and fill in zeros. That would be wrong.</p>
+
+<p><b>People are hired and fired all through the 17 months.</b> Only 1 person out of 1,000 is there for the whole period. 953 start late, 996 finish early, and the shortest job in the dataset lasted 31 days.</p>
+
+<p>Giving everyone 501 days would invent <b>36,313 fake days</b> — days when the person had already left, recorded as days when they came in and did nothing.</p>
+
+<p>And that matters most for exactly the people we care about:</p>
+
+<table>
+  <tr><th>Scenario</th><th class="num">Days from end of attack to that person's last day at work</th><th>How many leave within a week</th></tr>
+  <tr class="hi"><td><b>2</b> — job hunt, then theft</td><td class="num"><b>1 day</b></td><td><b>26 of 30</b></td></tr>
+  <tr><td><b>3</b> — keylogger</td><td class="num">0 days</td><td>10 of 10</td></tr>
+  <tr><td><b>1</b> — USB and leak site</td><td class="num">19 days</td><td>0 of 30</td></tr>
+</table>
+
+<div class="note good"><b>All 30 scenario-2 insiders leave the company.</b> Every single one. And 26 of them are gone within a week of finishing their attack. So the resignation is real — it just isn't silence <em>during</em> the attack. It is <b>their record stopping</b>.</div>
+
+<p>Filling each person only between their own first and last day keeps that. Someone who leaves in August has no rows in September, so "gone" still looks different from "here but idle." Filling everyone to 501 days would bury the departure under three hundred rows of zeros.</p>
+
+<div class="say">
+  <span class="lbl">If asked “why not just give everyone the full date range?”</span>
+  <p>“Because only 1 employee out of 1,000 is there the whole time, and it would invent 36,313 days of people who had already quit. All 30 of the scenario-2 insiders resign — 26 of them within a week of their attack ending — and you can see that because their record stops. Filling everyone to the full range would replace that with zeros and turn ‘this person left’ into ‘this person showed up and did nothing for ten months’.”</p>
+</div>
+
+<h2>4 — How a day gets marked as bad</h2>
+
+<p>The answer key has one line per insider:</p>
+
+<pre><code>dataset  scenario  user      start                 end
+4.2      1         KPC0073   07/07/2010 20:05:29   07/15/2010 03:08:16</code></pre>
+
+<p>The rule is one sentence: <b>a day is marked 1 if it falls between the start date and the end date for that person, including both ends. Otherwise 0.</b></p>
+
+<p>Three details in that sentence are doing real work.</p>
+
+<div class="card">
+<h4>The answer key covers all ten CERT releases, so we filter it — as text</h4>
+<p>It has 190 lines and only 70 are ours. We compare the release column to the <em>text</em> <code>"4.2"</code>. If the computer reads it as a number instead, the filter stops working properly — we would label people from a different release who aren't in our data, and miss the 70 who are. The code stops with an error if the filter finds nothing, because a table with zero bad days would train perfectly happily and score zero forever.</p>
+
+<h4>We compare dates, not clock times</h4>
+<p>Some attacks are very short. <code>BIH0745</code>'s entire attack is <b>65 minutes</b>, from 20:15 to 21:20 on one afternoon. If we compared the exact times, almost none of his day would count. So we cut the time off both ends and compare whole days. Those 65 minutes correctly mark the whole of 13 July.</p>
+
+<h4>Weekends inside an attack count as bad days</h4>
+<p>10 and 11 July 2010 are a Saturday and Sunday in the middle of <code>KPC0073</code>'s attack. He did nothing. Those rows exist only because of the fill, and they are marked 1, because they are inside the period the answer key names. This is where the two jobs of this stage meet.</p>
+</div>
+
+<h3>The other option we did not take</h3>
+
+<p>CERT also gives a second, narrower answer key: a file per insider listing their bad <em>actions</em> one by one, with times. We could have marked only the days where a listed bad action happened.</p>
+
+<p>We chose the wider windows instead, for three reasons.</p>
+
+<p><b>It would leave almost nothing to learn from.</b> <code>KPC0073</code>'s complete list of bad actions is three website visits. He would give us 3 bad days instead of 9, and scenario 1 would nearly vanish.</p>
+
+<p><b>It asks the wrong question.</b> Marking only scripted actions turns the task into "find the exact event the simulation wrote down." Our thesis is about finding an abnormal <em>period</em>.</p>
+
+<p><b>It would not be comparable.</b> Published research on this dataset uses the window rule, so using it keeps our numbers next to theirs.</p>
+
+<div class="note"><b>Raise the counterpoint yourself.</b> The narrow key is a legitimate choice, not a wrong one, and your supervisor may prefer it. The defensible position is: we picked the wider target on purpose and we know the cost — more noise inside long attacks, in exchange for having enough bad days to train on at all.</div>
+
+<h2>5 — Two columns, because there are two questions</h2>
+
+<table>
+  <tr><th>Column</th><th>About</th><th>Meaning</th></tr>
+  <tr><td class="mono">label</td><td><b>the day</b></td><td>is this day part of an attack? 0 or 1</td></tr>
+  <tr><td class="mono">user_scenario</td><td><b>the person</b></td><td>0 = normal employee, 1 / 2 / 3 = which kind of insider</td></tr>
+</table>
+
+<p>An insider's ordinary Tuesday in March is <code>label = 0</code> and <code>user_scenario = 2</code> at the same time. That is not a contradiction. He <em>is</em> an insider. That particular day just isn't an attack day.</p>
+
+<p>Two later stages need the person-level column and cannot work it out from the day-level one.</p>
+
+<p><b>Stage 4</b> splits people into training, validation and test groups. It has to make sure all three attack types appear in all three groups. There are only 10 scenario-3 insiders in the world, so a careless random split can easily put zero of them in the test group.</p>
+
+<p><b>Stage 7</b> reports results separately per attack type, which means it needs to know which type each person is — on their normal days as well as their attack days.</p>
+
+<div class="note"><b>Why it isn't just called <code>scenario</code>.</b> The answer key already has a column with that exact name, meaning the same thing but per attack rather than per person. Two columns with one name is how you end up merging the wrong one. Ours is called <code>user_scenario</code>, and every stage reads the name from <code>config.py</code> instead of typing it.</div>
+
+<h2>6 — What came out</h2>
+
+<pre><code>Rows before the fill    330,452
+Rows after the fill     464,687   (134,235 added, 29% of the table)
+People                  1,000
+Dates                   2 Jan 2010 -> 17 May 2011
+Bad days                1,892     (0.407% of all rows)
+pos_weight              244.6     (245 good days for every bad one)
+
+scenario   insiders   bad days   average per insider
+1                30        196                   6.5
+2                30      1,676                  55.9
+3                10         20                   2.0</code></pre>
+
+<p>Of the 134,235 rows we added, <b>125,511 (94%) are Saturdays and Sundays</b>. That is exactly what you would expect — this is a simulated office, and the fill is mostly putting weekends back.</p>
+
+<h4>How we know it is right</h4>
+<ul>
+  <li><b>All 1,892 attack days are present and marked.</b> We checked this separately, by going through all 70 attacks in the answer key and looking up every date in the saved file — not by trusting the same code that wrote it.</li>
+  <li><b>Every person's dates are now continuous.</b> For all 1,000 people, the number of rows equals last day minus first day plus one.</li>
+  <li><b>Exactly 70 people are marked as insiders</b>, and every one of them has at least one bad day.</li>
+  <li><b>No missing values, no duplicated days, and no bad day belonging to a normal employee.</b></li>
+  <li><b>16 automated tests</b>, plus Stage 1's 9 still passing.</li>
+</ul>
+
+<div class="note good"><b>One correction to our own planning document.</b> We had estimated 1,385 bad days without the fill. The real measured number is <b>1,364</b>. Use 1,364. Small difference, but it is the difference between a number we calculated and one we guessed.</div>
+
+<h2>7 — Two facts that will explain your Stage 7 results in advance</h2>
+
+<div class="callout">
+  <p><strong>Scenario 3 has 20 bad days in the whole dataset.</strong> Ten insiders, two days each. Stage 4 splits people 60/20/20, so the test group will hold about two of those insiders — roughly <b>four bad rows</b>. You cannot measure anything reliably with four examples. When scenario 3 scores badly, that is the reason.</p>
+  <p><strong>Scenario 2 is 89% of all bad days</strong> (1,676 out of 1,892). So any single overall score is basically a scenario-2 score. A model that caught scenario 2 perfectly and the other two not at all would still post an impressive headline number.</p>
+</div>
+
+<p>Both point at the same decision: <b>Stage 7 must report each attack type separately, not one average.</b> Say these two facts <em>before</em> you show results. Then two things that would look like failures become a known, measured property of the dataset.</p>
+
+<h2>8 — A flaw in the answer key that we did not fix</h2>
+
+<p>The attack periods mark the <em>signature event</em> — the thing the simulation scripted — not everything suspicious the person did. Two insiders show this clearly. Learn both; they are your evidence.</p>
+
+<h4>KPC0073 — suspicious the day before his attack "starts"</h4>
+
+<pre><code>       day    usb plugged in   after-hours usb   after-hours login   upload site   label
+2010-07-05                 0                 0                   0             0       0
+2010-07-06                 2                 4                   1             0       0   <- suspicious, marked normal
+2010-07-07                 1                 2                   1             1       1   <- attack starts 20:05
+2010-07-08                 0                 0                   0             0       1</code></pre>
+
+<p>His attack officially starts at 20:05 on 7 July. The night before, he plugged in a USB stick twice and logged in after hours. In 17 months, his entire history contains 16 USB events total. It is obviously the same behaviour. It is marked 0, correctly, because that is what the answer key says.</p>
+
+<h4>BIH0745 — his worst night is not in his attack period</h4>
+
+<pre><code>       day    after-hours usb   usb plugged in   files copied   upload site   label
+2010-07-08                  8                4             15             0       0   <- his worst night
+2010-06-29                  6                3             13             0       0
+2010-07-02                  6                3             13             0       0
+2010-07-13                  2                1              0             1       1   <- the 65-minute attack</code></pre>
+
+<p>His whole attack is 65 minutes on 13 July, when he plugged in a USB stick once and visited an upload site once. On three <em>unmarked</em> nights he copied <b>41 files</b> and produced <b>20 after-hours USB events — against 2 inside his attack</b>. Ten times as much suspicious behaviour outside the label as inside it.</p>
+
+<div class="note bad"><b>What this means for your results.</b> If your model flags 6 July for KPC0073, or 8 July for BIH0745, it is <em>right</em> — and it will be counted as a mistake. So your reported precision is a floor, not a ceiling. Some of what looks like error is the model finding real anomalies the answer key doesn't mark.</div>
+
+<div class="say">
+  <span class="lbl">If asked “why not widen the attack periods to cover those days?”</span>
+  <p>“Because then we'd be choosing the answers after seeing what our model flags. Once the target can be adjusted, the evaluation stops meaning anything. So we measured the gap instead — 20 after-hours USB events outside BIH0745's window against 2 inside — and reported it as a known limitation of the dataset.”</p>
+</div>
+
+<h2>9 — Weaknesses, said before anyone asks</h2>
+
+<ul>
+  <li><b>The answer key is narrower than the real behaviour.</b> Shown above with real numbers for two insiders. Some genuinely suspicious days are marked normal, so our precision score understates how well the model actually does.</li>
+  <li><b>28% of our bad examples are days of complete inactivity</b>, and 94% of those are weekends. Eighteen zeros is a thin thing to learn from. Whether a model can use them is an open question we do not answer here. What we guarantee is that they exist and the calendar is regular.</li>
+  <li><b>Marking the whole attack period also marks ordinary days.</b> A 59-day scenario-2 attack contains plenty of normal working days marked as bad. That is noise we accepted on purpose, to have enough bad days to train on.</li>
+  <li><b>Scenario 3 cannot really be measured.</b> Twenty bad days in total. We will report it, but any score for it rests on a handful of rows and should be presented that way.</li>
+  <li><b>0.407% bad days is still far too many compared to real life.</b> CERT built this dataset with 7% of employees as insiders on purpose, so there would be enough to study. A real company is nowhere near that.</li>
+  <li><b>We cannot tell "not at work" from "at work, doing nothing".</b> The dataset has no holiday or leave records, so a zero day is a zero day either way.</li>
+</ul>
+
+<h2>10 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">Isn't filling in zeros just making up data that was never collected?</div><div class="a">
+<p>No, and the difference matters. A zero here isn't a guess at something unknown — it is a measurement. The logging system watched that person all day and recorded no login, no USB event, no file copy, no email, no web request. Zero is what actually happened. That's an observation.</p>
+<p>Leaving the row out is the choice that states something false: it says the day didn't happen. It also makes the calendar irregular, so "the last 28 days" quietly becomes 39.</p>
+<p>Where we <em>would</em> be making things up is filling in days after a person left the company — and we deliberately don't. Each person is filled only between their own first and last day. That is why we added 134,235 rows instead of the 170,548 a full-range fill would have added.</p></div></div>
+
+<div class="qa"><div class="q">You said absence is the signal, but you also said the insiders never go quiet. Which is it?</div><div class="a">
+<p>The second — and we corrected this by measuring instead of assuming. Scenario-2 insiders keep working right through their attack; their activity at the end of the period matches the beginning, and the longest quiet run inside any attack in the whole dataset is four days, which is a long weekend.</p>
+<p>What is true is that they <em>leave</em>. All 30 of them. Every scenario-2 record ends before the dataset does, and 26 end within a week of the attack finishing. So the resignation is real, but it shows up as their record stopping — not as silence during the attack. Which is exactly why the fill is per-person and not global.</p></div></div>
+
+<div class="qa"><div class="q">Why mark the whole attack period instead of just the bad actions?</div><div class="a">
+<p>Two reasons. Our thesis is about spotting abnormal periods, not scripted events. And the action-level key is far too thin to train on — KPC0073's complete bad-action list is three web requests, so he would give us 3 bad days instead of 9 and scenario 1 would nearly disappear. The window rule is also what published work on this dataset uses, so our numbers stay comparable. The cost is noise: a 59-day attack period contains ordinary working days marked as bad. We took that trade knowingly.</p></div></div>
+
+<div class="qa"><div class="q">Only 0.4% of your rows are bad. How can you train anything on that?</div><div class="a">
+<p>By telling the model that bad days matter more. There are about 245 good days for every bad one, so Stage 5 weights the bad class by roughly that much when calculating the error. Stage 2 prints the number for reference but deliberately does not lock it in — Stage 5 has to recalculate it on its own training group, because using the whole-table value would leak information about the test set into training.</p>
+<p>We also don't use accuracy to judge the model. A model that says "normal" to everything scores 99.6% accuracy and is useless. We use precision, recall and PR-AUC instead.</p></div></div>
+
+<div class="qa"><div class="q">Two of your three attack types barely have any examples. Doesn't that ruin the results?</div><div class="a">
+<p>It limits what the results can claim, and we say so in advance rather than discovering it afterwards. Scenario 3 has 20 bad days in the entire dataset — about four will land in the test group — so no score for it is statistically meaningful, and we present it as an observation, not a result. Scenario 2 is 89% of all bad days, so any overall figure is really a scenario-2 figure. That is why Stage 7 reports each type separately. Both facts come from the dataset, not from our method, and they would affect anyone training on r4.2.</p></div></div>
+
+<div class="qa"><div class="q">How do you know the labels landed on the right days?</div><div class="a">
+<p>Three ways. The program prints checks every time it runs: 70 people marked as insiders, every insider has at least one bad day, no bad day on a normal employee, no missing values, no duplicated days.</p>
+<p>Separately, we checked the saved file independently — going through all 70 attacks in the answer key and looking up every one of the 1,892 dates, rather than trusting the code that wrote it.</p>
+<p>And there is a hand check. KPC0073's attack runs 7 to 15 July, and the table shows 1 on exactly those nine days and 0 on 6 July. If the date comparison were off by a day, or comparing clock times instead of dates, that boundary would sit somewhere else.</p></div></div>
+
+<div class="qa"><div class="q">Why is this a separate stage from feature extraction?</div><div class="a">
+<p>Because extraction is the slow part — it reads 16 GB and takes about 90 seconds — and the labelling rule is the thing most likely to change. Keeping them apart means changing the labelling costs four seconds instead of redoing the whole pass. It also keeps the labelling small enough to test properly, which is where the 16 tests live.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Stage 2 turns 330,452 rows with gaps into 464,687 rows with a complete calendar, and attaches the answer key: 1,892 bad days, 0.4% of the table. 28% of those bad days did not exist as rows before this stage. And without the fill, 28 rows in a row covered 39 days on average — so this stage isn't bookkeeping. It's what makes both the labels and our experiment mean what we say they mean.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 2 · CERT Insider Threat Test Dataset r4.2 (Carnegie Mellon University / ExactData).
+  Every number here was measured from <code>data/labelled_counts.parquet</code> and <code>answers/insiders.csv</code> after the run on 8 August 2026. None is estimated.
+</footer>
+
+
+</div>
+</body>
+</html>

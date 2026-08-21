@@ -1,0 +1,26 @@
+Check E - KPC0073, 2010-07-01 .. 2010-07-20
+Expected: USB zero everywhere, non-zero on 07-06, 07-07, 07-09, 07-12, 07-15
+
+       day  usb_connect_count  usb_disconnect_count  after_hours_usb  file_count  logon_count
+2010-07-01                  0                     0                0           0            1
+2010-07-02                  0                     0                0           0            1
+2010-07-06                  2                     2                4           0            2
+2010-07-07                  1                     1                2           0            2
+2010-07-08                  0                     0                0           0            1
+2010-07-09                  3                     3                6           0            2
+2010-07-12                  1                     1                2           0            2
+2010-07-13                  0                     0                0           0            1
+2010-07-14                  0                     0                0           0            1
+2010-07-15                  1                     1                2           0            2
+2010-07-16                  0                     0                0           0            1
+2010-07-19                  0                     0                0           0            1
+2010-07-20                  0                     0                0           0            1
+
+Whole 17-month history:
+  days with any USB connect : ['2010-07-06', '2010-07-07', '2010-07-09', '2010-07-12', '2010-07-15']
+  total connects            : 8
+  total disconnects         : 8
+  total device events       : 16  (brief says 16)
+  USB events before 2010-07 : 0
+
+VERDICT: PASS - the fingerprint reproduces exactly.

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — every function in labeling/</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .big{font-size:19.5px; line-height:1.55; margin:18px 0}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600}
+  .card h3 .stage{font-family:var(--mono); font-size:11px; color:var(--muted);
+                  border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:18px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 22px}
+  .rule .num{font-family:var(--mono); font-size:26px; font-weight:800; color:var(--accent);
+             line-height:1; flex:none; width:34px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0} .rule .body p + p{margin-top:9px}
+  .rule .body b{font-size:17px; display:block; margin-bottom:5px}
+
+  .zones{font-family:var(--mono); font-size:12.5px; line-height:1.85; background:var(--code-bg);
+         border-radius:8px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+  .zones .z{color:var(--accent); font-weight:700}
+  .zones .c{color:var(--muted)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 2 · labeling/</p>
+  <h1>Every function in <code>labeling/</code></h1>
+  <p class="sub">One line each, in plain words, in the order they appear in the file. Written from the bodies, not the docstrings — where the two disagree, it says so.</p>
+</header>
+
+<div class="callout">
+  <p><strong>What this package is for.</strong></p>
+  <p>Stage 1 only writes a row for a day that produced at least one event, so a person who took a weekend off simply has no Saturday. This package gives everyone a row for <em>every</em> date between their first and last sighting — zeros for the quiet ones — and then reads <code>answers/insiders.csv</code> to mark which of those dates fall inside a known attack, and which people are insiders at all. It drops nothing, computes no statistics, and hands the result to Stage 3.</p>
+</div>
+
+<div class="note good"><b>Why the fill has to come first.</b> A day of no activity is an observation, not missing data. The scenario-2 story is somebody who resigns and stops showing up, and their silence is the strongest thing they do — an unfilled table has no row to mark on those days, so the signal would be deleted by construction rather than merely unlearned.</div>
+
+<h2><span class="n">1</span>The three files</h2>
+
+<table>
+  <tr><th>File</th><th class="mono">Lines</th><th>What's in it</th></tr>
+  <tr><td class="mono">__init__.py</td><td class="mono">24</td><td>Docstring and one export list. No functions.</td></tr>
+  <tr class="hi"><td class="mono">label.py</td><td class="mono">715</td><td><b>25 definitions</b> — 22 functions (3 of them dataclass properties), 2 exception classes, 1 dataclass.</td></tr>
+  <tr><td class="mono">test_label.py</td><td class="mono">281</td><td><b>19 functions</b> — 3 fixture helpers and 16 tests.</td></tr>
+</table>
+
+<p>There is also a <code>README.md</code> in the package. It contains no code and is not covered here.</p>
+
+<h2><span class="n">2</span><code>__init__.py</code></h2>
+
+<p>No functions at all. The module docstring restates the stage in short form, and then:</p>
+
+<pre><code>__all__ = ["label"]</code></pre>
+
+<div class="note"><b>A wart worth knowing.</b> <code>__all__</code> names the <code>label</code> submodule but nothing in the file imports it, so <code>from labeling import *</code> raises <code>AttributeError</code> unless <code>labeling.label</code> has already been imported some other way. Nothing in the project does this — every caller writes <code>from labeling.label import …</code> — so it has never bitten, but the export list is currently decorative.</div>
+
+<h2><span class="n">3</span><code>label.py</code> — the scan table</h2>
+
+<p>All 25 definitions, in file order. ⭐ marks the six worth actually understanding.</p>
+
+<table>
+  <tr><th class="mono">Line</th><th>Name</th><th>One line</th></tr>
+
+  <tr><td class="mono">86</td><td class="mono">GroundTruthError</td><td>Raised when the answer file itself is unusable.</td></tr>
+  <tr><td class="mono">90</td><td class="mono">LabellingError</td><td>Raised when the table this stage produced is impossible.</td></tr>
+
+  <tr class="hi"><td class="mono">99</td><td class="mono">⭐ load_insiders</td><td>Reads the answer file as text and keeps only release 4.2's attack windows.</td></tr>
+  <tr><td class="mono">155</td><td class="mono">_to_day</td><td>Throws away the clock time, leaving midnight of that date.</td></tr>
+  <tr><td class="mono">167</td><td class="mono">_validate_windows</td><td>Rejects backwards windows, unknown scenario ids, and one person under two scenarios.</td></tr>
+
+  <tr class="hi"><td class="mono">206</td><td class="mono">⭐ calendar_fill</td><td>Gives each person a row for every date they spanned, zeros on the quiet ones.</td></tr>
+  <tr class="hi"><td class="mono">239</td><td class="mono">⭐ _calendar_index</td><td>Builds that person × date grid with one block of integer arithmetic.</td></tr>
+
+  <tr class="hi"><td class="mono">271</td><td class="mono">⭐ attach_labels</td><td>Adds the per-day attack flag and the per-person scenario number.</td></tr>
+  <tr class="hi"><td class="mono">297</td><td class="mono">⭐ _window_mask</td><td>Decides row by row whether the date sits between a window's two ends.</td></tr>
+  <tr><td class="mono">327</td><td class="mono">build_labelled_counts</td><td>Fill, then label — the whole stage in one call.</td></tr>
+  <tr><td class="mono">334</td><td class="mono">_require_unique_keys</td><td>Stops if a person-and-date pair appears twice.</td></tr>
+
+  <tr class="hi"><td class="mono">348</td><td class="mono">⭐ verify</td><td>Five things that cannot be true of a correct result; any of them stops the run.</td></tr>
+  <tr><td class="mono">388</td><td class="mono">_users_that_lost_rows</td><td>Names anyone who came out of the fill with fewer rows than they went in with.</td></tr>
+
+  <tr><td class="mono">400</td><td class="mono">LabelStats</td><td>The frozen bag of numbers the report and its checks both read.</td></tr>
+  <tr><td class="mono">412</td><td class="mono">LabelStats.negatives</td><td>Rows outside every attack window.</td></tr>
+  <tr><td class="mono">416</td><td class="mono">LabelStats.positive_rate</td><td>The share of rows inside a window — the imbalance the model faces.</td></tr>
+  <tr><td class="mono">420</td><td class="mono">LabelStats.pos_weight</td><td>Negatives per positive, printed for orientation and deliberately not reused.</td></tr>
+  <tr><td class="mono">430</td><td class="mono">compute_stats</td><td>One pass over the table producing every headline number.</td></tr>
+  <tr><td class="mono">451</td><td class="mono">format_report</td><td>Assembles the block of text the run prints.</td></tr>
+  <tr><td class="mono">491</td><td class="mono">_scenario_lines</td><td>Three rows showing how lopsided the scenarios are.</td></tr>
+  <tr><td class="mono">519</td><td class="mono">_check_lines</td><td>Eight soft checks that print <code>CHECK</code> instead of raising.</td></tr>
+  <tr><td class="mono">572</td><td class="mono">_check</td><td>Formats one of those eight lines.</td></tr>
+  <tr><td class="mono">576</td><td class="mono">format_user_report</td><td>Shows one person's busiest days so the edge of their window is visible.</td></tr>
+  <tr><td class="mono">633</td><td class="mono">_window_lines</td><td>One line per attack window: two dates and how many days that spans.</td></tr>
+
+  <tr><td class="mono">647</td><td class="mono">main</td><td>Read, label, check, write, print.</td></tr>
+</table>
+
+<h2><span class="n">4</span><code>label.py</code> — zone by zone</h2>
+
+<div class="zones">
+<span class="c">line</span>
+  78   <span class="z">ZONE 1 · constants + errors</span>   KEY_COLUMNS, _RULE, WINDOW_START, WINDOW_END
+  86                                 GroundTruthError, LabellingError
+
+  99   <span class="z">ZONE 2 · ground truth</span>        load_insiders, _to_day, _validate_windows
+
+ 206   <span class="z">ZONE 3 · calendar fill</span>       calendar_fill, _calendar_index
+
+ 271   <span class="z">ZONE 4 · labelling</span>           attach_labels, _window_mask,
+                                 build_labelled_counts, _require_unique_keys
+
+ 348   <span class="z">ZONE 5 · invariants</span>          verify, _users_that_lost_rows
+
+ 399   <span class="z">ZONE 6 · report</span>              LabelStats … _window_lines  (11 definitions)
+
+ 647   <span class="z">ZONE 7 · CLI</span>                 main
+</div>
+
+<h3>Zone 1 — the vocabulary and the two ways this stage can fail</h3>
+
+<p>Four module constants and two exception types; nothing here computes anything.</p>
+
+<div class="card">
+  <h3><span class="path">KEY_COLUMNS = ("user", "day") · _RULE = "=" * 78</span></h3>
+  <p>The first is the pair that identifies a row everywhere in this file — merges, duplicate checks and sorts all take it rather than spelling the two names out each time. The second is just the horizontal line the printed page is boxed with.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">WINDOW_START = "start_day" · WINDOW_END = "end_day"</span></h3>
+  <p>Names for the two date columns of the parsed window table, which exists only inside this module and is never written to disk.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">class GroundTruthError(ValueError)</span></h3>
+  <p>Signals that <code>insiders.csv</code> is wrong: a missing column, no rows matching release 4.2, a window that ends before it starts, or one person filed under two scenarios.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">class LabellingError(AssertionError)</span></h3>
+  <p>Signals that the table this stage built is wrong: rows vanished, a person-date repeated, a blank crept in, or an attack day landed on somebody the answer key never names.</p>
+  <p><b>Two types rather than one</b> so a corrupt input file can never be mistaken for a bug in the join.</p>
+</div>
+
+<h3>Zone 2 — turning the answer file into date ranges</h3>
+
+<div class="card">
+  <h3><span class="path">⭐ def load_insiders(path: Path, release: str = RELEASE_ID) -&gt; pd.DataFrame</span></h3>
+  <p>Reads the answer file with every column forced to text, keeps only the rows whose <code>dataset</code> field is the exact string <code>"4.2"</code>, and returns one row per attack window as person, scenario number, start date, end date.</p>
+  <p><b>Text, not numbers, is the point:</b> read numerically, <code>"4.2"</code> and <code>"4.20"</code> are the same value and two different CERT releases get mixed together.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _to_day(stamps: pd.Series) -&gt; pd.Series</span></h3>
+  <p>Parses stamps like <code>07/07/2010 20:05:29</code> and discards the clock, leaving midnight of that date.</p>
+  <p>Doing it once here is what makes "the day is between start and end" literally true of the stored values, instead of true only if every later comparison remembers to strip the time itself.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _validate_windows(windows: pd.DataFrame, path: Path) -&gt; None</span></h3>
+  <p>Refuses the file if any range runs backwards, if a scenario number outside 1/2/3 appears, or if one person is filed under two different scenarios.</p>
+  <p>A person with two <em>ranges</em> is fine and only logs a warning — the ranges simply both count.</p>
+</div>
+
+<h3>Zone 3 — putting the missing days back</h3>
+
+<div class="card">
+  <h3><span class="path">⭐ def calendar_fill(daily: pd.DataFrame) -&gt; pd.DataFrame</span></h3>
+  <p>Gives every person a row for each date between the first and last day they were seen, writing 0 into all the count columns on the dates that had no row, and leaving the rows that already existed exactly as they were.</p>
+  <p><b>It also quietly narrows the table:</b> the output keeps only <code>user</code>, <code>day</code> and the known feature columns, so any extra column present in the input is dropped. The docstring's "strict superset" is true of the rows, not of the columns.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _calendar_index(daily: pd.DataFrame) -&gt; pd.DataFrame</span></h3>
+  <p>Produces the complete person × date grid by taking each person's first and last day, working out how long their run is, and generating all the dates as one long stretch of integer arithmetic.</p>
+  <p><b>Not just speed:</b> there is no per-person branch, so it cannot get one person's first or last day wrong while the other 999 are right.</p>
+</div>
+
+<h3>Zone 4 — attaching the two ground-truth columns</h3>
+
+<div class="card">
+  <h3><span class="path">⭐ def attach_labels(daily: pd.DataFrame, windows: pd.DataFrame) -&gt; pd.DataFrame</span></h3>
+  <p>Appends two small integer columns: one saying whether <em>this date</em> falls inside an attack, one saying which scenario <em>this person</em> belongs to, with 0 for everybody the answer key never names.</p>
+  <p><b>They are meant to disagree.</b> An insider's ordinary Tuesday in March is a 0 in the first column and still a 2 in the second — Stage 4 needs the per-person value to balance its split, Stage 7 needs it to break results down by attack type.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">⭐ def _window_mask(daily: pd.DataFrame, windows: pd.DataFrame) -&gt; np.ndarray</span></h3>
+  <p>Produces a true/false answer per row by walking the ~70 attack ranges and, for each, touching only that person's rows — comparing dates with both ends counted as inside.</p>
+  <p>A range naming somebody who has no rows at all is skipped silently here; the report flags it separately, because that means Stage 1 lost their activity, which is a data problem rather than a labelling one.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def build_labelled_counts(daily, windows) -&gt; pd.DataFrame</span></h3>
+  <p>Runs the fill and then the marking, in that order, because a day with no events has no row to mark until the fill creates one.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _require_unique_keys(frame: pd.DataFrame, what: str) -&gt; None</span></h3>
+  <p>Stops with an error if the same person-and-date shows up more than once, which would multiply into several rows during the merge instead of failing loudly.</p>
+</div>
+
+<h3>Zone 5 — the things that stop the run</h3>
+
+<div class="card">
+  <h3><span class="path">⭐ def verify(labelled: pd.DataFrame, before: pd.DataFrame) -&gt; None</span></h3>
+  <p>Checks five impossibilities and raises on any of them: the table got shorter, a person-date repeated, a blank appeared anywhere, an attack day belongs to somebody benign, or an individual lost rows.</p>
+  <p><b>Docstring says four, the body runs five</b> — it was written before the shrunk-user check was added. Everything merely <em>surprising</em> is left to the printed report instead.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _users_that_lost_rows(after: pd.DataFrame, before: pd.DataFrame) -&gt; list[str]</span></h3>
+  <p>Compares row counts per person before and after and returns anyone who came out with fewer than they went in with, which should be nobody.</p>
+</div>
+
+<h3>Zone 6 — the numbers and the printed page</h3>
+
+<div class="card">
+  <h3><span class="path">@dataclass(frozen=True, slots=True) class LabelStats</span></h3>
+  <p>An immutable bundle of the seven measurements the printed page needs, gathered once so the headline numbers and the pass/fail lines cannot disagree with each other.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">@property def negatives(self) -&gt; int</span></h3>
+  <p>How many rows sit outside every attack range — everything left after subtracting the marked days.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">@property def positive_rate(self) -&gt; float</span></h3>
+  <p>The fraction of all rows that are inside an attack, which is the imbalance every later stage has to work against. Returns 0.0 rather than dividing by zero on an empty table.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">@property def pos_weight(self) -&gt; float</span></h3>
+  <p>How many ordinary rows there are per attack row.</p>
+  <p><b>Printed and then deliberately thrown away:</b> Stage 5 works this out again from its own training rows, because freezing the whole-table figure would smuggle the test set's balance into the loss function.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def compute_stats(labelled, before, windows) -&gt; LabelStats</span></h3>
+  <p>Walks the finished table once and fills that bundle in, including the list of people the answer key names who nevertheless ended up with no attack day at all.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def format_report(labelled, before, windows, out=None) -&gt; str</span></h3>
+  <p>Assembles the page the run prints: rows before and after the fill, the date range, the class balance, the per-scenario table and the eight pass/fail lines.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _scenario_lines(labelled, windows) -&gt; list[str]</span></h3>
+  <p>Three rows — one per attack type — giving how many people, how many marked days, and the average days each of those people contributes.</p>
+  <p><b>Worth reading rather than skipping:</b> it's where you see that one attack type supplies the overwhelming majority of marked days, so any overall score is very nearly a score for that one type alone.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _check_lines(labelled: pd.DataFrame, stats: LabelStats) -&gt; list[str]</span></h3>
+  <p>Eight statements about the result — insider count, everyone having at least one marked day, no blanks, no repeats, labels only ever 0 or 1 — each rendered as pass or <code>CHECK</code>.</p>
+  <p>Nothing here raises: these are the things that are suspicious rather than impossible, and a surprising number is something to look at, not necessarily something wrong.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _check(label: str, passed: bool, detail: object) -&gt; str</span></h3>
+  <p>Lays one of those eight statements out as a fixed-width line: the word <code>ok</code> or <code>CHECK</code>, the padded description, then whatever detail was measured.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def format_user_report(labelled, user, windows=None, rows=30) -&gt; str</span></h3>
+  <p>Shows one person's thirty most eventful days in date order, with <code>&lt;&lt;&lt;</code> beside the ones inside an attack, plus their ranges printed above.</p>
+  <p><b>The ranking is the clever bit:</b> days are scored by how much activity they carry, but every marked day is pushed above every unmarked one first — so the last quiet day and the first flagged day always end up adjacent on screen, where a wrong date comparison is obvious.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _window_lines(windows: pd.DataFrame, user: str) -&gt; list[str]</span></h3>
+  <p>One line per attack range belonging to that person: the two dates and how many days that covers with both ends counted.</p>
+</div>
+
+<h3>Zone 7 — the command line</h3>
+
+<div class="card">
+  <h3><span class="path">def main(argv: Sequence[str] | None = None) -&gt; int</span></h3>
+  <p>Reads the counts file, loads the answer key, fills and marks, runs the hard checks, writes the parquet, prints the page, and optionally prints one person's days.</p>
+  <p><b>Full runs and <code>--sample</code> runs write different filenames on purpose</b> — Stage 1 was bitten by exactly this, when a seven-second development run replaced the real 1,000-user table.</p>
+</div>
+
+<h2><span class="n">5</span><code>test_label.py</code> — the scan table</h2>
+
+<p>All 19 functions. The suite is short on purpose and aimed at failures that are wrong <em>silently</em> — no exception, no blank value, just a column that is subtly off and a model that appears to train fine.</p>
+
+<table>
+  <tr><th class="mono">Line</th><th>Name</th><th>One line</th></tr>
+  <tr><td class="mono">38</td><td class="mono">_counts</td><td>Fake Stage 1 table where every count is 1, so any 0 must have come from the fill.</td></tr>
+  <tr><td class="mono">48</td><td class="mono">_windows</td><td>Hand-built ranges that skip the CSV entirely.</td></tr>
+  <tr><td class="mono">56</td><td class="mono">_insiders_csv</td><td>Writes a small real answer file into a temporary folder.</td></tr>
+
+  <tr><td class="mono">71</td><td class="mono">test_window_is_inclusive_at_both_ends</td><td>Both edge dates of a three-day range are marked; their neighbours are not.</td></tr>
+  <tr><td class="mono">86</td><td class="mono">test_a_window_shorter_than_a_day_…</td><td>A real 65-minute attack claims its whole date.</td></tr>
+  <tr><td class="mono">96</td><td class="mono">test_insiders_ordinary_day_is_negative_…</td><td>An insider's quiet March day is unmarked but still carries scenario 2.</td></tr>
+  <tr><td class="mono">110</td><td class="mono">test_benign_user_is_all_zeros_…</td><td>Somebody the answer key never names gets zeros in both new columns.</td></tr>
+  <tr><td class="mono">121</td><td class="mono">test_a_window_only_labels_its_own_user</td><td>Two people, same date, only the named one is marked.</td></tr>
+
+  <tr><td class="mono">137</td><td class="mono">test_release_filter_compares_dataset_…</td><td>A file holding 4.2, 5.2 and 4.20 must yield only the 4.2 row.</td></tr>
+  <tr><td class="mono">153</td><td class="mono">test_timestamps_are_normalised_…</td><td>20:05 and 03:08 come back as plain dates.</td></tr>
+  <tr><td class="mono">164</td><td class="mono">test_a_release_with_no_rows_is_an_error_…</td><td>Matching nothing raises instead of returning an empty table.</td></tr>
+  <tr><td class="mono">174</td><td class="mono">test_one_user_under_two_scenarios_…</td><td>One person, two scenario numbers, refused.</td></tr>
+
+  <tr><td class="mono">191</td><td class="mono">test_fill_inserts_exactly_the_missing_…</td><td>Fri/Mon/Tue becomes five rows and the weekend holds zeros, not blanks.</td></tr>
+  <tr><td class="mono">207</td><td class="mono">test_fill_is_per_user_and_never_beyond_…</td><td>Someone who left in January isn't stretched to cover someone else's May.</td></tr>
+  <tr><td class="mono">225</td><td class="mono">test_fill_preserves_dtypes_…</td><td>Existing rows keep their values and their column types.</td></tr>
+  <tr><td class="mono">235</td><td class="mono">test_fill_makes_a_silent_day_labellable</td><td>The same two rows give 2 marked days unfilled and 8 filled.</td></tr>
+  <tr><td class="mono">251</td><td class="mono">test_duplicate_user_days_are_rejected_…</td><td>A repeated person-date raises instead of multiplying.</td></tr>
+
+  <tr><td class="mono">263</td><td class="mono">test_verify_rejects_a_positive_day_…</td><td>An attack day forced onto a benign person stops the run.</td></tr>
+  <tr><td class="mono">273</td><td class="mono">test_verify_accepts_a_correctly_…</td><td>A good table passes silently and comes out in the expected column order.</td></tr>
+</table>
+
+<h2><span class="n">6</span><code>test_label.py</code> — function by function</h2>
+
+<h3>The three helpers — building inputs by hand instead of reading files</h3>
+
+<div class="card">
+  <h3><span class="path">def _counts(rows: list[tuple[str, str]]) -&gt; pd.DataFrame</span></h3>
+  <p>Turns a list of person-and-date pairs into a Stage-1-shaped table with all 18 counts set to 1, so a 0 anywhere in a result can only have been inserted by the fill.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _windows(rows: list[tuple[str, int, str, str]]) -&gt; pd.DataFrame</span></h3>
+  <p>Builds the parsed range table directly, skipping the CSV — so a test about the marking rule doesn't also depend on file reading working.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def _insiders_csv(path, rows: list[tuple[str, str, str, str, str]])</span></h3>
+  <p>Writes a miniature real answer file to a temporary folder, including the <code>details</code> column that the loader insists on but never reads.</p>
+</div>
+
+<h3>The marking rule — five tests on where the edges fall</h3>
+
+<div class="card">
+  <h3><span class="path">def test_window_is_inclusive_at_both_ends() -&gt; None</span></h3>
+  <p>Seven days around a three-day attack: the 7th, 8th and 9th must all come out marked and the 6th and 10th must not.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_a_window_shorter_than_a_day_still_labels_that_day() -&gt; None</span></h3>
+  <p>Uses a real case from the dataset — an attack lasting 65 minutes — and requires the whole date to be marked, because the comparison is by date and not by clock.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_insiders_ordinary_day_is_negative_but_still_carries_the_scenario() -&gt; None</span></h3>
+  <p>An insider's March day and their July day: the first unmarked and the second marked, but both still carrying scenario 2. The two columns must not track each other.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_benign_user_is_all_zeros_in_both_columns() -&gt; None</span></h3>
+  <p>Somebody who appears nowhere in the answer key gets zeros in both new columns, stored in the small 8-bit integer type rather than a wider one.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_a_window_only_labels_its_own_user() -&gt; None</span></h3>
+  <p>Two people share a date and only the one the range names comes out marked — the guard against a comparison that forgot to filter by person.</p>
+</div>
+
+<h3>Reading the answer file — four tests on the ways it can be misread</h3>
+
+<div class="card">
+  <h3><span class="path">def test_release_filter_compares_dataset_as_a_string(tmp_path) -&gt; None</span></h3>
+  <p>An answer file holding releases 4.2, 5.2 and 4.20 must yield exactly one row. This is the test that fails the moment the column is read as a number.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_timestamps_are_normalised_to_midnight(tmp_path) -&gt; None</span></h3>
+  <p>A range starting at 20:05 and ending at 03:08 comes back as two bare dates, so nothing downstream has to remember to drop the time.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_a_release_with_no_rows_is_an_error_not_an_empty_table(tmp_path) -&gt; None</span></h3>
+  <p>A file with nothing for this release raises rather than returning an empty table — which would otherwise train a model on zero attack days without a single complaint.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_one_user_under_two_scenarios_is_rejected(tmp_path) -&gt; None</span></h3>
+  <p>The same person listed twice with different scenario numbers is refused, because the per-person column can only hold one value and picking either silently would be a guess.</p>
+</div>
+
+<h3>The fill — five tests on what gets inserted and what must not be</h3>
+
+<div class="card">
+  <h3><span class="path">def test_fill_inserts_exactly_the_missing_calendar_days() -&gt; None</span></h3>
+  <p>Friday, Monday and Tuesday become five rows; the two inserted weekend rows hold zeros and nothing anywhere is blank.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_fill_is_per_user_and_never_beyond_their_own_span() -&gt; None</span></h3>
+  <p>Somebody last seen in January is not expanded out to somebody else's May, which would fabricate months of absence that nothing in the world produced.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_fill_preserves_dtypes_and_existing_values() -&gt; None</span></h3>
+  <p>The rows that already existed keep their values and their storage types, including the one column among the eighteen that holds decimals rather than whole numbers.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_fill_makes_a_silent_day_labellable() -&gt; None</span></h3>
+  <p>Two rows eight days apart inside one attack: marking without filling finds 2 attack days, marking after filling finds 8. This is the entire argument for the ordering.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_duplicate_user_days_are_rejected_rather_than_multiplied() -&gt; None</span></h3>
+  <p>The same person and date twice raises immediately, rather than becoming four rows once the merge runs.</p>
+</div>
+
+<h3>The invariants — two tests that the hard checks work in both directions</h3>
+
+<div class="card">
+  <h3><span class="path">def test_verify_rejects_a_positive_day_on_a_benign_user() -&gt; None</span></h3>
+  <p>An attack day is forcibly written onto somebody the answer key never names, and the run must stop — this is the single join error that would poison every number downstream.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">def test_verify_accepts_a_correctly_labelled_table() -&gt; None</span></h3>
+  <p>A properly built table passes without complaint, and the columns come out in exactly the order the later stages assume: person, date, the eighteen counts, scenario, then the flag.</p>
+</div>
+
+<h2><span class="n">7</span>The five functions to actually remember</h2>
+
+<div class="rule">
+  <div class="num">1</div>
+  <div class="body">
+    <b><code>calendar_fill</code></b>
+    <p>The reason this stage exists. Without it, "the 28 rows before day <em>d</em>" is anything from 28 to 40 actual days depending on how many weekends that person skipped — and an employee who has resigned and stopped showing up produces no rows to mark at all, so their silence becomes invisible by construction.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">2</div>
+  <div class="body">
+    <b><code>attach_labels</code></b>
+    <p>The one place the two ground-truth columns are created, and the one place their difference is decided. Per-day versus per-person is not a technicality: Stage 4 balances its split on the per-person value, and Stage 7 reports per attack type with it.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">3</div>
+  <div class="body">
+    <b><code>_window_mask</code></b>
+    <p>The actual rule, in about fifteen lines: a date is inside if it is on or after the start and on or before the end, compared as dates. Every claim the project makes about what a positive <em>is</em> reduces to this comparison.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">4</div>
+  <div class="body">
+    <b><code>load_insiders</code></b>
+    <p>The release filter is the least obvious failure in the package. Read the <code>dataset</code> column as a number and 4.2 and 4.20 become indistinguishable, so you label other releases' people and miss your own — with no error, no blank, and a model that trains perfectly happily on the wrong answers.</p>
+  </div>
+</div>
+
+<div class="rule">
+  <div class="num">5</div>
+  <div class="body">
+    <b><code>verify</code></b>
+    <p>The line between "impossible" and "surprising". Five impossibilities stop the run here; everything merely odd — an insider with no attack days, an unexpected positive rate — is printed by the report instead, because a surprising number is something to look at, not automatically something wrong.</p>
+  </div>
+</div>
+
+<div class="callout">
+  <p><strong>The sentence that covers the whole package.</strong></p>
+  <p><em>"Stage 2 does two things and refuses to do a third. It puts back the days Stage 1 never wrote, because a silent day is an observation rather than a gap; and it reads the answer key onto those days, per day for the attack flag and per person for the scenario. It drops no rows and computes no statistics — both of those are Stage 3."</em></p>
+</div>
+
+<h2><span class="n">8</span>Where the docstrings and the code disagree</h2>
+
+<table>
+  <tr><th>Function</th><th>Docstring says</th><th>The body does</th></tr>
+  <tr><td class="mono">verify</td><td>"These <b>four</b> are logical impossibilities"</td><td>Runs <b>five</b> checks — the per-person row-loss check is not counted in the docstring.</td></tr>
+  <tr><td class="mono">calendar_fill</td><td>"the output is a strict superset of the input"</td><td>True of rows, not of columns: it keeps only <code>user</code>, <code>day</code> and the known features, dropping anything else.</td></tr>
+  <tr><td class="mono">__init__.py</td><td><code>__all__ = ["label"]</code></td><td>Never imports the submodule, so a star-import would fail.</td></tr>
+</table>
+
+<div class="note"><b>Four functions carry no docstring at all</b> — <code>_require_unique_keys</code>, <code>_users_that_lost_rows</code>, <code>_check</code> and <code>_window_lines</code>. All four are short and mechanical, which is presumably why, but it's worth knowing before someone asks whether the file is uniformly documented.</div>
+
+<footer>
+  InnerSight · <code>labeling/</code> function reference · 25 definitions in <code>label.py</code>, 19 in <code>test_label.py</code> · line numbers measured from the repository, descriptions written from the bodies.
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — code learning</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:840px; margin:0 auto; padding:56px 24px 80px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:34px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:58ch}
+
+  h2{font-size:14px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:48px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+
+  a.doc{display:block; text-decoration:none; color:inherit; background:var(--panel);
+        border:1px solid var(--line); border-radius:11px; padding:17px 21px; margin:11px 0;
+        transition:border-color .12s, transform .12s}
+  a.doc:hover{border-color:var(--accent); transform:translateX(2px)}
+  a.doc .t{font-size:18px; font-weight:650; letter-spacing:-.01em; margin-bottom:3px}
+  a.doc .t span{font-family:var(--mono); font-size:11.5px; color:var(--accent);
+                border:1px solid var(--line); border-radius:20px; padding:2px 8px;
+                margin-left:9px; vertical-align:middle; font-weight:500}
+  a.doc .d{color:var(--muted); font-size:15px}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:18px 22px; border-radius:0 8px 8px 0; margin:22px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .note{border-left:3px solid var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--ok)}
+
+  code{font-family:var(--mono); font-size:.87em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · code learning</p>
+  <h1>Learn the codebase</h1>
+  <p class="sub">Nine documents for understanding what you built. Start with the map, then read whichever package you expect to be asked about.</p>
+</header>
+
+<div class="callout">
+  <p><strong>What is in this folder, and what isn't.</strong></p>
+  <p>These explain <strong>the code</strong> — where functions live, what each one does, what the generated files are. The stage-by-stage documents about <em>why</em> each decision was made live next door in <code>html_files/</code>.</p>
+</div>
+
+<h2>Start here</h2>
+
+<a class="doc" href="innersight_code_map.html">
+  <div class="t">Where everything lives <span>navigation</span></div>
+  <div class="d">The four rules that let you guess correctly — one package per stage, five zones inside every file, helpers below their caller, verb-first names. Read this first; it makes the rest unnecessary to memorise.</div>
+</a>
+
+<a class="doc" href="innersight_code_review.html">
+  <div class="t">Reviewed as an examiner would <span>assessment</span></div>
+  <div class="d">The whole codebase from the perspective of someone looking for the weak point. Is the experiment valid, is the code trustworthy, do you understand it — plus the five questions worth rehearsing and nine honest weaknesses.</div>
+</a>
+
+<a class="doc" href="innersight_outputs_guide.html">
+  <div class="t">What all these files are <span>data/ + outputs/</span></div>
+  <div class="d">Every generated file explained — the three naming rules, what a checkpoint carries, how to read the metrics JSON, and which file to open for each likely question.</div>
+</a>
+
+<h2>Function by function, one per package</h2>
+
+<a class="doc" href="innersight_extraction_functions.html">
+  <div class="t">extraction/ <span>Stage 1</span></div>
+  <div class="d">Anything that touches a raw CSV. The five per-log builders, the fold, the join, and why distinct counts cannot be summed across chunks.</div>
+</a>
+
+<a class="doc" href="innersight_labeling_functions.html">
+  <div class="t">labeling/ <span>Stage 2</span></div>
+  <div class="d">The answer key and the calendar. Filling missing days with zeros, and marking which days fall inside an attack window.</div>
+</a>
+
+<a class="doc" href="innersight_baseline_functions.html">
+  <div class="t">baseline/ <span>Stage 3</span></div>
+  <div class="d">The thesis. Scoring each day against that person's own prior days, the standard-deviation floor, and the 2σ gate that decided the project was worth continuing.</div>
+</a>
+
+<a class="doc" href="innersight_splitting_functions.html">
+  <div class="t">splitting/ <span>Stage 4</span></div>
+  <div class="d">Who goes where. Assigning users rather than rows, stratified by attack type, across three seeds.</div>
+</a>
+
+<a class="doc" href="innersight_modeling_functions.html">
+  <div class="t">modeling/ <span>Stages 5 + 6</span></div>
+  <div class="d">Both models and everything they share — tensors, architectures, the training loop that knows nothing about which model it trains, the metrics, the orchestration.</div>
+</a>
+
+<a class="doc" href="innersight_evaluation_functions.html">
+  <div class="t">evaluation/ <span>Stage 7</span></div>
+  <div class="d">Reads checkpoints, never trains. Scoring, detection latency, false-positive inspection, the report — and <code>guards.py</code>, eight functions each named for what it refuses to allow.</div>
+</a>
+
+<div class="note"><b>If you have ten minutes and nothing else.</b> Read <b>Where everything lives</b>, then open <code>evaluation/guards.py</code> in the editor and read the eight function names. Those two things together answer most navigation and most integrity questions faster than any amount of memorising.</div>
+
+<footer>
+  InnerSight · CERT Insider Threat Test Dataset r4.2 · nine documents, all measured from the repository rather than described from memory.
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — the codebase, reviewed as an examiner</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:62ch}
+
+  h2{font-size:27px; margin:60px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:20px; margin:32px 0 8px; letter-spacing:-.01em}
+  h4{font-size:15.5px; margin:22px 0 6px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:22px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.58; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .filetag{font-family:var(--mono); font-size:11.5px; color:var(--accent); letter-spacing:.05em;
+           display:block; margin-bottom:-8px}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:12px 0; padding-left:24px} li{margin:7px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:20px 0}
+  .stat{flex:1 1 140px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:15px 17px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12.5px; color:var(--muted); margin-top:3px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:14px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:14px 20px; font-weight:650; font-size:16.5px}
+  .qa .q::before{content:"“"; color:var(--accent); font-size:22px; line-height:0; margin-right:4px}
+  .qa .a{padding:15px 20px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:11px}
+
+  .verdict{display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+           text-transform:uppercase; padding:3px 9px; border-radius:20px; font-weight:700}
+  .v-strong{background:color-mix(in srgb, var(--ok) 18%, transparent); color:var(--ok)}
+  .v-ok{background:color-mix(in srgb, var(--warn) 18%, transparent); color:var(--warn)}
+  .v-weak{background:color-mix(in srgb, var(--bad) 18%, transparent); color:var(--bad)}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · codebase review</p>
+  <h1>The code, reviewed the way it will be examined</h1>
+  <p class="sub">A walk through all thirteen thousand lines from the perspective of someone whose job is to find the weak point — what each package does, why it is built that way, and where the hard questions will land.</p>
+</header>
+
+<div class="callout">
+  <p><strong>How an examiner actually reads a final-year project.</strong></p>
+  <p>Not line by line. They look for three things, in this order: <strong>is the experiment valid</strong> (could the result be an artefact?), <strong>is the code trustworthy</strong> (would I believe a number it printed?), and <strong>does the student understand what they built</strong> (can they defend a decision they did not have to make?).</p>
+  <p>Everything below is organised around those three questions, because that is the order the questions will come in.</p>
+</div>
+
+<h2><span class="n">1</span>The shape of the thing</h2>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">10,120</div><div class="k">lines of implementation</div></div>
+  <div class="stat"><div class="v">3,080</div><div class="k">lines of tests</div></div>
+  <div class="stat"><div class="v">158</div><div class="k">test functions</div></div>
+  <div class="stat"><div class="v">7</div><div class="k">packages, one per stage</div></div>
+</div>
+
+<table>
+  <tr><th>Package</th><th class="num">Impl</th><th class="num">Tests</th><th>Responsibility</th></tr>
+  <tr><td class="mono">config.py</td><td class="num">643</td><td class="num">—</td><td>every constant in the project; nothing else defines one</td></tr>
+  <tr><td class="mono">extraction/</td><td class="num">881</td><td class="num">6</td><td>Stage 1 — 32.8 M raw events → 18 daily counts per person</td></tr>
+  <tr><td class="mono">labeling/</td><td class="num">714</td><td class="num">16</td><td>Stage 2 — calendar fill, then labels from the answer key</td></tr>
+  <tr><td class="mono">baseline/</td><td class="num">889</td><td class="num">16</td><td>Stage 3 — per-user causal z-scores. The thesis.</td></tr>
+  <tr><td class="mono">splitting/</td><td class="num">654</td><td class="num">19</td><td>Stage 4 — user-level stratified split, three seeds</td></tr>
+  <tr><td class="mono">modeling/</td><td class="num">2,450</td><td class="num">47</td><td>Stages 5–6 — shared training machinery + both architectures</td></tr>
+  <tr><td class="mono">evaluation/</td><td class="num">4,213</td><td class="num">54</td><td>Stage 7 — validation analyses, one test pass, the report</td></tr>
+</table>
+
+<p><em>(158 test <b>functions</b>; several are parametrised, so pytest reports a larger number. That is why the stage reports quote 9, 59, 101 for different subsets — they are pytest's expanded counts, not different suites.)</em></p>
+
+<div class="note"><b>The first thing an examiner will notice, and it cuts both ways.</b> Thirteen thousand lines to compare two models with 641 and 4,897 parameters is a <em>lot</em>. The models themselves are about 120 lines. So the honest framing — and it is a good one — is that this is not a modelling project with some plumbing; <b>it is a data-engineering and experimental-validity project with two small models at the end.</b> Roughly a quarter of the code is tests and another large fraction is diagnostics that exist to catch silent failure. Say that before someone asks why the evaluation package is bigger than the models.</div>
+
+<h3>The architecture: one file per stage boundary</h3>
+
+<pre><code>raw CERT logs  (16 GB, 5 CSVs)
+      │  extraction/          32.8 M events → 330,452 rows
+      ▼
+daily_counts.parquet   2.8 MB
+      │  labeling/            calendar fill + answer key
+      ▼
+labelled_counts.parquet   464,687 rows, 1,892 positives (0.407%)
+      │  baseline/            per-user causal z-scores
+      ▼
+dataset.parquet   16 MB
+      │  splitting/           600/200/200 users × 3 seeds
+      ▼
+splits.json
+      │  modeling/            Model A · Model B · 3 seeds each
+      ▼
+checkpoints (weights + threshold + standardiser)
+      │  evaluation/          validation analyses, then ONE test pass
+      ▼
+STAGE7_REPORT.md · final_results.json · figures</code></pre>
+
+<p><b>Every stage writes a file; the next stage reads that file; nothing recomputes.</b> This is worth defending explicitly, because it is the decision that made the project finishable: Stage 1 takes ninety seconds over 16 GB and runs once, while stages 5–7 were run dozens of times. If the CNN's training script reached back to the raw logs, every debugging cycle would have cost an afternoon.</p>
+
+<h2><span class="n">2</span>Is the experiment valid?</h2>
+
+<p>This is the first question and the one that can sink a project outright. The claim is <em>"Model B beats Model A because it sees temporal context."</em> An examiner's job is to find another explanation.</p>
+
+<h3>Threat 1 — were the two models actually trained identically?</h3>
+
+<p>The defence here is unusually strong, and it is structural rather than promised.</p>
+
+<p><code>train.py</code> takes a model object and inspects nothing about it. Stage 6 added an architecture class and an entry point, and touched none of the shared modules. That claim is verifiable two ways: by diff, and by file timestamps —</p>
+
+<pre><code>data.py, metrics.py, run_model_a.py     15:15   Stage 5, never touched after
+model_a checkpoints                     15:33
+model_b checkpoints                     16:10 – 16:17
+train.py, runner.py modified            16:48   ← AFTER both models were trained</code></pre>
+
+<p>Both checkpoint sets predate every subsequent modification. That is evidence, not assurance.</p>
+
+<div class="note good"><b>Second, sharper check.</b> The training-split <code>pos_weight</code> must print <b>229.7 / 225.3 / 232.1</b>. The whole-table figure is 244. If a run ever prints 244, the 27-day row mask was not applied before the weight was computed, which means the two models are on different rows and the comparison is void. <b>A single number in the log that distinguishes correct from silently-wrong</b> is exactly the kind of instrumentation an examiner rewards.</div>
+
+<h3>Threat 2 — leakage</h3>
+
+<p>Three leaks are possible in a project shaped like this, and each is closed differently.</p>
+
+<table>
+  <tr><th>Leak</th><th>Where it would happen</th><th>How it is prevented</th></tr>
+  <tr><td>Split by row, not by user</td><td>Stage 4</td><td>users are assigned; every one of their ~465 rows follows. Tested for disjointness across all three seeds.</td></tr>
+  <tr><td>Standardiser fitted on data it will score</td><td>Stage 5 / 7</td><td><b>structurally impossible</b> — <code>Corpus.build()</code> takes a standardiser as a <em>required argument</em>. No code path in <code>evaluation/</code> can fit one on the rows it is about to score.</td></tr>
+  <tr><td>Threshold re-selected on test</td><td>Stage 7</td><td><code>scoring.py</code> does not import <code>sweep_threshold</code>, and <code>evaluate()</code> is always called with <code>choose_threshold=False</code>.</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>This is the single most examiner-pleasing property in the codebase.</strong> Most students prevent leakage by being careful. Here two of the three leaks are prevented by <em>type signature</em> — the function that could commit them does not accept the arguments that would let it. Discipline fails at 2am; a required parameter does not.</p>
+</div>
+
+<h3>Threat 3 — "B wins because it has 7.6× the parameters"</h3>
+
+<p>A live alternative explanation, and the project answers it with a control rather than an argument: <b>Model B on a 7-day window.</b> Identical architecture, <b>identical parameter count</b> — convolutions plus global pooling do not depend on sequence length — with less context. Seven is the floor, because two dilated k=3 layers have a 7-day receptive field. The run aborts if the two parameter counts ever differ, since the control separates nothing otherwise.</p>
+
+<p>If B@7 lands between A and B@28, context is the driver and it is demonstrated, not asserted.</p>
+
+<h3>Threat 4 — the one that has not been closed yet</h3>
+
+<div class="note bad"><b>Onset versus persistence.</b> Scenario-2 attacks run 45–59 days. For a day at position 30, Model B's entire 28-day window sits <em>inside</em> the attack — it sees 28 consecutive anomalous days and says "attack", which is easy. Roughly half of scenario-2 positives are like that. Nothing is leaking (the window reaches strictly backwards, holds only that user's rows, and no label is ever visible), but <em>"detects the insider"</em> and <em>"notices an attack it already missed is still running"</em> are different products and only the first is worth claiming. <b>Stage 7 measures first-detection day per insider to settle it.</b> Anticipating this question and instrumenting for it is worth more than the answer.</div>
+
+<h2><span class="n">3</span>Would I believe a number this code printed?</h2>
+
+<h3>Two kinds of checking, and the distinction is the point</h3>
+
+<table>
+  <tr><th></th><th>Unit tests</th><th>Runtime sanity checks</th></tr>
+  <tr><td><b>Asks</b></td><td>does the code do what was written?</td><td>is what was written true of the world?</td></tr>
+  <tr><td><b>Runs</b></td><td>on demand</td><td>every single execution</td></tr>
+  <tr><td><b>On failure</b></td><td>fails loudly</td><td>prints a line; nothing stops</td></tr>
+  <tr><td><b>Catches</b></td><td>logic errors</td><td>wrong file, wrong release, silent data drift</td></tr>
+</table>
+
+<p>Every stage prints a report. A representative one, from Stage 1:</p>
+
+<pre><code>ok   no negative counts                 none
+ok   no NaNs anywhere                   none
+ok   no duplicate (user, day)           0 duplicates
+ok   logons approx logoffs, NOT equal   470,591 logons vs 384,268 logoffs
+ -   file_to_removable == file_count    True   (expected on r4.2)
+ -   large_attachment_count total       0      (expected on r4.2)</code></pre>
+
+<div class="note good"><b>The logons/logoffs check is the one worth pointing at in a viva.</b> It requires the two to be <em>close but not equal</em>. Exactly equal would mean something is synthesising logoffs; wildly different would mean the activity filter is broken. The dataset documentation states that a few logons are deliberately omitted to simulate dirty data — so a small mismatch is the <b>expected</b> state, and the check asserts the mismatch rather than the match. That is a student who read the documentation and thought about what "correct" means.</div>
+
+<h3>The tests were chosen by a stated criterion</h3>
+
+<p>Written at the top of the first test module and honoured in all seven:</p>
+
+<div class="callout"><p><strong>Test the behaviours that are wrong <em>silently</em></strong> — no exception, no NaN, just a number slightly off that nobody notices until the results make no sense.</p></div>
+
+<p>Which is why the extraction package has six test functions rather than sixty. The flagship one:</p>
+
+<div class="card">
+<h4>Distinct counts across chunk boundaries</h4>
+<p>The file is read in 50,000-row batches, so one person's single day can straddle two batches. Sixteen of the eighteen features are additive and combine by addition. Two — <code>unique_pcs_used</code> and <code>unique_filenames</code> — are <em>distinct</em> counts:</p>
+<pre><code>batch 1:  Anna, Monday, PC-1     →  1 distinct PC
+batch 2:  Anna, Monday, PC-1     →  1 distinct PC
+                                    ─────────────
+naive sum                           2   ✗
+truth (same machine, seen twice)    1   ✓</code></pre>
+<p>So those two keep unique <code>(user, day, value)</code> triples alive to the very end and count once. <b>The failure mode is what makes it worth a test:</b> no crash, no NaN, just a number slightly too large in proportion to how many chunks a given user-day happened to straddle — which changes with batch size. It would have survived to the results table.</p>
+</div>
+
+<h3>Behavioural verification beats assertion</h3>
+
+<p>Row counts prove a program ran. This proves it counted the right things:</p>
+
+<pre><code>KPC0073, reconstructed from our pipeline    │  the dataset's answer key
+2010-07-07   upload-site visits: 1          │  07/07/2010 21:23  wikileaks.org
+2010-07-12   upload-site visits: 1          │  07/12/2010 23:51  wikileaks.org
+2010-07-15   upload-site visits: 1          │  07/15/2010 02:40  wikileaks.org
+all 498 other days: 0                       │  (nothing else listed)</code></pre>
+
+<p>A known insider's timeline rebuilt from 32.8 million raw events, matching the published ground truth event for event. <b>No schema assertion can do that.</b></p>
+
+<h3>And a test the project got wrong, then fixed properly</h3>
+
+<div class="card">
+<p>Model B is a 1D CNN over an <code>(18, 28)</code> grid. If the tensor arrives transposed, the network convolves across <em>features</em> while treating days as channels — producing plausible numbers that mean nothing.</p>
+<p>The originally specified guard was: feed a ramp over days, reverse it, assert the output changes. <b>A deliberately broken feature-axis model passed that test on all eight initialisations</b>, because reversing a ramp also permutes the channels a feature-axis convolution reads, so both models respond.</p>
+<p>The replacement is <b>translation invariance</b>: a bump at days 8–11 must score the same as at days 16–19. Measured separation — correct model <code>1.49e-08</code>, broken model <code>7.47e-03</code>. Six orders of magnitude. The test module <b>ships the broken model explicitly</b>, plus a mutation test proving the guard fails on it.</p>
+<p><span class="verdict v-strong">strong</span> Finding that your own verification is invalid, and building a mutation test to prove the replacement works, is postgraduate-level practice.</p>
+</div>
+
+<h2><span class="n">4</span>Does the student understand what they built?</h2>
+
+<p>This is where most vivas are won or lost, and it is tested by asking about decisions that <em>had alternatives</em>. Six of those are visible in the code.</p>
+
+<div class="card">
+<h4>1. Per-day labels, not 28-day windows</h4>
+<p>The original design labelled a 28-day window positive only if ≥50% of it fell inside an attack. Scenario 1 lasts 1–12 days and scenario 3 lasts 2 — <b>neither can fill 14 of 28 days.</b> That rule silently deleted 40 of the 70 insiders and left 125 positives. Per-day labelling keeps all 70 and yields 1,892.</p>
+<p><b>A 15× increase in training signal from changing a labelling rule</b> — before any model existed. This is the highest-leverage decision in the project and it is not a modelling decision at all.</p>
+</div>
+
+<div class="card">
+<h4>2. Calendar fill, and why it is not cosmetic</h4>
+<p>Stage 1 emits a row only for days with events, so weekends vanish. Stage 2 fills each user's calendar with zeros between their first and last observed day. Two reasons: Model B needs 28 <em>consecutive calendar</em> days (28 rows can otherwise span 40 days with nothing raising), and <b>a day of no activity is an observation, not missing data</b> — a resigned insider who has stopped coming in produces exactly that.</p>
+<p>Measured consequence: <b>528 of the 1,892 positives — 28% — exist only after the fill.</b></p>
+</div>
+
+<div class="card">
+<h4>3. Expanding window, not an exponential moving average</h4>
+<p>The z-score baseline scores each day against that person's own prior days. An EMA with a two-week half-life was the more sophisticated option and was rejected for a measured reason: <b>scenario-2 attacks last 45–59 days</b>, long enough that an EMA would substantially absorb the attack into the baseline it is measured against — and scenario 2 is 88% of all positives.</p>
+<p>It still absorbs, and the project quantified that rather than hiding it: <b>scenario-2 days score 0.40× as high in the last third of their window as the first.</b> That number is both an honest limitation and the mechanism behind Model B's advantage.</p>
+</div>
+
+<div class="card">
+<h4>4. Clip to ±10 <em>before</em> standardising</h4>
+<p>z-scores reach 716 against a typical 0.42. The subtlety worth being able to explain: <b>standardising does not fix an outlier, it amplifies the damage.</b> The outlier inflates the feature's standard deviation, so every normal row is divided by a larger number and squashed toward zero while the outlier still towers. Clipping first keeps the divisor honest.</p>
+</div>
+
+<div class="card">
+<h4>5. Two domain lists decided by measurement, not intuition</h4>
+<p>Sixteen features are mechanical counts. Two depend on <em>which websites count</em> — the only place in the pipeline where a thumb could rest on the scale. Both were settled by one test applied uniformly: <em>does traffic to this domain concentrate inside labelled attack windows?</em></p>
+<pre><code>monster.com        insider A 10 in / 0 out    insider B  7 / 0    → keep
+aol.com/jobs                 5 / 0                       5 / 0    → ADD
+craigslist.org              17 / 22                      3 / 0    → drop
+linkedin.com       40,446 hits, most-visited domain in the dataset → drop
+mediafire.com      ~334,000 hits, no ground truth on r4.2         → drop</code></pre>
+<p>The mediafire removal is the strongest story. It was 90% of one feature while carrying no ground-truth signal, and <b>the damage was per-user rather than uniform</b>: an insider who never used mediafire kept a baseline of zero and his leak-site visit produced a huge deviation, while an insider who browsed it routinely had a noisy baseline that swallowed the same visit. Detection was depending on unrelated browsing habits.</p>
+</div>
+
+<div class="card">
+<h4>6. Average pooling, and the tuning attempt that proved it</h4>
+<p>A post-hoc variant with mean+max pooling <b>lost</b> — AUPRC 0.677 → 0.602. But the shape of the loss is the finding: scenario 1 rose 6.6 points, scenario 2 fell 11.0. Scenario 2 is 88% of positives, so it decides the metric.</p>
+<p><b>The pooling operator selects which attack profile the model can detect.</b> A max channel offers the shortcut "find the single worst day" — right for a burst, wrong for a drift whose individual days are unremarkable. A negative result <em>with a mechanism</em> is worth more than a lucky win, and reporting it unprompted is the behaviour of someone doing science rather than demonstrating a tool.</p>
+</div>
+
+<h2><span class="n">5</span>Three practices above the usual bar</h2>
+
+<div class="card">
+<h4>The prediction was registered before the experiment</h4>
+<p>Written into the Stage 6 brief before any Model B code existed, and copied into the package README before the run so it could not be retrofitted:</p>
+<table>
+  <tr><th></th><th>Predicted</th><th>Measured</th><th></th></tr>
+  <tr><td>Scenario 2</td><td>B clearly beats A</td><td>22.7% → 71.9%</td><td class="mono">✅ held</td></tr>
+  <tr><td>Scenario 1</td><td>roughly a tie</td><td>40.5% → 61.2%</td><td class="mono">❌ missed</td></tr>
+  <tr><td>Scenario 3</td><td>tie</td><td>4/12 → 4/12</td><td class="mono">✅ held</td></tr>
+  <tr><td>Overall</td><td>ahead but modestly</td><td>0.151 → 0.677</td><td class="mono">⚠️ 4× off</td></tr>
+</table>
+<p><b>Two of four predictions were wrong, and both are reported as wrong.</b> The scenario-1 explanation is the interesting part: a spike judged against 27 quiet days <em>inside the same window</em> is a stronger signal than the spike alone. Temporal context helps short bursts too — which the student did not expect and now understands.</p>
+</div>
+
+<div class="card">
+<h4>Guards print values, not verdicts</h4>
+<p>A boolean saying "the standardiser came from the checkpoint" is as convincing as no check at all. So the standardiser guard <em>refits</em> one on training rows purely for comparison and prints both sets of statistics, and the row-identity guard compares a SHA-256 digest of every row's <code>(user, day, label)</code> — which catches a reordering that a row count would not.</p>
+</div>
+
+<div class="card">
+<h4>The test split is opened once, and the opening is recorded</h4>
+<p><code>run_phase2</code> refuses to start until the validation phase has written its artifact, appends to <code>TEST_SPLIT_OPENED.json</code> on every opening, and requires <code>--force --reason '...'</code> for a second pass — with the reason recorded so the write-up can disclose it. <b>The discipline is enforced by the program rather than by the student's memory at 2am.</b></p>
+</div>
+
+<h2><span class="n">6</span>Where I would press hardest</h2>
+
+<div class="qa"><div class="q">Your evaluation package is bigger than your models. Justify that.</div><div class="a">
+<p>The honest answer is the strong one: the models are 120 lines because they are <em>supposed</em> to be small — 641 and 4,897 parameters against ~1,140 positive training rows. The engineering is not in the architectures, it is in making a 0.4%-positive comparison on 464,687 rows believable. Three-quarters of <code>evaluation/</code> is guards, leakage prevention and analyses that exist to test the result rather than produce it.</p>
+<p><b>Weak answer to avoid:</b> "it needed to be thorough." Point at what specific failure each part prevents.</p></div></div>
+
+<div class="qa"><div class="q">You changed the standard-deviation floor from what your own specification said. Did you tune on the labels?</div><div class="a">
+<p>The order of the justification decides this. The specified formula produced a median of <b>exactly zero for 8 of the 18 features</b>, because 73.5% of employees never connect a USB stick — so the floor was not a scale estimate at all, it collapsed onto a fallback constant. The estimator was changed to use employees who exhibit the behaviour at all.</p>
+<p><b>That reasoning uses only the distribution of the data and never touches the labels.</b> The 54/70 versus 66/70 comparison is confirmation reported afterwards, not the reason for the change. Say it in that order or it sounds like tuning.</p></div></div>
+
+<div class="qa"><div class="q">Only three random seeds. Why should I trust ±0.02?</div><div class="a">
+<p>Legitimate hit, and the honest answer names the limit. Three seeds is thin, and the seeds vary the <em>split</em> as well as the initialisation, so the spread conflates two sources of variance. A proper design would be three weight initialisations <em>within</em> each split — nine runs. It was scoped out on time, and the project says so rather than implying otherwise.</p>
+<p>What can still be claimed: <b>Model B's worst seed beats Model A's best by 3.7× with no overlap.</b> That separation does not require a tight confidence interval to be convincing.</p></div></div>
+
+<div class="qa"><div class="q">Your domain lists encode knowledge of what the attacks were. Isn't that cheating?</div><div class="a">
+<p>The candidate domains come from the dataset's published scenario descriptions, which is standard practice for this benchmark. What was <em>excluded</em> was decided by one stated test applied uniformly, and two upload domains carrying no ground truth at all were deliberately retained so the feature is not a lookup for the single domain the answer key names.</p>
+<p><b>The concession to make voluntarily:</b> a real deployment would not have this knowledge on day one. It is listed in the limitations.</p></div></div>
+
+<div class="qa"><div class="q">Show me your commit history.</div><div class="a">
+<p>There isn't one — the repository is uncommitted. This is a genuine weakness and there is no good answer to it. <b>Fix it before submission</b> rather than trying to defend it.</p></div></div>
+
+<h2><span class="n">7</span>Weaknesses, listed before someone else lists them</h2>
+
+<table>
+  <tr><th>Weakness</th><th>Severity</th><th>Best handling</th></tr>
+  <tr><td>Nothing committed to git; no development history</td><td><span class="verdict v-weak">fix now</span></td><td>one commit before submission; costs a minute</td></tr>
+  <tr><td>Three seeds, conflating split and initialisation variance</td><td><span class="verdict v-ok">disclose</span></td><td>name the correct design (9 runs) and why it was scoped out</td></tr>
+  <tr><td>Single dataset; no r5.2 generalisation test</td><td><span class="verdict v-ok">disclose</span></td><td>future work — z-scores are dataset-independent by construction</td></tr>
+  <tr><td>Dataset is synthetic and deliberately dense (7% insiders)</td><td><span class="verdict v-ok">disclose</span></td><td>CERT's own README calls it "unrealistically high"; volunteer it</td></tr>
+  <tr><td>Only 15 of 18 features informative on r4.2</td><td><span class="verdict v-strong">already handled</span></td><td>measured, documented, correct on r5+</td></tr>
+  <tr><td>Std floor is a population statistic including test users</td><td><span class="verdict v-strong">already handled</span></td><td>bounded (~0.1% contribution), declared in the report</td></tr>
+  <tr><td>Ground-truth windows narrower than the actual anomalies</td><td><span class="verdict v-strong">already handled</span></td><td>measured on two named insiders; makes reported precision a lower bound</td></tr>
+  <tr><td>Scenario 3 rests on 4 test rows</td><td><span class="verdict v-strong">already handled</span></td><td>reported as counts, never as a percentage</td></tr>
+  <tr><td><code>runner.save_checkpoint</code> mis-stamps <code>window_days</code> for B@7</td><td><span class="verdict v-ok">one line</span></td><td>known, worked around with a probe batch; mention in limitations</td></tr>
+</table>
+
+<div class="note good"><b>Six of the nine are already handled</b> — measured, documented and disclosed rather than discovered by an examiner. That ratio is itself a finding about the project: the weaknesses that remain are scope decisions, not oversights.</div>
+
+<h2><span class="n">8</span>What an examiner would write in the margin</h2>
+
+<table>
+  <tr><th>Criterion</th><th>Assessment</th></tr>
+  <tr><td><b>Experimental validity</b></td><td><span class="verdict v-strong">strong</span> One variable isolated; identical training verified by diff and timestamp; a capacity control that separates context from parameter count; leakage prevented by type signature rather than discipline.</td></tr>
+  <tr><td><b>Software engineering</b></td><td><span class="verdict v-strong">strong</span> Seven single-responsibility packages, one file boundary per stage, all constants centralised, 158 tests chosen by a stated criterion, runtime diagnostics on every execution.</td></tr>
+  <tr><td><b>Scientific honesty</b></td><td><span class="verdict v-strong">strong</span> Predictions registered in advance and scored including the misses; a failed tuning attempt reported with its mechanism; limitations volunteered before being found.</td></tr>
+  <tr><td><b>Understanding of the domain</b></td><td><span class="verdict v-strong">strong</span> Dataset choice justified by counting labelled insiders across all ten releases; three degenerate features found by measurement; the AUROC/AUPRC gap explained rather than exploited.</td></tr>
+  <tr><td><b>Statistical rigour</b></td><td><span class="verdict v-ok">adequate</span> Three seeds is thin and conflates two variance sources. The effect size carries the claim; the confidence interval does not.</td></tr>
+  <tr><td><b>Process evidence</b></td><td><span class="verdict v-weak">weak</span> No commit history. Fixable in one minute and should be.</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>The sentence to open the viva with.</strong></p>
+  <p>“The project is a controlled experiment with one variable. Two networks — 641 and 4,897 parameters — trained on identical rows, with an identical standardiser, loss, optimiser, schedule, seeds and device; the only difference is that one sees a single day and the other sees the twenty-eight days ending on it. Most of the thirteen thousand lines exist to make that claim verifiable rather than merely stated, and I can show you the two independent checks that prove the shared code never changed between the runs.”</p>
+</div>
+
+<footer>
+  InnerSight · codebase review · CERT Insider Threat Test Dataset r4.2 (Carnegie Mellon University / ExactData).
+  Line counts, test counts, module structure and file timestamps measured directly from the repository.
+</footer>
+
+</div>
+</body>
+</html>

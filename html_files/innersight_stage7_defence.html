@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — Stage 7 (defence prep)</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17px; margin:0; max-width:64ch}
+
+  h2{font-size:13px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase;
+     color:var(--muted); margin:56px 0 18px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:20px; margin:32px 0 10px; letter-spacing:-.01em}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--accent)}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:24px 26px; margin:18px 0}
+  .card > :first-child{margin-top:0}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:14px 16px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.55; margin:12px 0}
+  code{font-family:var(--mono); font-size:.9em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+     color:var(--muted); font-weight:600}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:12px 16px; border-radius:0 6px 6px 0; margin:16px 0; font-size:14.5px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+  .todo{border-left-color:var(--muted); background:color-mix(in srgb, var(--muted) 7%, transparent)}
+  .todo b{color:var(--muted)}
+
+  .fill{font-family:var(--mono); font-size:.88em; color:var(--muted);
+        border:1px dashed var(--muted); border-radius:4px; padding:0 6px; white-space:nowrap}
+
+  ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+
+  .stat-row{display:flex; gap:12px; flex-wrap:wrap; margin:18px 0}
+  .stat{flex:1 1 150px; background:var(--panel); border:1px solid var(--line);
+        border-radius:10px; padding:14px 16px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px}
+
+  .qa{border:1px solid var(--line); border-radius:10px; margin:12px 0; overflow:hidden}
+  .qa .q{background:var(--code-bg); padding:13px 18px; font-weight:650; font-size:15.5px}
+  .qa .q::before{content:"Q  "; font-family:var(--mono); color:var(--accent); font-weight:700}
+  .qa .a{padding:14px 18px}
+  .qa .a p{margin:0} .qa .a p + p{margin-top:10px}
+  .qa .a > :first-child::before{content:"A  "; font-family:var(--mono); color:var(--ok); font-weight:700}
+
+  .say{border:2px dashed var(--accent); border-radius:10px; padding:16px 20px; margin:16px 0;
+       background:var(--panel)}
+  .say .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--accent); display:block; margin-bottom:6px}
+  .say p{margin:0; font-size:16.5px}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · Stage 7 · defence preparation</p>
+  <h1>Opening the envelope once</h1>
+  <p class="sub">Every stage before this one existed to make a single comparison honest. Stage 7 spends that on one pass over data no model has ever seen — and the whole of its defence is the argument that the pass really was single, really was untouched, and really did apply the decisions made before it. This document is that argument, plus the four measurements that turn it into a result.</p>
+</header>
+
+<div class="note todo"><b>The state of this document.</b> The <code>evaluation/</code> package is written, tested and proven end to end. <b>The full-release runs have not happened yet</b>, so every measured number below appears as <span class="fill">pending</span>. Everything that is <em>not</em> a measurement — the method, the pre-registered decision rules, the guards, the answers to the hard questions — is final and does not change when the numbers arrive. Fill the boxes from the run output; nothing else needs editing.</div>
+
+<div class="callout">
+  <p><strong>Say this first, if you say nothing else.</strong></p>
+  <p>“The test split was opened once, for both models together, at the end. Neither model's decision threshold nor its input scaling was recomputed on it — both were saved inside the checkpoint at training time, months of decisions earlier, specifically so that they could not be. The program prints both values on every run and refuses to continue if the ones it applied are not the ones on disk.”</p>
+  <p>“And before opening it, I answered the question that decides what I am allowed to claim: not <em>how well</em> the model detects insiders, but <em>when</em>.”</p>
+</div>
+
+<h4>Words used in this document</h4>
+<table>
+  <tr><td class="mono">validation</td><td>The 200 people used to choose the stopping epoch and the decision threshold. Every number Stages 5 and 6 reported came from here. It is a <em>selection</em> set, so its numbers are optimistic by construction.</td></tr>
+  <tr><td class="mono">test</td><td>The 200 people nobody and nothing has touched. Opened once, in this stage. ~93,000 scored days per seed, ~376 of them attack days.</td></tr>
+  <tr><td class="mono">threshold</td><td>The score above which a day is flagged. Chosen on validation, stored inside the checkpoint, applied unchanged to test. Choosing it on test would be the easiest cheat in the project and the hardest to spot afterwards.</td></tr>
+  <tr><td class="mono">standardiser</td><td>The per-feature mean and standard deviation used to scale inputs, fitted on <em>training</em> people only. Also stored inside the checkpoint.</td></tr>
+  <tr><td class="mono">latency</td><td>How far into an attack the first detection lands, counted in days from the window's first day. The subject of §3, and the reason §3 comes first.</td></tr>
+</table>
+
+<h2>1 — What Stage 7 is for</h2>
+
+<p>Stage 6 produced a large number: Model B scores 0.677 average precision on validation against Model A's 0.151. Stage 7 exists because that number cannot be reported as it stands, for two separate reasons.</p>
+
+<div class="card">
+<h4>It is a selection number</h4>
+<p>Validation chose Model B's stopping epoch, then chose its threshold, and then the same validation data was reported. Three uses of one set. Model B's per-epoch score also swings — seed 42 bounced between 0.46 and 0.71 on consecutive epochs — so taking the best of thirty-nine such epochs is optimistic on top of that. The unbiased number lives in the sealed split.</p>
+
+<h4>It has not been asked the question that decides what it means</h4>
+<p>Scenario-2 attacks run 45–59 days, and Model B reads the 28 days behind each day it judges. So for a day at position 30 of an attack, the entire window is <em>inside</em> the attack. Not a cheat — but “detects the insider” and “notices an attack it already missed” are different products, and nothing measured so far tells them apart.</p>
+</div>
+
+<h2>2 — The rule that shapes the whole stage</h2>
+
+<div class="callout">
+  <p><strong>Phase 1 answers every remaining question on validation. Only then does Phase 2 open the test split. The order is not negotiable and it is enforced by the program, not by discipline.</strong></p>
+  <p>The reason is simple and total: <b>once you have seen the test numbers, any change you make afterwards is fitting to the test set</b> — and it does not matter whether the change was principled, because you can no longer prove it would have been made anyway. The result stops meaning anything the moment the ordering breaks.</p>
+</div>
+
+<table>
+  <tr><th></th><th>Phase 1 — validation</th><th>Phase 2 — test</th></tr>
+  <tr><td>detection latency</td><td>✔ measured, decides the claim</td><td>recomputed for the record</td></tr>
+  <tr><td>capacity control (B on 7 days)</td><td>✔ trained and measured</td><td>✘ never — it is a control</td></tr>
+  <tr><td>class-weighting ablation</td><td>✔ trained and measured</td><td>✘ never</td></tr>
+  <tr><td>top-scoring false positives</td><td>✔ inspected by hand</td><td>—</td></tr>
+  <tr class="hi"><td><b>the reported comparison</b></td><td>selection numbers only</td><td><b>one pass, both models</b></td></tr>
+</table>
+
+<div class="note good"><b>Two mechanisms make this checkable rather than claimed.</b> Phase 2 refuses to start unless Phase 1 has written its results file — the ordering is a missing-file error, not a habit. And every opening of the test split is appended to <code>outputs/TEST_SPLIT_OPENED.json</code> with a timestamp; a second opening is refused unless it is forced with a written reason, which is then recorded. A results table can be checked against the number of times test was read.</div>
+
+<div class="say">
+  <span class="lbl">The line to use if asked “how do we know you only looked once?”</span>
+  <p>“You can check. There is a file that records every time the test split was opened, with a timestamp and a reason, and the program appends to it before it reads a single row. A second pass requires forcing it and writing down why, and that reason ends up in the file. I cannot prove I did not delete the file — but I can point at a design where deleting it is the only way, rather than one where nobody would ever have known.”</p>
+</div>
+
+<h2>3 — The measurement that decides what the project may claim</h2>
+
+<p>This is the most important analysis in the stage, and it is not about accuracy at all.</p>
+
+<div class="callout">
+  <p><strong>Is Model B detecting the insider, or noticing that an attack it already missed is still running?</strong></p>
+  <p>Roughly half of all scenario-2 attack days sit deep enough inside a 45–59 day window that Model B's entire month of context is itself attack behaviour. Seeing 28 consecutive anomalous days and concluding “attack” is easy. Seeing day one and concluding “attack” is the product.</p>
+</div>
+
+<div class="note good"><b>First, what this is not.</b> It is not leakage. The window reaches strictly backwards, contains only that same person's rows, and no label is ever visible to the model at any point. Being shown a person's own recent behaviour is precisely what temporal context <em>means</em>; that the behaviour was also anomalous is the signal rather than a cheat. This distinction matters, because “leakage” and “a weaker claim than you think” call for completely different responses and only the second one applies.</div>
+
+<h4>Two views, both from predictions that already existed</h4>
+
+<p><b>First detection.</b> For each insider: the earliest day that is both labelled an attack day and scored above that checkpoint's own threshold, expressed as <em>day N of that insider's attack window</em>. Insiders never detected at all are counted separately — they are a result, not missing data.</p>
+
+<p><b>Recall by position.</b> The same attack days, bucketed by how far into the attack they fall.</p>
+
+<table>
+  <tr><th>Position in the attack</th><th class="mono">Model A</th><th class="mono">Model B</th><th>What it means</th></tr>
+  <tr><td>days 1–7</td><td class="num"><span class="fill">— / —</span></td><td class="num"><span class="fill">— / —</span></td><td>the first week: onset</td></tr>
+  <tr><td>days 8–14</td><td class="num"><span class="fill">— / —</span></td><td class="num"><span class="fill">— / —</span></td><td>window still mostly clean</td></tr>
+  <tr><td>days 15–28</td><td class="num"><span class="fill">— / —</span></td><td class="num"><span class="fill">— / —</span></td><td>window filling with attack</td></tr>
+  <tr class="hi"><td>days 29+</td><td class="num"><span class="fill">— / —</span></td><td class="num"><span class="fill">— / —</span></td><td><b>window entirely inside the attack</b></td></tr>
+  <tr><td>median first detection</td><td class="num"><span class="fill">day —</span></td><td class="num"><span class="fill">day —</span></td><td></td></tr>
+  <tr><td>insiders never caught</td><td class="num"><span class="fill">—</span></td><td class="num"><span class="fill">—</span></td><td></td></tr>
+</table>
+
+<h4>The decision rule, written before the numbers existed</h4>
+
+<p>The three thresholds that turn those bars into a conclusion are declared as constants in <code>evaluation/latency.py</code>, and they were fixed before a single number was produced:</p>
+
+<pre><code>PERSISTENCE_RATIO  = 1.5    late recall this many times early recall → persistence
+FLAT_RATIO         = 1.25   within this of each other               → flat
+ONSET_MEDIAN_DAYS  = 7.0    median first detection beyond one week  → not onset</code></pre>
+
+<table>
+  <tr><th>If the measurement says</th><th>The claim becomes</th></tr>
+  <tr><td>flat recall, median inside the first week</td><td><b>“detects insider activity at onset”</b> — claim it plainly</td></tr>
+  <tr><td>recall climbing steeply with position</td><td><b>“identifies ongoing exfiltration campaigns”</b>, with the median latency stated beside it every time</td></tr>
+  <tr><td>in between</td><td>onset detection may be claimed only with the median and the bucket table shown</td></tr>
+</table>
+
+<div class="note"><b>Why the answer is not obvious in advance, in either direction.</b> Stage 3 measured that scenario-2 z-scores decay to <b>0.40×</b> across an attack window — the person's own baseline gradually absorbs the attack, so late attack days are <em>quieter</em>, which argues against the persistence reading. At the same time Model B's window fills up with attack days, which argues for it. The two effects run opposite ways and only the measurement settles which wins.</div>
+
+<div class="say">
+  <span class="lbl">The line to use whichever way it lands</span>
+  <p>“I raised this against my own result before anyone else did, I wrote the decision rule down before I could see which answer it would give, and the report states the claim that rule licenses — not the one I would have preferred.”</p>
+</div>
+
+<h2>4 — The capacity control: is it context, or is it just bigger?</h2>
+
+<div class="callout">
+  <p><strong>Model B has 7.6× Model A's parameters. “B wins because it is bigger” is a live alternative explanation for the entire project, and it deserves a control rather than a paragraph.</strong></p>
+</div>
+
+<p>The clean separation is <b>Model B on a seven-day window</b>. Convolutions followed by a global average do not care how long the sequence is, so <code>ModelB(days=7)</code> has <em>exactly</em> the parameter count of <code>ModelB(days=28)</code> — 4,897 either way. Same architecture, same capacity, one quarter of the context. Seven days is the floor, because the two dilated kernel-3 layers have a seven-day reach and anything shorter would leave the second layer convolving over padding.</p>
+
+<table>
+  <tr><th></th><th class="mono">context</th><th class="mono">parameters</th><th class="mono">validation AUPRC</th></tr>
+  <tr><td>Model A</td><td class="num">1 day</td><td class="num">641</td><td class="num">0.1513 ± 0.0197</td></tr>
+  <tr class="hi"><td><b>Model B @ 7 days</b></td><td class="num">7 days</td><td class="num">4,897</td><td class="num"><span class="fill">pending</span></td></tr>
+  <tr><td>Model B @ 28 days</td><td class="num">28 days</td><td class="num">4,897</td><td class="num">0.6767 ± 0.0342</td></tr>
+</table>
+
+<table>
+  <tr><th>Where B@7 lands</th><th>What it licenses</th></tr>
+  <tr class="hi"><td><b>between A and B@28</b></td><td>context is the driver — <b>demonstrated rather than asserted</b>, because capacity is held exactly fixed</td></tr>
+  <tr><td>level with B@28</td><td>capacity was doing the work, and the write-up must say so</td></tr>
+  <tr><td>level with A</td><td>the 28-day span specifically is what matters; a week is not enough</td></tr>
+</table>
+
+<div class="note good"><b>Every one of those three outcomes is a result.</b> This is not a check that is hoped to pass — it is a measurement that produces a sentence either way, and the run aborts before training if the two parameter counts are ever unequal, because the control separates nothing if capacity is allowed to move.</div>
+
+<div class="note"><b>And it is never scored on test.</b> It is a control, not a competing model. Its checkpoints are written under a separate tag, and the loader that opens the reported models physically refuses to open them.</div>
+
+<h2>5 — The class-weighting ablation</h2>
+
+<p>Stages 5 and 6 both asserted that weighting the rare class is what stops the model collapsing to “nobody is an insider”. Neither measured it. Stage 7 does, on Model A, in ninety seconds.</p>
+
+<table>
+  <tr><th>Model A</th><th class="mono">AUPRC</th><th class="mono">P@50</th><th class="mono">mean predicted prob</th><th class="mono">distinct predictions</th></tr>
+  <tr class="hi"><td>weighted BCE <em>(reported)</em></td><td class="num">0.1513 ± 0.0197</td><td class="num">0.573</td><td class="num"><span class="fill">—</span></td><td class="num"><span class="fill">—</span></td></tr>
+  <tr><td>plain BCE</td><td class="num"><span class="fill">—</span></td><td class="num"><span class="fill">—</span></td><td class="num"><span class="fill">—</span></td><td class="num"><span class="fill">—</span></td></tr>
+</table>
+
+<div class="note"><b>The column to watch is the last one.</b> A collapsed model has a perfectly healthy-looking loss curve — that is what makes this failure dangerous. What gives it away is the number of <em>distinct</em> scores it produces: a model that is genuinely ranking emits tens of thousands across 85,000 validation days, and one that has learned “nobody is an insider” emits a handful. Not repeated on Model B: thirteen minutes for a second data point on a claim Model A already evidences.</div>
+
+<h2>6 — The nine rows that outscored almost every real attack</h2>
+
+<p>Stage 6 left one anomaly explicitly unresolved. Model B seed 123 scored P@50 = 0.520 but <b>P@10 = 0.100</b> — nine of its ten highest-scoring validation days are labelled benign, yet they outrank nearly every genuine attack day. Stage 7 prints those rows and reads them.</p>
+
+<div class="note"><b>There is a measured reason to suspect the labels rather than the model.</b> Stage 2 established that the published attack windows mark the <em>signature event</em>, not the full behavioural anomaly. BIH0745's heaviest after-hours USB copying sits outside his 65-minute labelled window. KPC0073's loudest day in the entire dataset — z = 107 on after-hours USB — is formally labelled 0. A model that ranks such days at the top is not wrong about the behaviour; it disagrees with the annotation.</div>
+
+<p>Each inspected row is classified into one of four readings, and the sentence the report uses is derived from the counts rather than chosen first:</p>
+
+<table>
+  <tr><th>Reading</th><th class="num">count</th><th>What it would license</th></tr>
+  <tr><td>insider, inside the window's dates but unlabelled</td><td class="num"><span class="fill">—</span></td><td rowspan="2"><b>“Our highest-scoring false positives are genuine anomalous behaviour the ground truth fails to label. The reported precision is therefore a lower bound.”</b></td></tr>
+  <tr><td>insider, within 28 days of their window</td><td class="num"><span class="fill">—</span></td></tr>
+  <tr><td>insider, far from their labelled window</td><td class="num"><span class="fill">—</span></td><td>unlabelled anomalous behaviour by a known insider — the Stage 2 finding, restated on new data</td></tr>
+  <tr><td>a person with no labelled attack at all</td><td class="num"><span class="fill">—</span></td><td>genuine false positives — an honest failure mode, and precision should be read at face value</td></tr>
+</table>
+
+<div class="note good"><b>Both answers are reportable and only one of them is flattering.</b> That is the point of deciding the wording from a count. The alternative — looking at the rows, forming an impression, and then writing the sentence — is how a report ends up claiming a lower bound because the author wanted one.</div>
+
+<h2>7 — The test pass</h2>
+
+<div class="stat-row">
+  <div class="stat"><div class="v"><span class="fill">—</span></div><div class="k">Model A test AUPRC</div></div>
+  <div class="stat"><div class="v"><span class="fill">—</span></div><div class="k">Model B test AUPRC</div></div>
+  <div class="stat"><div class="v">0.0041</div><div class="k">random baseline (0.41% positives)</div></div>
+  <div class="stat"><div class="v"><span class="fill">—</span></div><div class="k">× random, Model B</div></div>
+</div>
+
+<h4>What the split should look like, checked rather than assumed</h4>
+
+<pre><code>~93,000 scored days per seed
+~376 attack days per seed  (0.41%)      random-baseline AUPRC ≈ 0.004
+scenario-3 attack days: exactly 4 per seed, in all three seeds</code></pre>
+
+<p>Those are Stage 4's measurements, printed back as a guard. If the shape has drifted, the splits file and the dataset have gone out of step — a failure no accuracy figure would reveal.</p>
+
+<div class="note bad"><b>The guard that fails on a good-looking number.</b> If either model scores a test AUPRC at or above <b>0.95</b>, the program treats it as leakage rather than success and exits with an error code instead of writing a results file. At a 0.4% positive rate with labels this coarse, near-perfect ranking means a split applied by row instead of by person, a scaler fitted on everything, or a label leaking into a feature. This is the guard most likely to be argued with, which is exactly why it is enforced in code.</div>
+
+<div class="note"><b>And the honest expectation.</b> Test AUPRC should land near the validation figures. A large gap in <em>either</em> direction is a finding to investigate and report, not to smooth over — and a test score meaningfully <em>above</em> validation is more suspicious than one below it.</div>
+
+<h2>8 — The AUROC / AUPRC gap, as a finding rather than a footnote</h2>
+
+<p>This is worth raising unprompted, because it is the clearest statement in the project about why the metric was chosen.</p>
+
+<table>
+  <tr><th></th><th class="mono">AUROC</th><th class="mono">AUPRC</th><th class="mono">random AUPRC</th></tr>
+  <tr><td>Model A, validation</td><td class="num">0.9383</td><td class="num">0.1513</td><td class="num">0.0043</td></tr>
+  <tr class="hi"><td>Model B, validation</td><td class="num">0.9929</td><td class="num">0.6767</td><td class="num">0.0043</td></tr>
+  <tr><td>LAN (Cai et al., 2024), r4.2</td><td class="num">0.9369</td><td class="num">not reported</td><td class="num">—</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>Model A scores 0.938 AUROC — level with recent published work on this dataset — and 0.151 average precision on the same predictions.</strong></p>
+  <p>Both numbers are correct. At a 0.4% positive rate, AUROC is dominated by the ease of ranking hundreds of thousands of obvious negatives, so a model gets rewarded for correctly ignoring the days nobody was ever going to look at. Average precision describes what an analyst with a finite queue actually experiences.</p>
+  <p>The LAN comparison is an <em>anchor</em>, not a like-for-like: it uses a temporal split and a different labelling scheme. The point survives the caveat — a one-day model with essentially no ability to see a trend already reaches the AUROC the literature quotes.</p>
+</div>
+
+<h2>9 — The registered prediction, scored on test</h2>
+
+<p>Four predictions were written into the Stage 6 brief before Model B existed. Two were already wrong on validation. Stage 7 scores them again on data nobody has touched, and reports the misses as misses.</p>
+
+<table>
+  <tr><th></th><th>Predicted in advance</th><th>Validation</th><th>Test</th></tr>
+  <tr class="hi"><td><b>Scenario 2</b> improves</td><td>B clearly beats A</td><td class="mono">22.7% → 71.9% ✔</td><td class="mono"><span class="fill">pending</span></td></tr>
+  <tr><td><b>Scenario 1</b> ties</td><td>roughly a tie</td><td class="mono">40.5% → 61.2% ✘</td><td class="mono"><span class="fill">pending</span></td></tr>
+  <tr><td><b>Scenario 3</b> ties</td><td>tie</td><td class="mono">4/12 → 4/12 ✔</td><td class="mono"><span class="fill">pending</span></td></tr>
+  <tr><td><b>Overall</b> gain is modest</td><td>ahead, but modestly</td><td class="mono">0.151 → 0.677 ⚠ ~4× off</td><td class="mono"><span class="fill">pending</span></td></tr>
+</table>
+
+<div class="note good"><b>The report writes this table's verdicts from the measurement, not from the hypothesis.</b> If Model B loses on test, section 1 of the generated report says so in those words. If scenario 1 moves the other way, section 7 explains the averaging cost instead of the twenty-seven-quiet-days story. A scenario with no attack days in a split is reported as <em>unscored</em>, never as a failed prediction. This was tested by building the report from data where Model B loses, and reading what it said.</div>
+
+<h2>10 — How “we did not peek” is made provable</h2>
+
+<p>Six checks run on every pass and print their values rather than a verdict. A boolean saying “the scaler came from the checkpoint” is exactly as convincing as no check at all.</p>
+
+<div class="card">
+<h4>The scaler is the one the weights were trained under</h4>
+<p>The mean and standard deviation are refitted from the training people and compared, to nine decimal places, against the values stored in each checkpoint — and both models' stored values are compared against each other. The guard prints the actual numbers. A mismatch means either the dataset changed since training or the checkpoint is not what it claims, and either way the comparison is void.</p>
+
+<h4>The threshold is the one chosen on validation</h4>
+<p>Compared byte-for-byte against the stored value and printed, along with how many days it flags. The code that would <em>choose</em> a threshold is not imported into the evaluation package at all.</p>
+
+<h4>Both models scored the identical rows</h4>
+<p>Compared by a hash of every row's person, day and label — not by a row count. A count catches a dropped row; a hash also catches a reordering, which is the failure that would leave both scores plausible and both wrong.</p>
+
+<h4>Test people appear in no training or validation split</h4>
+<p>Checked per seed. A person who trains under seed 42 and is tested under seed 123 is fine — those are independent experiments. A person who does both within one seed invalidates that seed.</p>
+
+<h4>No NaN, no infinity, and every score above the random baseline</h4>
+
+<h4>And the one that makes the rest believable</h4>
+<p>Re-scoring <em>validation</em> from the checkpoints must reproduce the AUPRC that Stages 5 and 6 logged. If loading the weights, rebuilding the architecture, applying the stored scaler and applying the stored threshold gives back 0.1237 / 0.1687 / 0.1615 for Model A and 0.7127 / 0.6306 / 0.6868 for Model B, then the identical machinery pointed at test is doing what it says. On the 30-user smoke run it matched to four decimal places on all six checkpoints.</p>
+</div>
+
+<div class="say">
+  <span class="lbl">The line to use</span>
+  <p>“I did not write a check that says the scaler came from the checkpoint. I wrote one that refits it from the training people, compares it to nine decimal places, and prints both sets of numbers into the log and into the results file. You can read them.”</p>
+</div>
+
+<h2>11 — Weaknesses, said before anyone asks</h2>
+
+<div class="card">
+<h4>The dataset is synthetic and deliberately dense</h4>
+<p>Seventy insiders among a thousand people is a 7% rate no real organisation has. The per-<em>day</em> positive rate of 0.4% is realistic; the per-<em>person</em> rate is not, and it makes the training problem easier than reality.</p>
+
+<h4>Three of the eighteen features carry nothing on this release</h4>
+<p><code>large_attachment_count</code> is identically zero across r4.2, and two others barely move. The model is effectively working with fifteen.</p>
+
+<h4>The labels are windows, not events</h4>
+<p>Every day inside an attack window is labelled positive, including days on which the insider did nothing unusual — and, as §6 shows, some genuinely anomalous days sit outside the window and are labelled benign. Both directions of error are present, and neither can be fixed without re-labelling by hand.</p>
+
+<h4>Scenario 3 rests on four test rows per split</h4>
+<p>Arithmetic, not bad luck: all ten of those insiders have exactly two attack days each. A recall there has five possible values, and its standard deviation across seeds measures noise on four rows and nothing else. It is written as “n of 4 attack days” everywhere, never as a percentage.</p>
+
+<h4>The standard-deviation floor is a population statistic including test people</h4>
+<p>Stage 3's per-feature floor is a median of per-user standard deviations taken over everybody. Any one held-out person contributes roughly 0.1% of it. It is bounded, it is disclosed, and it is not worth re-running the pipeline over — but it is not zero, and it should be stated rather than discovered.</p>
+
+<h4>The three seeds are three splits, not three initialisations</h4>
+<p>So “mean ± sd” here measures the split lottery rather than model variance. That is the more conservative of the two and the right one to report at this sample size, but it is not an ensemble and should not be described as one.</p>
+
+<h4>The tuning attempt is excluded, deliberately and visibly</h4>
+<p>Model B v2 lost — 0.6767 down to 0.6022 with double the spread — and appears nowhere in the results. It survives as one paragraph, because <em>why</em> it lost is a finding: adding a maximum channel to the pooling raised scenario-1 recall 6.6 points and cost 11.0 points of scenario 2, which is 88% of positives. <b>The pooling operator selects which attack profile the model can detect.</b> Sustained pooling for a drift, peak pooling for a burst, and at 4,900 parameters you cannot have both.</p>
+</div>
+
+<h2>12 — Questions to rehearse</h2>
+
+<div class="qa"><div class="q">How do I know you didn't try several thresholds on the test set and report the best one?</div><div class="a">
+<p>Because the threshold was chosen on validation months of decisions earlier and written inside the checkpoint file, alongside the weights and the input scaling. Stage 7 loads it and applies it. The function that searches for a threshold is not imported into the evaluation package — there is no code path that could sweep one on test.</p>
+<p>And it is not left as an assurance. Every run prints the threshold it applied beside the value stored on disk, compares them, and refuses to continue if they differ. The same is true of the scaler, which is additionally refitted from the training people and compared to nine decimal places. Both sets of numbers are in the log and in the results file.</p></div></div>
+
+<div class="qa"><div class="q">Scenario-2 attacks last two months. Isn't Model B just seeing the rest of the attack?</div><div class="a">
+<p>That is the strongest challenge to this result and I would rather raise it myself. It is not leakage: the window reaches strictly backwards, contains only that same person's rows, and no label is ever visible. Being shown someone's own recent behaviour is what temporal context means.</p>
+<p>But whether it catches the onset or merely notices an attack in progress is a real question, and it is the first thing Stage 7 measures. I plot recall against the day's position inside its own attack window, with the decision rule written down before I could see the answer. If recall climbs steeply with position, the claim changes from “detects insiders” to “identifies ongoing exfiltration campaigns” with the median latency stated — and the report generates that wording automatically from the measurement, so I cannot quietly keep the stronger claim.</p></div></div>
+
+<div class="qa"><div class="q">Model B is 7.6 times larger. Is it winning on context or on capacity?</div><div class="a">
+<p>I ran the control. The same architecture on a seven-day window has <em>exactly</em> the same parameter count — 4,897 — because convolutions followed by a global average do not care about sequence length. So the only thing that changes is how far back it can see, and the run aborts before training if those two counts are ever unequal.</p>
+<p>If it lands between Model A and Model B, capacity is ruled out and context is demonstrated. If it lands level with the 28-day model, capacity was doing the work and I say so. I did not run a control I expected to pass; I ran one where all three outcomes produce a sentence I would have to write.</p></div></div>
+
+<div class="qa"><div class="q">Your AUROC is 0.99. Isn't that too good?</div><div class="a">
+<p>It is, in the sense that it is the wrong number to be impressed by. Model A — which sees a single day and structurally cannot detect a trend — already scores 0.938 AUROC, level with recent published work on this dataset. On the very same predictions its average precision is 0.151.</p>
+<p>At a 0.4% positive rate AUROC is dominated by how easy it is to rank hundreds of thousands of obviously ordinary days. It rewards a model for correctly ignoring the days nobody would ever have looked at. I report both, headline the average precision, and print the random baseline of 0.004 next to it every single time, because “0.68 against a baseline of 0.004” is a sentence you can evaluate and “0.68” is not.</p></div></div>
+
+<div class="qa"><div class="q">What would have made you say the thesis failed?</div><div class="a">
+<p>Two things, and both were written down in advance. If Model B had improved the sharp bursts and left scenario 2 where it was, the 28-day window would have been adding capacity rather than context, and the thesis would not have been supported — scenario 2 is the attack type that is <em>defined</em> by playing out over weeks.</p>
+<p>And in this stage: if the seven-day control recovers the whole gain, the honest conclusion is that the architecture rather than the history is doing the work. That control exists precisely because it could produce that answer.</p></div></div>
+
+<div class="qa"><div class="q">You have a whole document of guards. Isn't that over-engineering for a student project?</div><div class="a">
+<p>Every one of them exists because of a specific way this project could produce a plausible number and no error. A model that collapses to “nobody is an insider” is 99.6% accurate and its loss curve looks perfectly healthy. A scaler refitted on the evaluation rows raises the score and raises no exception. Two models scored on slightly different rows still give two numbers you can put in a table.</p>
+<p>The check I would point at is the one that re-scores validation from the checkpoints and compares against what the training runs logged. If that reproduces to four decimal places, the same machinery applied to the test split is doing what it claims. That is not decoration — it is the reason to believe anything else in the results.</p></div></div>
+
+<div class="qa"><div class="q">Why is the tuned Model B not in the comparison?</div><div class="a">
+<p>Because it lost, and including a variant only when it wins is how a report becomes a sales document. It scored 0.6022 against 0.6767 with double the spread. The code was reverted; the measurement was kept.</p>
+<p>What is in the write-up is the reason it lost, because that is a real finding. Adding a maximum channel to the pooling gave the model the shortcut “find the single worst day” — the right instinct for a two-day burst and precisely the wrong one for a drift whose individual days are unremarkable. Scenario 1 gained 6.6 points and scenario 2 lost 11.0, and scenario 2 is 88% of the positives. The pooling operator chooses which attack profile you can detect.</p></div></div>
+
+<div class="qa"><div class="q">What is the one thing you would do next?</div><div class="a">
+<p>Run this on r5.2. It has two thousand people, exercises all eighteen features rather than fifteen, and adds a fourth attack scenario — so it separates “the method works” from “the method works on r4.2”, which is the single largest thing this project cannot currently claim.</p>
+<p>After that, three weight initialisations <em>within</em> each split, so the error bars measure model variance rather than the split lottery; and attention pooling in place of the mean, which would keep the drift sensitivity while producing a per-day weight map — turning “this person is anomalous” into “these are the days that made them anomalous”, which is what an analyst opens the alert to see.</p></div></div>
+
+<div class="callout">
+  <p><strong>The sentence to end on.</strong></p>
+  <p>“Six stages went into making one comparison honest: one row set for both models, one scaler fitted on training people only, one training loop that does not know which model it is running. Stage 7 spends all of that on a single pass over two hundred people nobody had touched, with the threshold and the scaling taken from files written before that data was ever opened. The result is <span class="fill">—</span> against a random baseline of 0.004, and — more importantly — I can tell you <em>when</em> in an attack it arrives, because I measured that before I was allowed to see the test set at all.”</p>
+</div>
+
+<footer>
+  InnerSight · Stage 7 · <code>evaluation/</code> — corpus, checkpoints, scoring, guards, latency, false positives, the two phases, the report.
+  Package written and tested 8 August 2026: 54 tests of its own, 101 across the project, and the full pipeline proven end to end on the 30-user sample.
+  <b>The full-release runs are outstanding and the test split has not been opened.</b> Every <span class="fill">pending</span> box is filled from the run output; nothing else in this document changes.
+</footer>
+
+
+</div>
+</body>
+</html>

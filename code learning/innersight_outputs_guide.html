@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnerSight — what all these files are</title>
+<style>
+  :root{
+    --bg:#fbfaf9; --panel:#ffffff; --ink:#1c1a17; --muted:#6b6560;
+    --line:#e6e1db; --accent:#8a5a2b; --accent-soft:#f5ece2;
+    --ok:#2f6f4e; --warn:#9a6a12; --bad:#9b3428;
+    --code-bg:#f4f1ed;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --panel:#1e1e23; --ink:#eceae7; --muted:#a09a94;
+      --line:#33323a; --accent:#d9a066; --accent-soft:#2a231c;
+      --ok:#7fc79c; --warn:#e0b45c; --bad:#e08d80;
+      --code-bg:#26262c;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+       line-height:1.68; font-size:16.5px; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px; margin:0 auto; padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink); padding-bottom:24px; margin-bottom:36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+           color:var(--accent); margin:0 0 10px}
+  h1{font-size:37px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:17.5px; margin:0; max-width:60ch}
+
+  h2{font-size:26px; margin:58px 0 14px; letter-spacing:-.015em; padding-top:14px;
+     border-top:1px solid var(--line)}
+  h2 .n{font-family:var(--mono); font-size:15px; color:var(--accent); margin-right:10px}
+  h3{font-size:19px; margin:30px 0 8px; letter-spacing:-.01em}
+
+  .callout{background:var(--accent-soft); border-left:4px solid var(--accent);
+           padding:20px 24px; border-radius:0 8px 8px 0; margin:24px 0}
+  .callout p{margin:0} .callout p + p{margin-top:12px}
+  .callout strong{color:var(--accent)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:20px 24px; margin:16px 0}
+  .card > :first-child{margin-top:0}
+  .card h3{margin-top:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .card h3 .path{font-family:var(--mono); font-size:15px; color:var(--accent); font-weight:600}
+  .card h3 .meta{font-family:var(--mono); font-size:11.5px; color:var(--muted);
+                 border:1px solid var(--line); border-radius:20px; padding:2px 9px}
+
+  pre{background:var(--code-bg); border-radius:8px; padding:15px 17px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  pre code{background:none; padding:0; font-size:inherit}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  td.mono,th.mono{font-family:var(--mono); font-size:12.5px}
+  td.num{text-align:right; font-family:var(--mono); font-size:12.5px}
+  tr.hi td{background:var(--accent-soft)}
+
+  .note{border-left:3px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, transparent);
+        padding:13px 17px; border-radius:0 6px 6px 0; margin:18px 0; font-size:15px}
+  .note b{color:var(--warn)}
+  .good{border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent)}
+  .good b{color:var(--ok)}
+  .bad{border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bad b{color:var(--bad)}
+
+  ul{margin:11px 0; padding-left:24px} li{margin:7px 0}
+
+  .rule{display:flex; gap:16px; align-items:flex-start; margin:16px 0;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 20px}
+  .rule .tag{font-family:var(--mono); font-size:13px; font-weight:700; color:var(--accent);
+             flex:none; width:100px}
+  .rule .body{flex:1}
+  .rule .body p{margin:0}
+
+  footer{margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">InnerSight · data/ and outputs/</p>
+  <h1>What all these files are</h1>
+  <p class="sub">Two folders, thirty-odd files, five formats. Once you know the three naming rules, you can identify any of them without opening it.</p>
+</header>
+
+<div class="callout">
+  <p><strong>The one-sentence mental model.</strong></p>
+  <p><code>data/</code> holds <strong>the pipeline's intermediate products</strong> — one file per stage, each one the input to the next. <code>outputs/</code> holds <strong>everything the models produced</strong> — trained weights, measured numbers, logs and figures.</p>
+  <p>Nothing in either folder is source code, and nothing in either is written by hand. Every file is regenerable by re-running a stage.</p>
+</div>
+
+<h2><span class="n">1</span>Three naming rules that identify any file</h2>
+
+<div class="rule">
+  <div class="tag">.sample</div>
+  <div class="body"><p><b>Built from the 30-user development copy, not the real dataset.</b> Those 30 users include 9 insiders — a 30% insider rate against the real 7% — so <b>every number from a <code>.sample</code> file is meaningless.</b> They exist so a 7-second test run can never overwrite a real result. If you are ever unsure whether a number is real, check for this infix first.</p></div>
+</div>
+
+<div class="rule">
+  <div class="tag">_seed42<br>_seed123<br>_seed456</div>
+  <div class="body"><p><b>Three different random splits of the 1,000 users</b> — not three attempts at the same thing. Each seed puts different people in train, validation and test, so each produces its own trained model. Results are always reported as mean ± standard deviation across the three, because a single split is a single draw of a lottery.</p></div>
+</div>
+
+<div class="rule">
+  <div class="tag">_v2</div>
+  <div class="body"><p><b>The tuning attempt that lost.</b> Dropout, mean+max pooling and a learning-rate schedule; validation AUPRC fell 0.677 → 0.602. <b>Excluded from every result.</b> The files stay on disk as a record and the reason it lost is worth one paragraph, but no <code>_v2</code> file appears in any table.</p></div>
+</div>
+
+<p>Two more tags will appear once the last runs finish: <code>_nopw</code> (the class-weighting ablation) and <code>_w7</code> (the 7-day capacity control). Both are experiments <em>about</em> the result, not the result.</p>
+
+<h2><span class="n">2</span><code>data/</code> — one file per stage</h2>
+
+<p>Each stage reads the previous file and writes the next. Nothing recomputes.</p>
+
+<table>
+  <tr><th>File</th><th class="num">Size</th><th>Made by</th><th>What's in it</th></tr>
+  <tr><td class="mono">daily_counts.parquet</td><td class="num">2.8 MB</td><td>Stage 1</td><td>330,452 rows — user, day, 18 raw counts</td></tr>
+  <tr><td class="mono">labelled_counts.parquet</td><td class="num">3.5 MB</td><td>Stage 2</td><td>464,687 rows — the same, plus zero-filled days, plus <code>label</code> and <code>user_scenario</code></td></tr>
+  <tr class="hi"><td class="mono">dataset.parquet</td><td class="num">16 MB</td><td>Stage 3</td><td>464,687 rows — counts <b>replaced by z-scores</b>. This is what the models train on.</td></tr>
+  <tr><td class="mono">splits.json</td><td class="num">61 KB</td><td>Stage 4</td><td>which users are in train / validation / test, for each of the three seeds</td></tr>
+</table>
+
+<div class="note"><b>Why does <code>dataset.parquet</code> jump to 16 MB with the same number of rows?</b> Because the contents changed from small whole numbers to decimals. A column of counts is mostly zeros and small integers, which compresses enormously. A column of z-scores is high-precision decimals with almost no repetition, so there is nothing to compress. <b>Same rows, five times the file.</b> It is a good sign, not a problem — it is what "we replaced counts with deviations" looks like on disk.</div>
+
+<h3>Reading them</h3>
+
+<pre><code>import pandas as pd
+df = pd.read_parquet("data/dataset.parquet")
+df.head()
+df[df.user == "KPC0073"]           # one person's whole history
+df[df.label == 1].user.nunique()   # 70 insiders</code></pre>
+
+<p>Parquet is a compressed columnar format — it is not readable in a text editor, and that is the point: it loads in under a second and remembers the exact data types, so a date stays a date and an integer stays an integer between stages.</p>
+
+<h3><code>splits.json</code> — the only human-readable one</h3>
+
+<pre><code>{
+  "fractions": {"train": 0.6, "val": 0.2, "test": 0.2},
+  "seeds": [42, 123, 456],
+  "splits":  { "42": {"train": ["AAF0535", ...], "val": [...], "test": [...] }, ... },
+  "summary": { "42": {"test": {"users": 200, "rows": 93287,
+                              "positive_rows": 383, "positive_rate": 0.0041,
+                              "positives_by_scenario": {"1": 40, "2": 339, "3": 4}}}}
+}</code></pre>
+
+<p><b>The <code>summary</code> block is the useful half.</b> You can answer "how many attack days are in the test set?" by opening the file, without loading any data or running anything.</p>
+
+<h2><span class="n">3</span><code>outputs/</code> — what the models produced</h2>
+
+<p>Four kinds of thing, and it helps to think of them as answering four different questions.</p>
+
+<div class="card">
+  <h3><span class="path">*_metrics.json</span> <span class="meta">the numbers</span></h3>
+  <p><b>Question it answers: how well did it do?</b> This is the file to open when you need a figure. Everything else in <code>outputs/</code> is supporting evidence.</p>
+  <p>Three sections that matter:</p>
+  <pre><code>aggregate       mean ± std across the three seeds — the headline numbers
+per_seed        one record per seed, including the full epoch-by-epoch history
+per_scenario    recall broken down by attack type, pooled and per-seed</code></pre>
+  <p>Plus four flags at the top that are worth knowing exist:</p>
+  <pre><code>pos_weight_enabled              was the class-imbalance fix on?
+collapse_guard_fired_any_seed   did the model degenerate to one answer?
+leakage_suspected_any_seed      did AUPRC go suspiciously high?
+device                          "mps" — the Apple GPU</code></pre>
+  <p><b>Getting a headline number out:</b></p>
+  <pre><code>import json
+m = json.load(open("outputs/model_b_metrics.json"))
+m["aggregate"]["auprc"]            # {'mean': 0.6767, 'std': 0.0342, 'n': 3}
+m["aggregate"]["random_baseline"]  # ~0.0043 — always quote this beside it
+m["per_scenario"]["2"]             # scenario 2: hits_summed / attack_days_summed</code></pre>
+</div>
+
+<div class="card">
+  <h3><span class="path">*_run.log</span> <span class="meta">the transcript</span></h3>
+  <p><b>Question it answers: what actually happened during training?</b> Plain text, exactly what appeared in the terminal. This is the file to open when someone doubts a number, because it shows the run rather than summarising it.</p>
+  <p>Each seed's block opens with the setup, and those lines are worth being able to read aloud:</p>
+  <pre><code>rows 464,687, masked out as warm-up 27,000 (5.8%), positives lost to the mask 0
+rows with any |z| &gt; 10 before clipping: 2,138 (0.46%)
+train: 600 users, 264,609 target rows, 1,147 positive (0.4335%)
+val:   200 users,  85,191 target rows,   362 positive (0.4249%)
+pos_weight (train only) = 229.7  [263,462 negatives / 1,147 positives]
+random-baseline AUPRC on validation = 0.00425
+ModelA: 641 trainable parameters</code></pre>
+  <p>Then one line per epoch:</p>
+  <pre><code>epoch  1  train_loss 1.06119  val_loss 0.84237  val_AUPRC 0.0423
+          val_P@50 0.240  mean_prob 0.33423  distinct 84,067   0.9s</code></pre>
+  <p>And after the first epoch, the guards print their actual values rather than a verdict:</p>
+  <pre><code>guard | predicted prob min 0.045485 max 1.000000 mean 0.334230 std 0.204481
+guard | 84,067 distinct predicted values, ok
+guard | val AUPRC 0.0423 &gt; random baseline 0.00425, ok</code></pre>
+  <div class="note good"><b>The line to point at if challenged on fairness.</b> <code>pos_weight (train only) = 229.7</code>. If it ever printed 244 instead, the 27-day row mask was not applied before the weight was computed, which would mean the two models trained on different rows. One number in the log separates correct from silently wrong.</div>
+</div>
+
+<div class="card">
+  <h3><span class="path">checkpoints/*.pt</span> <span class="meta">the trained models</span></h3>
+  <p><b>Question it answers: can I use this model again?</b> A <code>.pt</code> file is PyTorch's save format — technically a zip archive, not readable by eye.</p>
+  <p>Each one carries <b>four things, not just the weights</b>:</p>
+  <table>
+    <tr><td>the weights</td><td>641 numbers for Model A, 4,897 for Model B</td></tr>
+    <tr><td>the decision threshold</td><td>the cutoff chosen on validation. A model without it is not a working system.</td></tr>
+    <tr><td>the standardiser</td><td>the mean and spread used to scale the inputs — so the same transform is reapplied exactly</td></tr>
+    <tr><td>the configuration</td><td>which model, which seed, one day or twenty-eight, which device</td></tr>
+  </table>
+  <p><b>Why this matters:</b> Stage 7 loads a checkpoint and re-applies the <em>stored</em> threshold and standardiser rather than recomputing them. Recomputing either on the test set would be leakage. Storing them inside the file is what makes that impossible by accident.</p>
+  <p>Six real files — two models × three seeds — at ~6 KB each for Model A and ~24 KB for Model B.</p>
+</div>
+
+<div class="card">
+  <h3><span class="path">figures/*_curves.png</span> <span class="meta">the training curves</span></h3>
+  <p><b>Question it answers: did it actually learn?</b> This is the single most convincing artifact you can show — it is hard to fake a loss curve.</p>
+  <p><b>What healthy looks like:</b> training loss falls steadily; validation AUPRC rises then flattens; the run stops shortly after the best point.</p>
+  <div class="note"><b>One thing on Model B's curve will look wrong and isn't.</b> Its <em>validation loss rises</em> while its <em>validation AUPRC also rises</em> — loss 0.336 → 1.076 while AUPRC went 0.254 → 0.713. That is why the project stops on AUPRC and not on loss: stopping on loss would have halted Model B around epoch 8 at AUPRC ≈ 0.43 and thrown away two-thirds of the result. <b>Have that explanation ready, because it is the sort of thing an examiner spots and asks about.</b></div>
+</div>
+
+<div class="card">
+  <h3><span class="path">stage3_gate.csv</span> <span class="meta">the go / no-go table</span></h3>
+  <p><b>Question it answers: was the signal there before any model existed?</b> One row per insider, all 70, produced by Stage 3 <em>before</em> anything was trained.</p>
+  <pre><code>user, scenario, days, window_days, peak, late_ratio,
+pre_attack_max, attack_max, lift_max, passes_max,
+pre_attack_mean, attack_mean, lift_mean, passes_mean</code></pre>
+  <p>Reading one row — <code>AAM0658</code>, a scenario-1 insider:</p>
+  <table>
+    <tr><td class="mono">window_days 7</td><td>his attack lasted 7 days</td></tr>
+    <tr><td class="mono">pre_attack_max 2.10</td><td>before the attack, his loudest feature averaged 2.1σ</td></tr>
+    <tr><td class="mono">attack_max 9.20</td><td>during it, 9.2σ</td></tr>
+    <tr><td class="mono">lift_max 4.38</td><td>4.4× louder during the attack than before it</td></tr>
+    <tr><td class="mono">passes_max True</td><td>cleared the 2σ bar</td></tr>
+  </table>
+  <p><b>Why both <code>_max</code> and <code>_mean</code>:</b> collapsing 18 z-scores into one number is ambiguous and the conclusion flips depending on which you pick — the mean dilutes a sharp three-feature attack across fifteen features that never moved, the max is noisy enough that an ordinary day clears 2σ. The project reports both, always, rather than resolving it quietly.</p>
+  <p><b>The result:</b> 66 of 70 insiders cleared 2σ. That is what licensed building the rest of the project.</p>
+</div>
+
+<h2><span class="n">4</span>What isn't there yet</h2>
+
+<p>These appear once Stage 7's final run completes:</p>
+
+<table>
+  <tr><td class="mono">STAGE7_REPORT.md</td><td>the results document — the submission deliverable</td></tr>
+  <tr><td class="mono">outputs/final_results.json</td><td>every test-set number, machine-readable</td></tr>
+  <tr><td class="mono">figures/stage7_comparison.png</td><td>Model A vs Model B, side by side</td></tr>
+  <tr><td class="mono">figures/stage7_detection_latency.png</td><td>how early in an attack each model catches the insider</td></tr>
+  <tr><td class="mono">outputs/insider_detection.csv</td><td>per-insider detection table, for the appendix</td></tr>
+  <tr><td class="mono">outputs/TEST_SPLIT_OPENED.json</td><td>an audit record — the test set was opened, once, at this time</td></tr>
+</table>
+
+<h2><span class="n">5</span>Which file to open when asked</h2>
+
+<table>
+  <tr><th>If asked…</th><th>Open</th></tr>
+  <tr class="hi"><td><b>"What were your results?"</b></td><td class="mono">outputs/model_b_metrics.json → aggregate</td></tr>
+  <tr><td>"Show me it actually trained."</td><td class="mono">outputs/figures/model_b_curves.png</td></tr>
+  <tr><td>"How do I know the models saw the same data?"</td><td class="mono">outputs/model_*_run.log → the <code>pos_weight</code> line</td></tr>
+  <tr><td>"Was the signal there before modelling?"</td><td class="mono">outputs/stage3_gate.csv</td></tr>
+  <tr><td>"How many attack days are in the test set?"</td><td class="mono">data/splits.json → summary</td></tr>
+  <tr><td>"What does the model actually take as input?"</td><td class="mono">data/dataset.parquet</td></tr>
+  <tr><td>"Did it collapse to one answer?"</td><td class="mono">metrics.json → <code>collapse_guard_fired_any_seed</code></td></tr>
+  <tr><td>"Which users are in test?"</td><td class="mono">data/splits.json → <code>splits["42"]["test"]</code></td></tr>
+  <tr><td>"How long did training take?"</td><td class="mono">metrics.json → <code>per_seed[i].seconds_total</code></td></tr>
+  <tr><td>"Show me one insider's data."</td><td class="mono">dataset.parquet, filter <code>user == "KPC0073"</code></td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>If you only remember one thing about these folders.</strong></p>
+  <p><code>data/</code> is the pipeline — one file per stage, each the input to the next. <code>outputs/</code> is the evidence — numbers, transcripts, weights and pictures. <strong>Anything with <code>.sample</code> in its name is a rehearsal and must never be quoted, and anything with <code>_v2</code> is an experiment that lost.</strong></p>
+</div>
+
+<footer>
+  InnerSight · guide to <code>data/</code> and <code>outputs/</code> · file sizes, structures and log excerpts read directly from the repository.
+</footer>
+
+</div>
+</body>
+</html>

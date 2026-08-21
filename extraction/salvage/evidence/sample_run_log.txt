@@ -1,0 +1,12 @@
+11:41:11 INFO    reading /home/claude/sample
+11:41:11 INFO    logon: reading ['date', 'user', 'pc', 'activity'] from logon.csv
+11:41:11 INFO    logon: 67953 rows total
+11:41:11 INFO    device: reading ['date', 'user', 'activity'] from device.csv
+11:41:11 INFO    device: 26342 rows total
+11:41:11 INFO    file: reading ['date', 'user', 'filename'] from file.csv
+11:41:12 INFO    file: 26222 rows total
+11:41:12 INFO    email: reading ['date', 'user', 'to', 'cc', 'bcc', 'size'] from email.csv
+11:41:12 INFO    email: 89577 rows total
+11:41:12 INFO    http: reading ['date', 'user', 'url'] from http.csv
+11:41:16 INFO    http: 967805 rows total
+11:41:16 INFO    wrote 8655 rows to /tmp/throwaway.parquet
