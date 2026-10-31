@@ -1,5 +1,10 @@
 # InnerSight
 
+> **Team project — B.Sc. Computer Science final project, Afeka Tel Aviv Academic College of Engineering.**
+> Forked from the team repository. **My role:** I led model training for Model A (MLP, 1-day context) and Model B (1D CNN, 28-day context).
+>
+> **Headline result:** the 28-day model reached **3.5× the average precision** of the 1-day model (0.67 vs 0.19, 155× above random) on held-out users. Full results: [STAGE7_REPORT.md](STAGE7_REPORT.md)
+
 Insider threat detection on the CMU CERT Insider Threat Test Dataset (r4.2).
 
 **The thesis in one line:** an insider does nothing forbidden — they do normal
